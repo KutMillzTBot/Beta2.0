@@ -1,3 +1,18 @@
+Conversation opened. 1 unread message.
+
+Skip to content
+Using Gmail with screen readers
+1 of 6,576
+SCALP_INDICATORS_CLEAN
+Inbox
+
+Andrew Miller
+Attachments
+Fri, Jan 2, 2026, 1:49 PM (0 minutes ago)
+to me
+
+ One attachment
+  •  Scanned by Gmail
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -344,6 +359,12 @@ button, .btn{
   box-shadow: 0 14px 26px rgba(239,68,68,0.18) !important;
 }
 
+
+    /* Mobile/desktop compatibility helpers */
+    html { -webkit-text-size-adjust: 100%; }
+    body { -webkit-font-smoothing: antialiased; }
+    button, input, select, textarea { -webkit-appearance: none; appearance: none; }
+
 </style>
 </head>
 
@@ -413,7 +434,7 @@ button, .btn{
           </div>
 
           <div id="account-warning" class="hidden mt-3 p-3 rounded-lg border border-red-500/40 bg-red-500/10 text-sm text-red-200">
-            ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ ÃÂÃÂÃÂÃÂ¯ÃÂÃÂÃÂÃÂ¸ÃÂÃÂÃÂÃÂ Symbol not available on this account. Use a Deriv <b>Derived/Synthetic (STD)</b> account for Volatility indices and Vol 1s.
+            ⚠️ Symbol not available on this account. Use a Deriv <b>Derived/Synthetic (STD)</b> account for Volatility indices and Vol 1s.
           </div>
         </div>
       </div>
@@ -531,7 +552,7 @@ button, .btn{
       <!-- Clustering Detected Alert -->
       <div id="cluster-alert" class="card hidden border-yellow-500/40">
         <div class="flex items-start gap-3">
-          <div class="text-yellow-400 text-xl">ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ ÃÂÃÂÃÂÃÂ¯ÃÂÃÂÃÂÃÂ¸ÃÂÃÂÃÂÃÂ</div>
+          <div class="text-yellow-400 text-xl">⚠️</div>
           <div>
             <div class="text-lg font-semibold text-yellow-300">Clustering Detected</div>
             <div id="cluster-text" class="text-sm text-slate-200 mt-1">
@@ -553,7 +574,7 @@ button, .btn{
         </div>
         <div class="flex justify-between mt-2 text-xs text-slate-300">
           <div id="confidence-text">0%</div>
-          <div id="confidence-notes" class="text-slate-400">Waiting ticksÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¦</div>
+          <div id="confidence-notes" class="text-slate-400">Waiting ticks…</div>
         </div>
 
         <div class="mt-3 text-xs text-slate-400">
@@ -598,7 +619,7 @@ button, .btn{
               </button>
             </div>
             <p class="text-xs text-slate-400 mt-2">
-              If symbol fails to stream, you may be on an account that doesnÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂt allow it. Use a Derived/STD account for Volatility indices.
+              If symbol fails to stream, you may be on an account that doesn’t allow it. Use a Derived/STD account for Volatility indices.
             </p>
           </div>
 
@@ -619,7 +640,7 @@ button, .btn{
 
           <div class="md:col-span-2 flex items-center justify-between p-3 bg-slate-700/50 rounded-lg mt-1">
             <div class="flex items-center gap-3">
-              <div class="text-purple-300 text-xl">ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¡</div>
+              <div class="text-purple-300 text-xl">⚡</div>
               <div>
                 <div class="font-semibold text-slate-200">Auto Trading</div>
                 <div class="text-xs text-slate-400">Enable to start automated trading based on current settings</div>
@@ -727,7 +748,7 @@ button, .btn{
               <div class="col-span-2 flex items-center justify-between p-3 bg-slate-700/40 rounded-lg">
                 <div>
                   <div class="text-sm font-semibold text-slate-200">Accumulator Safe Mode</div>
-                  <div class="text-xs text-slate-400">Caps growth to <b>1ÃÂ¢ÃÂÃÂ2%</b> and lets AI Guard block spike/chop.</div>
+                  <div class="text-xs text-slate-400">Caps growth to <b>12%</b> and lets AI Guard block spike/chop.</div>
                 </div>
                 <label class="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" id="accu-safe" class="sr-only peer" checked>
@@ -955,7 +976,7 @@ button, .btn{
           <!-- Smart Take-Out -->
           <div class="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg mt-2">
             <div class="flex flex-col sm:flex-row sm:items-center">
-              <span class="text-sm font-medium text-slate-300 mr-4">Smart Take-Out (2→1 tick):</span>
+              <span class="text-sm font-medium text-slate-300 mr-4">Smart Take-Out (21 tick):</span>
               <span id="smart-takeout-indicator" class="pill bg-red-600 text-white">OFF</span>
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
@@ -1034,14 +1055,17 @@ button, .btn{
 
             <button id="toggle-visibility-btn" class="p-3 text-slate-400 hover:text-sky-300 transition duration-150"
               type="button" title="Show Token">
-              ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ°ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1 1 0 0 1 0-.644C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.577 3.01 9.964 7.178a1 1 0 0 1 0 .644C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.577-3.01-9.964-7.178Z" />
+  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+</svg>
             </button>
           </div>
         </div>
 
         <div class="relative mb-3">
           <label for="start-password" class="block text-sm font-medium mb-1 text-slate-300">Start Password</label>
-          <input type="password" id="start-password" placeholder="Type password to start botÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¦"
+          <input type="password" id="start-password" placeholder="Type password to start bot…"
             class="w-full p-3 rounded-lg bg-slate-700 border border-slate-600 text-slate-50 focus:ring-sky-500 focus:border-sky-500"
             autocomplete="off" />
           <p id="pw-error-message" class="mt-2 text-sm text-red-300 hidden">
@@ -1078,14 +1102,14 @@ button, .btn{
 
       <!-- Insights -->
       <div class="card">
-        <h2 class="text-xl font-semibold mb-4 text-emerald-400">Market Insights ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¨</h2>
+        <h2 class="text-xl font-semibold mb-4 text-emerald-400">Market Insights ✨</h2>
 
         <div class="flex flex-col sm:flex-row gap-4 mb-4">
           <button id="analyze-market-btn" class="flex-1 py-2 rounded-lg font-bold transition duration-200 bg-emerald-700 hover:bg-emerald-800 text-white shadow-lg">
-            Analyze Market Sentiment ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¨
+            Analyze Market Sentiment ✨
           </button>
           <button id="assess-risk-btn" class="flex-1 py-2 rounded-lg font-bold transition duration-200 bg-pink-700 hover:bg-pink-800 text-white shadow-lg">
-            Assess Strategy Risk ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¨
+            Assess Strategy Risk ✨
           </button>
         </div>
 
@@ -1098,7 +1122,7 @@ button, .btn{
         </div>
 
         <div class="mt-3 text-xs text-slate-400">
-          Note: This is NOT financial advice. Signals can be wrong ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ always risk-manage.
+          Note: This is NOT financial advice. Signals can be wrong — always risk-manage.
         </div>
       </div>
 
@@ -1123,7 +1147,7 @@ function logLine(msg){
   }
 }
 
-// ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ
+// 
 // Transaction log lines: CLOSED | SYMBOL | CALL/PUT | +/-value
 function txLogLine(msg){
   const t = new Date().toLocaleTimeString();
@@ -1166,11 +1190,11 @@ const appState = {
 
   currentBalance:0,
 
-  // ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ
+  // 
 // Session tracking
   sessionProfit:0,     // net P/L
   sessionLoss:0,       // absolute loss total
-  // ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
+  // ¢œ
 // Session limits (extra safety layer)
   sessionTrades: 0,
   sessionWins: 0,
@@ -1189,7 +1213,7 @@ const appState = {
   is_sellable:0,
   isSelling:false,
 
-  // ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ
+  // 
 // Track last trade meta so TX log shows CALL/PUT + symbol
   currentDirection:null,       // "CALL" / "PUT"
   currentSymbolAtEntry:null,   // e.g., "R_100"
@@ -1276,12 +1300,12 @@ autoTradingEnabled:true,
     lastOHLC:null,
     hasTick:false,
 
-    /* ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ
+    /* 
  PRICE ACTION: closed 1s candle history (used by filter) */
     closedCandles: []  // {time, open, high, low, close}
   },
 
-  // ÃÂ¢ÃÂÃÂ Feature guards (added, default ON but safe)
+  //  Feature guards (added, default ON but safe)
   volGuard:{
     enabled:true,
     lookbackCandles:20,
@@ -1312,12 +1336,12 @@ autoTradingEnabled:true,
     beAt:0.12,           // move to BE after +$0.12
     beBuffer:0.01        // keep +$0.01 cushion
   },
-  // ÃÂ¢ÃÂÃÂ Accumulator (True ACCU) - optional scrape mode
+  //  Accumulator (True ACCU) - optional scrape mode
   accu:{
     enabled:false,
     growthRate:0.01,      // 1%..5% (0.01..0.05)
     takeProfit:null,      // profit amount ($) for server-side auto-sell (limit_order.take_profit)
-    safe:true             // caps growth to 1ÃÂ¢ÃÂÃÂ2% when ON
+    safe:true             // caps growth to 12% when ON
   },
 
 
@@ -1556,7 +1580,7 @@ const aiLayer = {
       return { allow:false, reason:`Low Confidence (${conf}% < ${minC}%)`, cooldownMs: (this.regime === "DRAWDOWN") ? 90000 : 20000 };
     }
 
-    // Allow ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ record only on FINAL stage to avoid double-count
+    // Allow — record only on FINAL stage to avoid double-count
 // this.perf.allowCount += 1;
     if (ctx?.stage === "BEFORE_BUY"){
       this.perf.tradeTimes.push(now);
@@ -1568,7 +1592,7 @@ const aiLayer = {
 };
 
 /* =========================================================
-   Chart Assist (FVG / Pullback / Double)  — optional
+   Chart Assist (FVG / Pullback / Double)   optional
    - BOOST mode: only shortens cooldown when a high-quality
      quick setup appears in the SAME direction the bot already
      wants to trade. (Does NOT change entry logic.)
@@ -1995,7 +2019,7 @@ function updateAIGuardUI(){
 // ==== AI INTELLIGENCE LAYER END ====
 
 /* =========================================================
-   ÃÂ¢ÃÂÃÂ SAFETY FEATURES MODULE (non-invasive)
+    SAFETY FEATURES MODULE (non-invasive)
    - Does NOT change signal logic (direction decision stays the same)
    - Only adds extra "allow/block" gates + trade management (optional)
 ========================================================= */
@@ -2004,11 +2028,11 @@ function _getClosedCandles(){
   return appState.chart?.closedCandles || [];
 }
 
-/* ÃÂ¢ÃÂÃÂ Volatility Guard: blocks dead market + spike conditions */
+/*  Volatility Guard: blocks dead market + spike conditions */
 function passesVolatilityGuard(){
   if (!appState.volGuard?.enabled) return true;
 
-  // â Anti-stuck recovery: add a small internal cooldown so the bot keeps cycling
+  //  Anti-stuck recovery: add a small internal cooldown so the bot keeps cycling
   // and you never have to "stop/start" to recover.
   const now = Date.now();
   if (appState.volGuard._cooldownUntil && now < appState.volGuard._cooldownUntil){
@@ -2034,7 +2058,7 @@ function passesVolatilityGuard(){
     return false;
   }
 
-  // Too Quiet (optional) â off by default so Vol 25 1s can still scrape normally.
+  // Too Quiet (optional)  off by default so Vol 25 1s can still scrape normally.
   const blockTooQuiet = !!appState.volGuard.blockTooQuiet; // set true manually if you want this behavior
   const deadMult = (typeof appState.volGuard.deadMaxMult === "number") ? appState.volGuard.deadMaxMult : 0.35;
   if (blockTooQuiet && deadMult > 0 && avgRange > 0 && last < avgRange * deadMult){
@@ -2065,7 +2089,7 @@ function passesVolatilityGuard(){
   return true;
 }
 
-/* ÃÂ¢ÃÂÃÂ Candle Structure Checks: strong close, wick rejection, optional break+retest */
+/*  Candle Structure Checks: strong close, wick rejection, optional break+retest */
 function passesCandleStructure(direction){
   if (!appState.candleChecks?.enabled) return true;
   const candles = _getClosedCandles();
@@ -2137,7 +2161,7 @@ function passesCandleStructure(direction){
   return true;
 }
 
-/* ÃÂ¢ÃÂÃÂ HTF Trend Confirm (optional). Uses ticks_history candles like H4 trend code. */
+/*  HTF Trend Confirm (optional). Uses ticks_history candles like H4 trend code. */
 function requestHTFCandles(){
   if (!appState.htfConfirm?.enabled) return;
   if (!appState.ws || !appState.isAuthenticated) return;
@@ -2186,7 +2210,7 @@ function htfAllows(direction){
   return true;
 }
 
-/* ÃÂ¢ÃÂÃÂ Trade Management (optional)
+/*  Trade Management (optional)
    - Break-even: if profit >= beAt then close if falls back to (0 + buffer)
    - Trailing TP: lock in profit as it rises (soft trailing)
 */
@@ -2561,9 +2585,9 @@ function checkSessionLimitsAndMaybeStop(){
   const pnl = Number(appState.sessionProfit || 0);
 
   if (appState.sessMaxProfit != null && pnl >= appState.sessMaxProfit){
-    appState.sessStopReason = `TP hit (${pnl.toFixed(2)} ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¥ ${Number(appState.sessMaxProfit).toFixed(2)})`;
+    appState.sessStopReason = `TP hit (${pnl.toFixed(2)} ≥ ${Number(appState.sessMaxProfit).toFixed(2)})`;
   } else if (appState.sessMaxLoss != null && pnl <= -Math.abs(appState.sessMaxLoss)){
-    appState.sessStopReason = `SL hit (${pnl.toFixed(2)} ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¤ -${Math.abs(appState.sessMaxLoss).toFixed(2)})`;
+    appState.sessStopReason = `SL hit (${pnl.toFixed(2)} ≤ -${Math.abs(appState.sessMaxLoss).toFixed(2)})`;
   } else if (appState.sessMaxTrades != null && appState.sessionTrades >= appState.sessMaxTrades){
     appState.sessStopReason = `Max trades hit (${appState.sessionTrades}/${appState.sessMaxTrades})`;
   } else if (appState.sessMaxWins != null && appState.sessionWins >= appState.sessMaxWins){
@@ -2922,7 +2946,7 @@ function loadDefaults(mode){
   appState.useTrendFilter = !!d.trend;
   appState.breakoutStrict = !!d.strict;
 
-  // ÃÂ¢ÃÂÃÂ Extra guards per mode (safe defaults)
+  //  Extra guards per mode (safe defaults)
   appState.volGuard.enabled = true;
   appState.candleChecks.enabled = true;
   appState.candleChecks.requireBreakRetest = !!appState.breakoutStrict;
@@ -2932,7 +2956,7 @@ function loadDefaults(mode){
   appState.trend.enabled = appState.useTrendFilter;
   appState.trend.status = appState.trend.enabled ? "LOADING" : "OFF";
 
-  // ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ
+  // 
 // if we are already connected, refresh H4 trend immediately when switching to MOMENTUM/H4
   appState.trend.lastUpdated = 0;
   if (appState.trend.enabled && appState.isAuthenticated) requestH4Candles();
@@ -2985,7 +3009,7 @@ function initChart(){
       series = chart.addSeries(LightweightCharts.LineSeries, { priceLineVisible:false, lastValueVisible:true });
     }
     seriesKind = "line";
-    logLine("Chart fallback ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ line series (candles unavailable).");
+    logLine("Chart fallback → line series (candles unavailable).");
   }
 
   if (dom.chartStatus) setPill(dom.chartStatus, "READY", "bg-emerald-700 text-white");
@@ -3042,7 +3066,7 @@ function updateSeriesFromTick(price){
     c.close = price;
     try{ series.update(c); }catch(_){}
   } else {
-    /* ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ
+    /* 
  PRICE ACTION: finalize previous candle into history */
     if (appState.chart.lastOHLC){
       appState.chart.closedCandles.push({ ...appState.chart.lastOHLC });
@@ -3074,7 +3098,7 @@ function trendClassify(emaFast, emaSlow){
   return "NEUTRAL";
 }
 
-/* ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ
+/* 
  FIXED: Proper Deriv candles request uses ticks_history + style:"candles"
    Response comes back as msg_type:"history" with history.candles[] */
 function requestH4Candles(){
@@ -3140,7 +3164,7 @@ function passesBreakoutFilter(direction){
 }
 
 /* =========================================================
-   ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ
+   
  PRICE ACTION FILTER (ALL 3 MODES)
    - Uses real 1s candles from chart aggregator
    - Blocks: doji/weak body, wick traps, fake range breakouts
@@ -3178,7 +3202,7 @@ function paIsFakeBreakout(last, rangeHi, rangeLo, direction, buffer){
 }
 
 function passesPriceActionFilter(direction){
-  // â Respect Price Action toggle: when OFF, never block trades
+  //  Respect Price Action toggle: when OFF, never block trades
   if (appState.candleChecks && appState.candleChecks.enabled === false){
     return true;
   }
@@ -3269,7 +3293,7 @@ function updateClustering(price){
 
   if (sameCount >= 3){
     dom.clusterAlert?.classList.remove("hidden");
-    if (dom.clusterText) dom.clusterText.textContent = `Clustering Detected: ${sameCount} repeats in last 5 ticks ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ possible reversal/indecision.`;
+    if (dom.clusterText) dom.clusterText.textContent = `Clustering Detected: ${sameCount} repeats in last 5 ticks → possible reversal/indecision.`;
   } else {
     dom.clusterAlert?.classList.add("hidden");
   }
@@ -3280,7 +3304,7 @@ function updateClustering(price){
 ========================================================= */
 function computeConfidence(){
   const buf = appState.tickBuffer;
-  if (buf.length < appState.tickBufferSize) return { score: 0, signal: "WAIT", notes: "Waiting ticksÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¦" };
+  if (buf.length < appState.tickBufferSize) return { score: 0, signal: "WAIT", notes: "Waiting ticks…" };
 
   const first = buf[0];
   const last = buf[buf.length-1];
@@ -3307,7 +3331,7 @@ function computeConfidence(){
   if (dir && score >= 70) signal = (dir === "CALL") ? "BUY" : "SELL";
   else if (dir && score >= 45) signal = "WATCH";
 
-  const notes = `ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ=${delta.toFixed(4)} | Mode=${appState.mode} | Trend=${appState.trend.enabled ? appState.trend.status : "OFF"} | Breakout=${breakoutOk ? "OK" : "WAIT"}`;
+  const notes = `Δ=${delta.toFixed(4)} | Mode=${appState.mode} | Trend=${appState.trend.enabled ? appState.trend.status : "OFF"} | Breakout=${breakoutOk ? "OK" : "WAIT"}`;
   return { score, signal, notes };
 }
 
@@ -3443,7 +3467,7 @@ function startBot(){
   appState.chart.hasTick = false;
   appState.lastDigits = [];
 
-  // ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ
+  // 
 // PRICE ACTION: reset candle history on start
   appState.chart.closedCandles = [];
 
@@ -3520,7 +3544,7 @@ function handleResponse(res){
       appState.trend.lastUpdated = 0;
       if (appState.trend.enabled){
         appState.trend.status = "LOADING";
-        requestH4Candles(); // ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ
+        requestH4Candles(); // 
 // now correct request
       } else {
         appState.trend.status = "OFF";
@@ -3579,7 +3603,7 @@ function handleResponse(res){
       break;
     }
 
-    /* ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ
+    /* 
  FIXED: H4 candles now arrive as msg_type:"history" */
     case "history":{
       // H4 trend + optional HTF confirm both use msg_type:"history"
@@ -3815,24 +3839,24 @@ function checkAndEnterTrade(){
     }
   }
 
-  /* ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ
+  /* 
  PRICE ACTION GATE (AUTO) */
   if (!passesPriceActionFilter(direction)){
     // block reason already set inside the filter
     return;
   }
 
-  /* ÃÂ¢ÃÂÃÂ VOLATILITY GUARD (AUTO) */
+  /*  VOLATILITY GUARD (AUTO) */
   if (!passesVolatilityGuard()){
     return;
   }
 
-  /* ÃÂ¢ÃÂÃÂ CANDLE STRUCTURE CHECKS (AUTO) */
+  /*  CANDLE STRUCTURE CHECKS (AUTO) */
   if (!passesCandleStructure(direction)){
     return;
   }
 
-  /* ÃÂ¢ÃÂÃÂ HTF CONFIRM (OPTIONAL) */
+  /*  HTF CONFIRM (OPTIONAL) */
   if (appState.htfConfirm?.enabled){
     if (appState.htfConfirm.status === "OFF") requestHTFCandles();
     if (!htfAllows(direction)){
@@ -3898,7 +3922,7 @@ function enterTrade(direction, stake){
   // Build proposal request (ACCU uses growth_rate + optional limit_order.take_profit)
   let req;
   if (appState.accu && appState.accu.enabled){
-    // Safe Mode: cap growth to 1ÃÂ¢ÃÂÃÂ2%
+    // Safe Mode: cap growth to 12%
     const safe = !!appState.accu.safe;
     const growth = Math.max(0.01, Math.min(0.05, Number(appState.accu.growthRate || 0.01)));
     const growthRate = safe ? Math.min(growth, 0.02) : growth;
@@ -3952,7 +3976,7 @@ function checkProfitAndLoss(contract){
 
   if (!appState.autoSellEnabled) return;
 
-  // ÃÂ¢ÃÂÃÂ Optional trade management (non-invasive). If it triggers, it sells and returns.
+  //  Optional trade management (non-invasive). If it triggers, it sells and returns.
   if (appState.currentContractId){
     if (applyTradeManagement(currentProfit, contract)) return;
   }
@@ -4002,31 +4026,31 @@ function fallbackInsight(type){
     const conf = computeConfidence();
     return [
       `Safe Entry Suggestion (Fallback):`,
-      `ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ Symbol: ${appState.symbol}`,
-      `ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ Mode: ${appState.mode}`,
-      `ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ Trend Filter: ${trend}`,
-      `ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ Momentum: ${dir} | ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ=${delta.toFixed(4)}`,
-      `ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ Breakout Strict: ${appState.breakoutStrict ? "ON" : "OFF"}`,
-      `ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ Confidence: ${conf.score}% | Signal: ${conf.signal}`,
+      `• Symbol: ${appState.symbol}`,
+      `• Mode: ${appState.mode}`,
+      `• Trend Filter: ${trend}`,
+      `• Momentum: ${dir} | Δ=${delta.toFixed(4)}`,
+      `• Breakout Strict: ${appState.breakoutStrict ? "ON" : "OFF"}`,
+      `• Confidence: ${conf.score}% | Signal: ${conf.signal}`,
       ``,
       `Suggested Action:`,
-      conf.signal === "BUY" ? "ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ BUY setup is strong (conditions passing)" :
-      conf.signal === "SELL" ? "ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ SELL setup is strong (conditions passing)" :
-      conf.signal === "WATCH" ? "ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ WATCH (signal forming, wait cleaner move)" :
-      "ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ WAIT (not enough confirmation)",
+      conf.signal === "BUY" ? "• BUY setup is strong (conditions passing)" :
+      conf.signal === "SELL" ? "• SELL setup is strong (conditions passing)" :
+      conf.signal === "WATCH" ? "• WATCH (signal forming, wait cleaner move)" :
+      "• WAIT (not enough confirmation)",
       ``,
-      `Risk Level: MEDIUM (synthetics move fast ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ keep stake small).`
+      `Risk Level: MEDIUM (synthetics move fast — keep stake small).`
     ].join("\n");
   }
 
   return [
     `Risk Check (Fallback):`,
-    `ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ Stake: $${appState.stakeAmount.toFixed(2)}`,
-    `ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ TP: $${appState.tpUSD.toFixed(2)} | SL: $${appState.slUSD.toFixed(2)} (SL sells only if Safe Mode ON)`,
-    `ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ Duration: ${appState.duration} ${appState.durationUnit}`,
-    `ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ Cooldown: ${appState.cooldownDuration}s`,
-    `ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ Auto Trading: ${appState.autoTradingEnabled ? "ON" : "OFF"}`,
-    `ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ Session P/L: $${appState.sessionProfit.toFixed(2)} | Loss: $${appState.sessionLoss.toFixed(2)}`
+    `• Stake: $${appState.stakeAmount.toFixed(2)}`,
+    `• TP: $${appState.tpUSD.toFixed(2)} | SL: $${appState.slUSD.toFixed(2)} (SL sells only if Safe Mode ON)`,
+    `• Duration: ${appState.duration} ${appState.durationUnit}`,
+    `• Cooldown: ${appState.cooldownDuration}s`,
+    `• Auto Trading: ${appState.autoTradingEnabled ? "ON" : "OFF"}`,
+    `• Session P/L: $${appState.sessionProfit.toFixed(2)} | Loss: $${appState.sessionLoss.toFixed(2)}`
   ].join("\n");
 }
 
@@ -4084,7 +4108,7 @@ function manualPlaceTrade(mult=1){
     return;
   }
 
-  /* ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ
+  /* 
  PRICE ACTION GATE (MANUAL) */
   if (!passesPriceActionFilter(dir)){
     updateTradeStatus("WAIT: price action", "bg-yellow-600 text-white");
@@ -4162,7 +4186,7 @@ function appendUsdQuoteSymbolsToSelect(activeList){
     const sep = document.createElement("option");
     sep.value = sepValue;
     sep.disabled = true;
-    sep.textContent = "ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ USD Markets (Auto) ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ";
+    sep.textContent = "¢”€¢”€¢”€¢”€¢”€¢”€¢”€¢”€ USD Markets (Auto) ¢”€¢”€¢”€¢”€¢”€¢”€¢”€¢”€";
     dom.symbolSelect.appendChild(sep);
     existing.add(sepValue);
   }
@@ -4202,7 +4226,7 @@ function setSymbol(newSymbol){
   appState.chart.lastCandleTime = 0;
   appState.chart.lastOHLC = null;
 
-  // ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ
+  // 
 // PRICE ACTION: reset candle history on symbol switch
   appState.chart.closedCandles = [];
 
@@ -4212,7 +4236,7 @@ function setSymbol(newSymbol){
   if (appState.isAuthenticated){
     subscribeTicks(newSymbol);
 
-    // ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ
+    // 
 // refresh trend candles for the NEW symbol
     if (appState.trend.enabled) requestH4Candles();
 
@@ -4420,7 +4444,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     dom.accuSafe?.addEventListener("change", (e) => {
       appState.accu.safe = !!e.target.checked;
-      // if safe is ON, clamp growth to 1ÃÂ¢ÃÂÃÂ2%
+      // if safe is ON, clamp growth to 12%
       if (appState.accu.safe && appState.accu.growthRate > 0.02){
         appState.accu.growthRate = 0.02;
       }
@@ -4518,4 +4542,3 @@ dom.clearLogBtn?.addEventListener("click", () => { if (LOG) LOG.textContent = ""
 });</script>
 </body>
 </html>
-
