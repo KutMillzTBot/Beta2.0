@@ -653,6 +653,43 @@ button, .btn{
               class="w-full p-2 rounded bg-slate-700 border border-slate-600 text-slate-50 focus:ring-sky-500 focus:border-sky-500">
           </div>
 
+          <div class="col-span-2 p-3 rounded-lg border border-slate-700 bg-slate-900/30">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <div class="text-sm font-medium text-slate-300">Risk % Stake (Auto Lot Size)</div>
+                <div id="riskStakePreview" class="text-[11px] text-slate-400">Auto stake: OFF</div>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="riskSizingEnabled" class="sr-only peer" disabled>
+                <div class="w-11 h-6 bg-slate-500 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-sky-300 rounded-full peer
+                  peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                  after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600"></div>
+              </label>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+              <div>
+                <label for="riskSizingPct" class="block text-xs mb-1">Risk per trade (%)</label>
+                <input id="riskSizingPct" type="number" step="0.1" placeholder="1"
+                  class="w-full p-2 rounded bg-slate-700 border border-slate-600 text-slate-50 focus:ring-sky-500 focus:border-sky-500" disabled>
+              </div>
+              <div>
+                <label for="riskSizingMin" class="block text-xs mb-1">Min Stake (USD)</label>
+                <input id="riskSizingMin" type="number" step="0.01" placeholder="0.35"
+                  class="w-full p-2 rounded bg-slate-700 border border-slate-600 text-slate-50 focus:ring-sky-500 focus:border-sky-500" disabled>
+              </div>
+              <div>
+                <label for="riskSizingMax" class="block text-xs mb-1">Max Stake (USD) (0 = no cap)</label>
+                <input id="riskSizingMax" type="number" step="0.01" placeholder="0"
+                  class="w-full p-2 rounded bg-slate-700 border border-slate-600 text-slate-50 focus:ring-sky-500 focus:border-sky-500" disabled>
+              </div>
+            </div>
+
+            <div class="mt-2 text-[11px] text-slate-400">
+              When ON: <b>stake = balance × (risk% / 100)</b>, then clamped by Min/Max. (This is your auto lot size.)
+            </div>
+          </div>
+
           <div>
             <label for="maxTradesPerSignal" class="block text-sm font-medium mb-1">Max Trades/Signal</label>
             <input type="number" id="maxTradesPerSignal" step="1"
@@ -1179,7 +1216,6 @@ const appState = {
 // Session tracking
   sessionProfit:0,     // net P/L
   sessionLoss:0,       // absolute loss total
-  // ¢œ
 // Session limits (extra safety layer)
   sessionTrades: 0,
   sessionWins: 0,
@@ -1247,7 +1283,11 @@ autoTradingEnabled:true,
   },
 
   stakeAmount:1.00,
-  duration:5,
+  
+  // Risk-based stake sizing (auto lot size)
+  riskSizing:{ enabled:false, pct:1, minStake:0.35, maxStake:0 },
+
+duration:5,
   durationUnit:'t',
   tpUSD:0.34,
   slUSD:10.00,
@@ -2352,6 +2392,13 @@ const dom = {
   modeStatus: $("mode-status"),
 
   stakeInput: $("stakeAmount"),
+
+  // Risk sizing (auto lot size)
+  riskSizingToggle: $("riskSizingEnabled"),
+  riskSizingPct: $("riskSizingPct"),
+  riskSizingMin: $("riskSizingMin"),
+  riskSizingMax: $("riskSizingMax"),
+  riskStakePreview: $("riskStakePreview"),
   durationInput: $("duration"),
   durationUnitInput: $("durationUnit"),
   tpInput: $("tpUSD"),
@@ -2617,6 +2664,23 @@ function updateTrendUI(){
   setPill(dom.h4TrendDisplay, t, cls);
 }
 
+function getEffectiveStake(){
+  const manual = Number(appState.stakeAmount) || 0;
+  const rs = appState.riskSizing;
+  if (rs && rs.enabled){
+    const bal = Number(appState.currentBalance) || 0;
+    const pct = Number(rs.pct) || 0;
+    let stake = (bal > 0 && pct > 0) ? (bal * pct / 100) : manual;
+    const min = Number(rs.minStake) || 0;
+    const max = Number(rs.maxStake) || 0;
+    if (min > 0) stake = Math.max(stake, min);
+    if (max > 0) stake = Math.min(stake, max);
+    stake = Math.round(stake * 100) / 100;
+    if (Number.isFinite(stake) && stake > 0) return stake;
+  }
+  return manual;
+}
+
 function updateUI(){
   if (dom.modePill) dom.modePill.textContent = appState.mode;
   if (dom.modeStatus) dom.modeStatus.textContent = appState.mode;
@@ -2673,6 +2737,23 @@ function updateUI(){
 
 
   setIfNotEditing(dom.stakeInput, appState.stakeAmount.toFixed(2));
+
+  // Risk sizing UI
+  if (!appState.riskSizing) appState.riskSizing = { enabled:false, pct:1, minStake:0.35, maxStake:0 };
+  if (dom.riskSizingToggle) dom.riskSizingToggle.checked = !!appState.riskSizing.enabled;
+  setIfNotEditing(dom.riskSizingPct, String(appState.riskSizing.pct ?? 1));
+  setIfNotEditing(dom.riskSizingMin, String(appState.riskSizing.minStake ?? 0.35));
+  setIfNotEditing(dom.riskSizingMax, String(appState.riskSizing.maxStake ?? 0));
+  if (dom.riskStakePreview){
+    if (appState.riskSizing.enabled){
+      const eff = getEffectiveStake();
+      const bal = Number(appState.currentBalance) || 0;
+      const pct = Number(appState.riskSizing.pct) || 0;
+      dom.riskStakePreview.textContent = `Auto stake: $${eff.toFixed(2)} (${pct}% of $${bal.toFixed(2)})`;
+    } else {
+      dom.riskStakePreview.textContent = "Auto stake: OFF";
+    }
+  }
   setIfNotEditing(dom.durationInput, String(appState.duration));
   if (dom.durationUnitInput && document.activeElement !== dom.durationUnitInput) dom.durationUnitInput.value = appState.durationUnit;
   setIfNotEditing(dom.tpInput, appState.tpUSD.toFixed(2));
@@ -2750,10 +2831,10 @@ function updateUI(){
   updateTrendUI();
 
   if (dom.currentSymbolLabel) dom.currentSymbolLabel.textContent = appState.symbol;
-
-  if (dom.placeStakeLabel) dom.placeStakeLabel.textContent = `$${appState.stakeAmount.toFixed(2)}`;
-  if (dom.bulk3Label) dom.bulk3Label.textContent = `$${(appState.stakeAmount*3).toFixed(2)}`;
-  if (dom.bulk5Label) dom.bulk5Label.textContent = `$${(appState.stakeAmount*5).toFixed(2)}`;
+  const effStakeForLabels = getEffectiveStake();
+  if (dom.placeStakeLabel) dom.placeStakeLabel.textContent = `$${effStakeForLabels.toFixed(2)}`;
+  if (dom.bulk3Label) dom.bulk3Label.textContent = `$${(effStakeForLabels*3).toFixed(2)}`;
+  if (dom.bulk5Label) dom.bulk5Label.textContent = `$${(effStakeForLabels*5).toFixed(2)}`;
 
   if (dom.accountTypeStatus){
     if (appState.isDemo === true) setPill(dom.accountTypeStatus, "DEMO", "bg-yellow-600 text-white");
@@ -2805,6 +2886,7 @@ function setSettingsLock(isLocked){
 
   const list = [
     dom.stakeInput, dom.durationInput, dom.durationUnitInput,
+    dom.riskSizingToggle, dom.riskSizingPct, dom.riskSizingMin, dom.riskSizingMax,
     dom.tpInput, dom.slInput, dom.maxTradesInput, dom.cooldownInput,
     dom.modeSelect, dom.safeToggle, dom.priceActionToggle, dom.autoResumeToggle, dom.autoSellToggle,
     dom.smartTakeoutToggle, dom.smartTakeoutPrimary, dom.smartTakeoutFallback, dom.smartTakeoutFallbackPct, dom.smartTakeoutStallTicks,
@@ -2843,6 +2925,13 @@ function setSettingsLock(isLocked){
 function updateStateFromUI(){
   try{
     if (dom.stakeInput) appState.stakeAmount = parseFloat(dom.stakeInput.value) || 0;
+    // Risk-based stake sizing
+    if (!appState.riskSizing) appState.riskSizing = { enabled:false, pct:1, minStake:0.35, maxStake:0 };
+    if (dom.riskSizingToggle) appState.riskSizing.enabled = !!dom.riskSizingToggle.checked;
+    if (dom.riskSizingPct) appState.riskSizing.pct = Math.max(0, Math.min(100, parseFloat(dom.riskSizingPct.value) || 0));
+    if (dom.riskSizingMin) appState.riskSizing.minStake = Math.max(0, parseFloat(dom.riskSizingMin.value) || 0);
+    if (dom.riskSizingMax) appState.riskSizing.maxStake = Math.max(0, parseFloat(dom.riskSizingMax.value) || 0);
+
     if (dom.durationInput) appState.duration = parseInt(dom.durationInput.value) || 0;
     if (dom.durationUnitInput) appState.durationUnit = dom.durationUnitInput.value;
     if (dom.tpInput) appState.tpUSD = parseFloat(dom.tpInput.value) || 0;
@@ -3860,7 +3949,8 @@ function checkAndEnterTrade(){
     }
   }
 
-  enterTrade(direction, appState.stakeAmount);
+  const stake = getEffectiveStake();
+  enterTrade(direction, stake);
 }
 
 function enterTrade(direction, stake){
@@ -4171,7 +4261,7 @@ function appendUsdQuoteSymbolsToSelect(activeList){
     const sep = document.createElement("option");
     sep.value = sepValue;
     sep.disabled = true;
-    sep.textContent = "¢”€¢”€¢”€¢”€¢”€¢”€¢”€¢”€ USD Markets (Auto) ¢”€¢”€¢”€¢”€¢”€¢”€¢”€¢”€";
+    sep.textContent = "¢¢¢¢¢¢¢¢ USD Markets (Auto) ¢¢¢¢¢¢¢¢";
     dom.symbolSelect.appendChild(sep);
     existing.add(sepValue);
   }
