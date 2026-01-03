@@ -732,7 +732,95 @@ button, .btn{
           </div>
         </div>
       </div>
-          <!-- Accumulator (True ACCU) -->
+          
+      <!-- Burst Protection + Soft Score (advanced, optional) -->
+      <div class="mt-4 p-4 rounded-lg border border-slate-700 bg-slate-900/30">
+        <div class="text-sm font-extrabold text-slate-200 mb-2">Scalp Timing Assist (Advanced)</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <!-- Burst Protection -->
+          <div class="p-3 bg-slate-700/50 rounded-lg">
+            <div class="flex items-center justify-between">
+              <div class="flex flex-col sm:flex-row sm:items-center">
+                <span class="text-sm font-medium text-slate-300 mr-3">Burst Protection:</span>
+                <span id="burst-protect-indicator" class="pill bg-red-600 text-white">OFF</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="burst-protect-toggle" class="sr-only peer" disabled>
+                <div class="w-11 h-6 bg-slate-500 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer
+                  peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                  after:bg-white after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
+              </label>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mt-3">
+              <div>
+                <label class="text-xs text-slate-400">Lookback ticks</label>
+                <input id="burst-protect-lookback" type="number" min="10" max="200" step="1" value="40"
+                  class="w-full mt-1 p-2 bg-slate-800 border border-slate-600 rounded text-slate-100" disabled />
+              </div>
+              <div>
+                <label class="text-xs text-slate-400">Spike mult</label>
+                <input id="burst-protect-mult" type="number" min="1" max="10" step="0.1" value="3.5"
+                  class="w-full mt-1 p-2 bg-slate-800 border border-slate-600 rounded text-slate-100" disabled />
+              </div>
+              <div>
+                <label class="text-xs text-slate-400">Min cooldown (s)</label>
+                <input id="burst-protect-mincd" type="number" min="5" max="600" step="1" value="45"
+                  class="w-full mt-1 p-2 bg-slate-800 border border-slate-600 rounded text-slate-100" disabled />
+              </div>
+              <div>
+                <label class="text-xs text-slate-400">Max cooldown (s)</label>
+                <input id="burst-protect-maxcd" type="number" min="5" max="600" step="1" value="120"
+                  class="w-full mt-1 p-2 bg-slate-800 border border-slate-600 rounded text-slate-100" disabled />
+              </div>
+            </div>
+
+            <div class="text-center text-xs text-slate-500 mt-2" id="burst-protect-status">Burst Protection is OFF.</div>
+          </div>
+
+          <!-- Soft Score -->
+          <div class="p-3 bg-slate-700/50 rounded-lg">
+            <div class="flex items-center justify-between">
+              <div class="flex flex-col sm:flex-row sm:items-center">
+                <span class="text-sm font-medium text-slate-300 mr-3">Soft Score:</span>
+                <span id="soft-score-indicator" class="pill bg-red-600 text-white">OFF</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="soft-score-toggle" class="sr-only peer" disabled>
+                <div class="w-11 h-6 bg-slate-500 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer
+                  peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                  after:bg-white after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
+              </label>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 mt-3">
+              <div>
+                <label class="text-xs text-slate-400">Block below</label>
+                <input id="soft-score-block" type="number" min="0" max="100" step="1" value="45"
+                  class="w-full mt-1 p-2 bg-slate-800 border border-slate-600 rounded text-slate-100" disabled />
+              </div>
+              <div>
+                <label class="text-xs text-slate-400">Boost below</label>
+                <input id="soft-score-boost" type="number" min="0" max="100" step="1" value="60"
+                  class="w-full mt-1 p-2 bg-slate-800 border border-slate-600 rounded text-slate-100" disabled />
+              </div>
+              <div>
+                <label class="text-xs text-slate-400">Boost cooldown (s)</label>
+                <input id="soft-score-boostcd" type="number" min="0" max="600" step="1" value="20"
+                  class="w-full mt-1 p-2 bg-slate-800 border border-slate-600 rounded text-slate-100" disabled />
+              </div>
+            </div>
+
+            <div class="text-center text-xs text-slate-500 mt-2" id="soft-score-status">Soft Score is OFF.</div>
+          </div>
+        </div>
+
+        <div class="text-[11px] text-slate-400 mt-3">
+          Tip: Turn these ON for Vol 1s to improve timing without over-blocking. They only stand down during bursts / low-quality conditions.
+        </div>
+      </div>
+
+<!-- Accumulator (True ACCU) -->
           <div class="mt-4 p-4 rounded-lg border border-slate-700 bg-slate-900/30">
             <div class="flex items-center justify-between gap-3">
               <div>
@@ -1038,7 +1126,54 @@ button, .btn{
 
 
 
-        <div class="mt-4 pt-3 border-t border-slate-700">
+        
+          <!-- Tick Ladder (1/2/3) -->
+          <div class="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg mt-3">
+            <div class="flex flex-col sm:flex-row sm:items-center">
+              <span class="text-sm font-medium text-slate-300 mr-4">Tick Ladder (1/2/3):</span>
+              <span id="tick-ladder-indicator" class="pill bg-red-600 text-white">OFF</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="tick-ladder-toggle" class="sr-only peer" disabled>
+              <div class="w-11 h-6 bg-slate-500 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-pink-300 rounded-full peer
+                peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                after:bg-white after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 mt-2">
+            <div>
+              <label class="text-xs text-slate-400">Start ticks</label>
+              <input id="tick-ladder-start" type="number" min="1" step="1" value="1"
+                class="w-full mt-1 p-2 bg-slate-800 border border-slate-600 rounded text-slate-100" disabled />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Mid ticks</label>
+              <input id="tick-ladder-mid" type="number" min="1" step="1" value="2"
+                class="w-full mt-1 p-2 bg-slate-800 border border-slate-600 rounded text-slate-100" disabled />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Max ticks</label>
+              <input id="tick-ladder-max" type="number" min="1" step="1" value="3"
+                class="w-full mt-1 p-2 bg-slate-800 border border-slate-600 rounded text-slate-100" disabled />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Quick window (ticks)</label>
+              <input id="tick-ladder-window" type="number" min="1" max="10" step="1" value="3"
+                class="w-full mt-1 p-2 bg-slate-800 border border-slate-600 rounded text-slate-100" disabled />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Double-touch count</label>
+              <input id="tick-ladder-dtouch" type="number" min="1" max="5" step="1" value="2"
+                class="w-full mt-1 p-2 bg-slate-800 border border-slate-600 rounded text-slate-100" disabled />
+            </div>
+          </div>
+
+          <div class="text-center text-xs text-slate-500 mt-2" id="tick-ladder-status">
+            Tick Ladder is OFF.
+          </div>
+
+<div class="mt-4 pt-3 border-t border-slate-700">
           <p class="text-xs text-center text-slate-500">Made by Kut.Milz</p>
         </div>
       </div>
@@ -1281,6 +1416,37 @@ autoTradingEnabled:true,
     fallbackAfterPct:70,
     stallTicksRequired:1
   },
+
+  // Tick Ladder (optional): dynamic 1/2/3 tick take-out based on early momentum (SCALP + tick duration only)
+  tickLadder:{
+    enabled:false,
+    startTicks:1,
+    midTicks:2,
+    maxTicks:3,
+    quickWindowTicks:3,
+    doubleTouchCount:2
+  },
+
+  // Burst Protection (optional): stand down briefly during tick-volatility bursts (best for Vol 1s)
+  burstProtect:{
+    enabled:false,
+    lookback:40,
+    spikeMult:3.5,
+    minCooldownS:45,
+    maxCooldownS:120,
+    refractoryS:6
+  },
+
+  // Soft Score (optional): soft filter that boosts cooldown in bad conditions instead of hard-blocking everything
+  softScore:{
+    enabled:false,
+    blockBelow:45,
+    boostBelow:60,
+    boostCooldownS:20
+  },
+
+  burstCooldownUntil:0,
+  softScoreCooldownUntil:0,
 
   stakeAmount:1.00,
   
@@ -1624,6 +1790,89 @@ const aiLayer = {
    - GATE mode: can block entries when a strong reversal pattern
      conflicts with direction (optional; off by default).
 ========================================================= */
+
+/* =========================================================
+   Burst Protection + Soft Score helpers (optional)
+   ========================================================= */
+const burstProtect = {
+  _lastPrice: null,
+  _lastTriggerAt: 0,
+
+  onTick(price, nowMs){
+    const cfg = appState.burstProtect;
+    if (!cfg || !cfg.enabled) return;
+
+    if (this._lastPrice == null){
+      this._lastPrice = price;
+      return;
+    }
+    const dp = Math.abs(price - this._lastPrice);
+    this._lastPrice = price;
+
+    // Need enough rolling data for a stable baseline
+    const base = Number(aiLayer.rolling?.volAvg || 0);
+    const baseOk = Number.isFinite(base) && base > 0 && (aiLayer.rolling?.returns?.length || 0) >= 20;
+    if (!baseOk) return;
+
+    const spikeMult = Math.max(1, Number(cfg.spikeMult || 3.5));
+    const refractory = Math.max(0, Number(cfg.refractoryS || 6)) * 1000;
+    if (nowMs - (this._lastTriggerAt || 0) < refractory) return;
+
+    // Spike if current delta is much larger than typical delta
+    if (dp >= base * spikeMult){
+      const minS = Math.max(0, Number(cfg.minCooldownS || 45));
+      const maxS = Math.max(minS, Number(cfg.maxCooldownS || 120));
+      const severity = Math.min(1, Math.max(0, (dp / (base * spikeMult)) - 1) / 2); // 0..1
+      const cdS = Math.round(minS + severity * (maxS - minS));
+      appState.burstCooldownUntil = Math.max(appState.burstCooldownUntil || 0, nowMs + cdS * 1000);
+      this._lastTriggerAt = nowMs;
+
+      if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "Burst Protection";
+      logLine(`[Burst] Spike detected (Δ=${dp.toFixed(5)} base=${base.toFixed(5)}). Cooldown ${cdS}s`);
+    }
+  }
+};
+
+function computeSoftScore(direction){
+  const cfg = appState.softScore;
+  if (!cfg || !cfg.enabled) return { score: 100, reasons: ["OFF"] };
+
+  let score = 100;
+  const reasons = [];
+
+  // Regime penalty (from AI layer)
+  const regime = (aiLayer.regime || "NORMAL");
+  if (regime === "CHOP"){ score -= 20; reasons.push("CHOP"); }
+  else if (regime === "SPIKE"){ score -= 35; reasons.push("SPIKE"); }
+  else if (regime === "COOLING"){ score -= 10; reasons.push("COOLING"); }
+  else if (regime === "DRAWDOWN"){ score -= 15; reasons.push("DRAWDOWN"); }
+
+  // Confidence penalty
+  const conf = Number(aiLayer.confidence ?? 100);
+  if (Number.isFinite(conf) && conf < 80){
+    const p = Math.min(25, (80 - conf) * 0.6);
+    score -= p;
+    reasons.push("LowConf");
+  }
+
+  // Indicator alignment (Scalp Indicator Assist)
+  const ind = chartAssist.indicatorScore ? chartAssist.indicatorScore(direction) : null;
+  if (ind && Number.isFinite(ind.score)){
+    // Reward alignment, penalize conflict
+    const alignPenalty = Math.max(0, (60 - ind.score) * 0.35);
+    score -= alignPenalty;
+    if (alignPenalty > 0) reasons.push("IndWeak");
+    if (Number.isFinite(ind.conflictPct) && ind.conflictPct >= (appState.scalpInd?.hardConflictPct ?? 70)){
+      score -= 10;
+      reasons.push("IndConflict");
+    }
+  }
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+  return { score, reasons };
+}
+
+
 const chartAssist = {
   lastSignal: null,
   lastSignalAt: 0,
@@ -2246,7 +2495,11 @@ function initTradeMgmtForNewContract(){
     lastSpotTime: null,
     peakProfit: 0,
     beActive: false,
-    lockedProfit: null
+    lockedProfit: null,
+    lastProfit: null,
+    weakCount: 0,
+    goodCount: 0,
+    ladderTarget: null
   };
 }
 
@@ -2292,7 +2545,32 @@ function applyTradeManagement(currentProfit, contract){
     }
 
     const fallbackAt = Math.max(0, Math.min(100, Number(stCfg.fallbackAfterPct ?? 70)));
-    const primaryTicks = Math.max(1, parseInt(stCfg.primaryTicks ?? 2) || 2);
+    let primaryTicks = Math.max(1, parseInt(stCfg.primaryTicks ?? 2) || 2);
+
+    // Tick Ladder (optional): dynamic 1/2/3 target based on early "double-touch" momentum.
+    // Only applies in SCALP mode + tick duration.
+    if (appState.tickLadder?.enabled && appState.mode === "SCALP" && unit === "t" && dur > 0){
+      const lad = appState.tickLadder;
+      const startT = Math.max(1, parseInt(lad.startTicks ?? 1) || 1);
+      const midT = Math.max(startT, parseInt(lad.midTicks ?? 2) || 2);
+      const maxT = Math.max(midT, parseInt(lad.maxTicks ?? 3) || 3);
+      const windowT = Math.max(1, parseInt(lad.quickWindowTicks ?? 3) || 3);
+      const need = Math.max(1, parseInt(lad.doubleTouchCount ?? 2) || 2);
+
+      if (mg.ladderTarget == null) mg.ladderTarget = startT;
+      if (mg.goodCount == null) mg.goodCount = 0;
+
+      // "good" tick = profit improved by > eps (deltaP computed above)
+      const good = hasPrev && (deltaP > eps);
+
+      if (mg.ticksElapsed <= windowT && currentProfit > 0){
+        mg.goodCount = good ? (mg.goodCount + 1) : 0;
+        if (mg.goodCount >= need) mg.ladderTarget = Math.max(mg.ladderTarget, maxT);
+        else if (mg.goodCount >= 1) mg.ladderTarget = Math.max(mg.ladderTarget, midT);
+      }
+      primaryTicks = mg.ladderTarget;
+    }
+
     const fallbackTicks = Math.max(1, parseInt(stCfg.fallbackTicks ?? 1) || 1);
 
     // Momentum-aware fallback (SCALP only): near the end of tick-duration trades, grab 1 tick if momentum stalls.
@@ -2434,6 +2712,32 @@ const dom = {
   smartTakeoutFallbackPct: $("smart-takeout-fallbackpct"),
   smartTakeoutStallTicks: $("smart-takeout-stallticks"),
   smartTakeoutStatus: $("smart-takeout-status"),
+  // Tick Ladder
+  tickLadderToggle: $("tick-ladder-toggle"),
+  tickLadderIndicator: $("tick-ladder-indicator"),
+  tickLadderStart: $("tick-ladder-start"),
+  tickLadderMid: $("tick-ladder-mid"),
+  tickLadderMax: $("tick-ladder-max"),
+  tickLadderWindow: $("tick-ladder-window"),
+  tickLadderDTouch: $("tick-ladder-dtouch"),
+  tickLadderStatus: $("tick-ladder-status"),
+
+  // Burst Protection + Soft Score
+  burstProtectToggle: $("burst-protect-toggle"),
+  burstProtectIndicator: $("burst-protect-indicator"),
+  burstProtectLookback: $("burst-protect-lookback"),
+  burstProtectMult: $("burst-protect-mult"),
+  burstProtectMinCd: $("burst-protect-mincd"),
+  burstProtectMaxCd: $("burst-protect-maxcd"),
+  burstProtectStatus: $("burst-protect-status"),
+
+  softScoreToggle: $("soft-score-toggle"),
+  softScoreIndicator: $("soft-score-indicator"),
+  softScoreBlock: $("soft-score-block"),
+  softScoreBoost: $("soft-score-boost"),
+  softScoreBoostCd: $("soft-score-boostcd"),
+  softScoreStatus: $("soft-score-status"),
+
 
   scalpIndToggle: $("scalp-ind-toggle"),
   scalpIndIndicator: $("scalp-ind-indicator"),
@@ -2790,6 +3094,59 @@ function updateUI(){
   setIfNotEditing(dom.smartTakeoutFallbackPct, String(appState.smartTakeout?.fallbackAfterPct ?? 70));
   setIfNotEditing(dom.smartTakeoutStallTicks, String(appState.smartTakeout?.stallTicksRequired ?? 1));
 
+
+  // Tick Ladder UI
+  if (dom.tickLadderIndicator && appState.tickLadder){
+    const on = !!appState.tickLadder.enabled;
+    dom.tickLadderIndicator.textContent = on ? "ON" : "OFF";
+    dom.tickLadderIndicator.className = `pill ${on ? "bg-emerald-600" : "bg-red-600"} text-white`;
+  }
+  if (dom.tickLadderToggle && appState.tickLadder){
+    dom.tickLadderToggle.checked = !!appState.tickLadder.enabled;
+  }
+  setIfNotEditing(dom.tickLadderStart, String(appState.tickLadder?.startTicks ?? 1));
+  setIfNotEditing(dom.tickLadderMid, String(appState.tickLadder?.midTicks ?? 2));
+  setIfNotEditing(dom.tickLadderMax, String(appState.tickLadder?.maxTicks ?? 3));
+  setIfNotEditing(dom.tickLadderWindow, String(appState.tickLadder?.quickWindowTicks ?? 3));
+  setIfNotEditing(dom.tickLadderDTouch, String(appState.tickLadder?.doubleTouchCount ?? 2));
+  if (dom.tickLadderStatus && appState.tickLadder){
+    dom.tickLadderStatus.textContent = appState.tickLadder.enabled ? "Tick Ladder is ON." : "Tick Ladder is OFF.";
+  }
+
+  // Burst Protection UI
+  if (dom.burstProtectIndicator && appState.burstProtect){
+    const on = !!appState.burstProtect.enabled;
+    dom.burstProtectIndicator.textContent = on ? "ON" : "OFF";
+    dom.burstProtectIndicator.className = `pill ${on ? "bg-emerald-600" : "bg-red-600"} text-white`;
+  }
+  if (dom.burstProtectToggle && appState.burstProtect){
+    dom.burstProtectToggle.checked = !!appState.burstProtect.enabled;
+  }
+  setIfNotEditing(dom.burstProtectLookback, String(appState.burstProtect?.lookback ?? 40));
+  setIfNotEditing(dom.burstProtectMult, String(appState.burstProtect?.spikeMult ?? 3.5));
+  setIfNotEditing(dom.burstProtectMinCd, String(appState.burstProtect?.minCooldownS ?? 45));
+  setIfNotEditing(dom.burstProtectMaxCd, String(appState.burstProtect?.maxCooldownS ?? 120));
+  if (dom.burstProtectStatus && appState.burstProtect){
+    dom.burstProtectStatus.textContent = appState.burstProtect.enabled ? "Burst Protection is ON." : "Burst Protection is OFF.";
+  }
+
+  // Soft Score UI
+  if (dom.softScoreIndicator && appState.softScore){
+    const on = !!appState.softScore.enabled;
+    dom.softScoreIndicator.textContent = on ? "ON" : "OFF";
+    dom.softScoreIndicator.className = `pill ${on ? "bg-emerald-600" : "bg-red-600"} text-white`;
+  }
+  if (dom.softScoreToggle && appState.softScore){
+    dom.softScoreToggle.checked = !!appState.softScore.enabled;
+  }
+  setIfNotEditing(dom.softScoreBlock, String(appState.softScore?.blockBelow ?? 45));
+  setIfNotEditing(dom.softScoreBoost, String(appState.softScore?.boostBelow ?? 60));
+  setIfNotEditing(dom.softScoreBoostCd, String(appState.softScore?.boostCooldownS ?? 20));
+  if (dom.softScoreStatus && appState.softScore){
+    dom.softScoreStatus.textContent = appState.softScore.enabled ? "Soft Score is ON." : "Soft Score is OFF.";
+  }
+
+
   // Scalp Indicator Assist UI
   if (dom.scalpIndToggle && appState.scalpInd){
     dom.scalpIndToggle.checked = !!appState.scalpInd.enabled;
@@ -2890,6 +3247,9 @@ function setSettingsLock(isLocked){
     dom.tpInput, dom.slInput, dom.maxTradesInput, dom.cooldownInput,
     dom.modeSelect, dom.safeToggle, dom.priceActionToggle, dom.autoResumeToggle, dom.autoSellToggle,
     dom.smartTakeoutToggle, dom.smartTakeoutPrimary, dom.smartTakeoutFallback, dom.smartTakeoutFallbackPct, dom.smartTakeoutStallTicks,
+    dom.tickLadderToggle, dom.tickLadderStart, dom.tickLadderMid, dom.tickLadderMax, dom.tickLadderWindow, dom.tickLadderDTouch,
+    dom.burstProtectToggle, dom.burstProtectLookback, dom.burstProtectMult, dom.burstProtectMinCd, dom.burstProtectMaxCd,
+    dom.softScoreToggle, dom.softScoreBlock, dom.softScoreBoost, dom.softScoreBoostCd,
     dom.scalpIndToggle, dom.scalpIndMode, dom.scalpIndMa, dom.scalpIndBBPeriod, dom.scalpIndBBStd,
     dom.scalpIndRSI, dom.scalpIndMacdFast, dom.scalpIndMacdSlow, dom.scalpIndMacdSig,
     dom.scalpIndBoostMin, dom.scalpIndGateMin, dom.scalpIndHardConf,
@@ -2948,6 +3308,31 @@ function updateStateFromUI(){
     if (dom.smartTakeoutFallback) appState.smartTakeout.fallbackTicks = Math.max(1, parseInt(dom.smartTakeoutFallback.value) || 1);
     if (dom.smartTakeoutFallbackPct) appState.smartTakeout.fallbackAfterPct = Math.max(0, Math.min(100, parseFloat(dom.smartTakeoutFallbackPct.value) || 70));
     if (dom.smartTakeoutStallTicks) appState.smartTakeout.stallTicksRequired = Math.max(1, parseInt(dom.smartTakeoutStallTicks.value) || 1);
+
+    // Tick Ladder
+    if (!appState.tickLadder) appState.tickLadder = { enabled:false, startTicks:1, midTicks:2, maxTicks:3, quickWindowTicks:3, doubleTouchCount:2 };
+    if (dom.tickLadderToggle) appState.tickLadder.enabled = !!dom.tickLadderToggle.checked;
+    if (dom.tickLadderStart) appState.tickLadder.startTicks = Math.max(1, parseInt(dom.tickLadderStart.value) || 1);
+    if (dom.tickLadderMid) appState.tickLadder.midTicks = Math.max(1, parseInt(dom.tickLadderMid.value) || 2);
+    if (dom.tickLadderMax) appState.tickLadder.maxTicks = Math.max(1, parseInt(dom.tickLadderMax.value) || 3);
+    if (dom.tickLadderWindow) appState.tickLadder.quickWindowTicks = Math.max(1, parseInt(dom.tickLadderWindow.value) || 3);
+    if (dom.tickLadderDTouch) appState.tickLadder.doubleTouchCount = Math.max(1, parseInt(dom.tickLadderDTouch.value) || 2);
+
+    // Burst Protection
+    if (!appState.burstProtect) appState.burstProtect = { enabled:false, lookback:40, spikeMult:3.5, minCooldownS:45, maxCooldownS:120, refractoryS:6 };
+    if (dom.burstProtectToggle) appState.burstProtect.enabled = !!dom.burstProtectToggle.checked;
+    if (dom.burstProtectLookback) appState.burstProtect.lookback = Math.max(10, parseInt(dom.burstProtectLookback.value) || 40);
+    if (dom.burstProtectMult) appState.burstProtect.spikeMult = Math.max(1, Math.min(10, parseFloat(dom.burstProtectMult.value) || 3.5));
+    if (dom.burstProtectMinCd) appState.burstProtect.minCooldownS = Math.max(0, parseInt(dom.burstProtectMinCd.value) || 45);
+    if (dom.burstProtectMaxCd) appState.burstProtect.maxCooldownS = Math.max(0, parseInt(dom.burstProtectMaxCd.value) || 120);
+
+    // Soft Score
+    if (!appState.softScore) appState.softScore = { enabled:false, blockBelow:45, boostBelow:60, boostCooldownS:20 };
+    if (dom.softScoreToggle) appState.softScore.enabled = !!dom.softScoreToggle.checked;
+    if (dom.softScoreBlock) appState.softScore.blockBelow = Math.max(0, Math.min(100, parseInt(dom.softScoreBlock.value) || 45));
+    if (dom.softScoreBoost) appState.softScore.boostBelow = Math.max(0, Math.min(100, parseInt(dom.softScoreBoost.value) || 60));
+    if (dom.softScoreBoostCd) appState.softScore.boostCooldownS = Math.max(0, parseInt(dom.softScoreBoostCd.value) || 20);
+
 
     // Scalp Indicator Assist (SCALP only)
     if (!appState.scalpInd) appState.scalpInd = { enabled:false };
@@ -3666,6 +4051,8 @@ function handleResponse(res){
 
       // AI live feed (safety-only)
       aiLayer.onPriceTick(price, Date.now());
+      // Burst Protection (optional)
+      try{ burstProtect.onTick(price, Date.now()); }catch(_){ }
       appState.tickBuffer.push(price);
       while(appState.tickBuffer.length > appState.tickBufferSize) appState.tickBuffer.shift();
 
@@ -3860,7 +4247,7 @@ function checkAndEnterTrade(){
   requestHTFCandles();
 
   // Respect bot cooldown + AI cooldown
-  let effectiveCooldownUntil = Math.max(appState.cooldownUntil || 0, aiLayer.cooldownExtraUntil || 0);
+  let effectiveCooldownUntil = Math.max(appState.cooldownUntil || 0, aiLayer.cooldownExtraUntil || 0, appState.burstCooldownUntil || 0, appState.softScoreCooldownUntil || 0);
 
   if (Date.now() < effectiveCooldownUntil){
     // Chart Assist can shorten ONLY the bot cooldown when it sees a strong quick setup
@@ -3869,12 +4256,16 @@ function checkAndEnterTrade(){
       if (dirPeek){
         try{ chartAssist.maybeBoostCooldown(dirPeek, effectiveCooldownUntil); }catch(_){}
       }
-      effectiveCooldownUntil = Math.max(appState.cooldownUntil || 0, aiLayer.cooldownExtraUntil || 0);
+      effectiveCooldownUntil = Math.max(appState.cooldownUntil || 0, aiLayer.cooldownExtraUntil || 0, appState.burstCooldownUntil || 0, appState.softScoreCooldownUntil || 0);
     }
 
     if (Date.now() < effectiveCooldownUntil){
       if (dom.blockReasonDisplay){
-        dom.blockReasonDisplay.textContent = (Date.now() < (aiLayer.cooldownExtraUntil||0)) ? "AI Cooldown" : "Cooldown";
+        dom.blockReasonDisplay.textContent =
+          (Date.now() < (appState.burstCooldownUntil||0)) ? "Burst Cooldown" :
+          (Date.now() < (appState.softScoreCooldownUntil||0)) ? "Soft Score Cooldown" :
+          (Date.now() < (aiLayer.cooldownExtraUntil||0)) ? "AI Cooldown" :
+          "Cooldown";
       }
       return;
     }
@@ -3945,6 +4336,30 @@ function checkAndEnterTrade(){
     const g = chartAssist.shouldGate(direction);
     if (!g.allow){
       if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = g.reason || "Chart Assist blocked";
+      return;
+    }
+  }
+
+
+  // Soft Score (optional) - gentle quality control
+  if (appState.softScore?.enabled){
+    const ss = computeSoftScore(direction);
+    const blockBelow = Math.max(0, Math.min(100, Number(appState.softScore.blockBelow ?? 45)));
+    const boostBelow = Math.max(0, Math.min(100, Number(appState.softScore.boostBelow ?? 60)));
+    const boostCdS = Math.max(0, Number(appState.softScore.boostCooldownS ?? 20));
+
+    if (ss.score < blockBelow){
+      const msg = `Soft Score Block (${ss.score})`;
+      if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = msg;
+      updateTradeStatus("BLOCKED (Soft Score)", "bg-slate-700 text-slate-200");
+      logLine("[SoftScore] Blocked: " + msg + " [" + (ss.reasons||[]).join(",") + "]");
+      return;
+    }
+    if (ss.score < boostBelow && boostCdS > 0){
+      appState.softScoreCooldownUntil = Math.max(appState.softScoreCooldownUntil || 0, Date.now() + boostCdS * 1000);
+      const msg = `Soft Score Cooldown (${ss.score})`;
+      if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = msg;
+      updateTradeStatus("Stand down...", "bg-orange-500 text-white");
       return;
     }
   }
@@ -4467,6 +4882,27 @@ document.addEventListener("DOMContentLoaded", () => {
     dom.smartTakeoutFallback?.addEventListener("input", () => updateStateFromUI());
     dom.smartTakeoutFallbackPct?.addEventListener("input", () => updateStateFromUI());
     dom.smartTakeoutStallTicks?.addEventListener("input", () => updateStateFromUI());
+
+    // Tick Ladder
+    dom.tickLadderToggle?.addEventListener("change", () => { updateStateFromUI(); updateUI(); });
+    dom.tickLadderStart?.addEventListener("input", () => updateStateFromUI());
+    dom.tickLadderMid?.addEventListener("input", () => updateStateFromUI());
+    dom.tickLadderMax?.addEventListener("input", () => updateStateFromUI());
+    dom.tickLadderWindow?.addEventListener("input", () => updateStateFromUI());
+    dom.tickLadderDTouch?.addEventListener("input", () => updateStateFromUI());
+
+    // Burst Protection + Soft Score
+    dom.burstProtectToggle?.addEventListener("change", () => { updateStateFromUI(); updateUI(); });
+    dom.burstProtectLookback?.addEventListener("input", () => updateStateFromUI());
+    dom.burstProtectMult?.addEventListener("input", () => updateStateFromUI());
+    dom.burstProtectMinCd?.addEventListener("input", () => updateStateFromUI());
+    dom.burstProtectMaxCd?.addEventListener("input", () => updateStateFromUI());
+
+    dom.softScoreToggle?.addEventListener("change", () => { updateStateFromUI(); updateUI(); });
+    dom.softScoreBlock?.addEventListener("input", () => updateStateFromUI());
+    dom.softScoreBoost?.addEventListener("input", () => updateStateFromUI());
+    dom.softScoreBoostCd?.addEventListener("input", () => updateStateFromUI());
+
 
     dom.scalpIndToggle?.addEventListener("change", () => { updateStateFromUI(); updateUI(); });
     dom.scalpIndMode?.addEventListener("change", () => updateStateFromUI());
