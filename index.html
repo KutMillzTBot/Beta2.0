@@ -10,9 +10,12 @@
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
     /* ABSOLUTE RULE: DO NOT TOUCH OR CHANGE ANY BACKGROUND CODE */
     body {
       font-family: 'Inter', sans-serif;
+      font-weight: 600;
       background: radial-gradient(1200px 700px at 15% 10%, rgba(124,58,237,0.12), rgba(255,255,255,0) 60%),
                   radial-gradient(900px 600px at 85% 20%, rgba(244,114,182,0.10), rgba(255,255,255,0) 55%),
                   linear-gradient(180deg, #fbfbff 0%, #f2efff 55%, #f7fbff 100%);
@@ -34,9 +37,8 @@
       border-color: rgba(124,58,237,0.22) !important;
     }
     .card input::placeholder { color: rgba(15,23,42,0.45) !important; }
-    .card label { color: rgba(15,23,42,0.80) !important; }
-
-    /* Status pill contrast on light */
+    .card label { color: rgba(17, 24, 39, 0.92) !important; font-weight: 700 !important; }
+/* Status pill contrast on light */
     .status-pill { border: 1px solid rgba(124,58,237,0.14); }
 
     /* Brand title */
@@ -260,7 +262,8 @@ h1, #app-title{
 /* Labels / secondary text */
 .text-slate-300,.text-slate-400,.text-slate-500,
 .text-gray-400,.text-gray-500{
-  color: #6b7280 !important;
+  color: #374151 !important;
+  font-weight: 600 !important;
 }
 
 /* Inputs */
@@ -272,8 +275,8 @@ input, select, textarea{
   outline: none !important;
 }
 input:focus, select:focus, textarea:focus{
-  border-color:#60a5fa !important;
-  box-shadow: 0 0 0 4px rgba(59,130,246,0.18) !important;
+  border-color:rgba(124,58,237,0.55) !important;
+  box-shadow: 0 0 0 4px rgba(124,58,237,0.18) !important;
 }
 
 /* Primary button (Start Bot look) */
@@ -324,7 +327,7 @@ button, .btn{
 #system-log .warn, #tx-log .warn { color:#f59e0b !important; font-weight:800; }
 #system-log .error, #tx-log .error { color:#ef4444 !important; font-weight:800; }
 #system-log .success, #tx-log .success { color:#22c55e !important; font-weight:800; }
-#system-log .info, #tx-log .info { color:#3b82f6 !important; font-weight:800; }
+#system-log .info, #tx-log .info { color:#111827 !important; font-weight:800; }
 
 /* Session limits card inside: keep clean */
 #sess-status{ color:#6b7280 !important; }
