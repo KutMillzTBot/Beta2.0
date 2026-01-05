@@ -5054,5 +5054,311 @@ dom.clearLogBtn?.addEventListener("click", () => { if (LOG) LOG.textContent = ""
     logLine("Init error: " + e.message);
   }
 });</script>
+
+<!-- ================= KUT MILZ ULTIMATE AI ENGINE ================= -->
+<script>
+/* =====================================================================
+   KUT MILZ TB — ULTIMATE INSTITUTIONAL AI ENGINE (DERIV API)
+   ===================================================================== */
+const AI_KEY = "kut_milz_tb_ai_ultimate_v4";
+let AI = JSON.parse(localStorage.getItem(AI_KEY)) || { symbols:{}, global:{wins:0,losses:0,kill:false} };
+function saveAI(){ localStorage.setItem(AI_KEY, JSON.stringify(AI)); }
+function getSymbol(symbol){
+  if(!AI.symbols[symbol]){
+    AI.symbols[symbol]={patterns:{},zones:{},stats:{w:0,l:0},confFloor:55,stakeBias:1,hourly:{},lastDecay:Date.now()};
+  }
+  return AI.symbols[symbol];
+}
+function extractPattern(ticks){
+  if(!ticks||ticks.length<6) return "NONE";
+  let p=""; for(let i=ticks.length-6;i<ticks.length-1;i++) p+=ticks[i+1]>ticks[i]?"U":"D";
+  return p;
+}
+function zone(price){ return Math.floor(price/10)*10; }
+function decay(ai){
+  if(Date.now()-ai.lastDecay<3600000) return;
+  for(const k in ai.patterns){ ai.patterns[k].w*=0.95; ai.patterns[k].l*=0.95; }
+  ai.lastDecay=Date.now();
+}
+function adjustConf(ai){
+  const t=ai.stats.w+ai.stats.l; if(t<25) return;
+  const wr=ai.stats.w/t;
+  if(wr>0.6) ai.confFloor=Math.max(45,ai.confFloor-2);
+  if(wr<0.45) ai.confFloor=Math.min(70,ai.confFloor+3);
+}
+function globalRisk(){
+  const t=AI.global.wins+AI.global.losses; if(t<20) return;
+  if(AI.global.wins/t<0.4) AI.global.kill=true;
+}
+function stakeMult(ai,conf){
+  let m=1; if(conf>80) m+=0.2; if(conf>90) m+=0.3;
+  if(ai.stats.l>ai.stats.w) m-=0.2; if(AI.global.kill) m=0;
+  return Math.max(0.5,Math.min(1.8,m));
+}
+function aiGate(symbol,pattern,z,conf){
+  const ai=getSymbol(symbol); decay(ai); globalRisk();
+  if(AI.global.kill) return {ok:false,reason:"GLOBAL KILL SWITCH"};
+  if(conf<ai.confFloor) return {ok:false,reason:"CONF FLOOR"};
+  if(ai.zones[z]>=3) return {ok:false,reason:"NO-TRADE ZONE"};
+  const p=ai.patterns[pattern];
+  if(p&&(p.l>p.w)&&(p.w+p.l>=6)) return {ok:false,reason:"BAD PATTERN"};
+  return {ok:true};
+}
+function learn(symbol,pattern,z,win){
+  const ai=getSymbol(symbol);
+  if(!ai.patterns[pattern]) ai.patterns[pattern]={w:0,l:0};
+  win?ai.patterns[pattern].w++:ai.patterns[pattern].l++;
+  if(!ai.zones[z]) ai.zones[z]=0; if(!win) ai.zones[z]++;
+  win?ai.stats.w++:ai.stats.l++; win?AI.global.wins++:AI.global.losses++;
+  adjustConf(ai); saveAI();
+}
+function renderAI(symbol){
+  const ai=getSymbol(symbol);
+  const el=document.getElementById("ai-stats-panel"); if(!el) return;
+  el.innerHTML=`<b>ULTIMATE AI ENGINE</b><br>
+  Symbol: ${symbol}<br>
+  Wins: ${ai.stats.w} | Losses: ${ai.stats.l}<br>
+  Confidence Floor: ${ai.confFloor}%<br>
+  Patterns: ${Object.keys(ai.patterns).length}<br>
+  No-Trade Zones: ${Object.keys(ai.zones).length}<br>
+  Global Kill: ${AI.global.kill}`;
+}
+console.log("KUT MILZ AI ENGINE ACTIVE");
+</script>
+<!-- ================================================================ -->
+
+
+<!-- ================= AI FULL WIRING ================= -->
+<script>
+(function(){
+  console.log("AI FULL WIRING INIT");
+
+  // helpers
+  function getConfidence(){
+    const el=document.getElementById("confidence-text");
+    return el?parseFloat(el.innerText)||0:0;
+  }
+  function getSymbol(){
+    const el=document.getElementById("currentSymbolLabel");
+    return el?el.innerText:"UNKNOWN";
+  }
+  function getPrice(){
+    return window.lastTickPrice||0;
+  }
+
+  // tick capture (safe)
+  window.tickHistory = window.tickHistory || [];
+  const _pushTick = window.onNewTick;
+  window.onNewTick = function(price){
+    window.lastTickPrice = price;
+    tickHistory.push(price);
+    if(tickHistory.length>50) tickHistory.shift();
+    if(typeof _pushTick==="function") _pushTick(price);
+  };
+
+  // PRE-TRADE GATE
+  const btn=document.getElementById("placeTradeBtn");
+  if(btn){
+    btn.addEventListener("click", function(e){
+      const symbol=getSymbol();
+      const conf=getConfidence();
+      const pat=extractPattern(tickHistory);
+      const z=zone(getPrice());
+      const gate=aiGate(symbol,pat,z,conf);
+      if(!gate.ok){
+        e.stopImmediatePropagation();
+        document.getElementById("block-reason-display").innerText=gate.reason;
+        console.warn("AI BLOCK:",gate.reason);
+        return false;
+      }
+    }, true);
+  }
+
+  // POST-TRADE LEARN (watch tx log)
+  const tx=document.getElementById("tx-log");
+  if(tx){
+    const obs=new MutationObserver(()=>{
+      const txt=tx.innerText.trim().split("\n").pop()||"";
+      if(txt.includes("CLOSED")){
+        const win=!txt.includes("-");
+        const symbol=getSymbol();
+        const pat=extractPattern(tickHistory);
+        const z=zone(getPrice());
+        learn(symbol,pat,z,win);
+        renderAI(symbol);
+      }
+    });
+    obs.observe(tx,{childList:true,subtree:true});
+  }
+
+  // dashboard mount
+  if(!document.getElementById("ai-stats-panel")){
+    const div=document.createElement("div");
+    div.id="ai-stats-panel";
+    div.className="card text-xs";
+    document.querySelector(".container-wrapper")?.appendChild(div);
+  }
+
+  console.log("AI FULLY WIRED AND ACTIVE");
+})();
+</script>
+<!-- ================================================== -->
+
+
+<!-- ================= AI ENHANCEMENTS ================= -->
+<script>
+(function(){
+  // === USER CONTROLS (SAFE DEFAULTS) ===
+  window.AI_USER_SETTINGS = JSON.parse(localStorage.getItem("AI_USER_SETTINGS")) || {
+    stakeScaling: false,   // manual by default
+    alwaysLearning: true   // learning always ON
+  };
+
+  function saveSettings(){
+    localStorage.setItem("AI_USER_SETTINGS", JSON.stringify(AI_USER_SETTINGS));
+  }
+
+  // === TIME-OF-DAY LEARNING ===
+  const _learn = window.learn;
+  window.learn = function(symbol, pattern, z, win){
+    const hour = new Date().getHours();
+    const ai = getSymbol(symbol);
+    if(!ai.hourly[hour]) ai.hourly[hour] = {w:0,l:0};
+    win ? ai.hourly[hour].w++ : ai.hourly[hour].l++;
+    _learn(symbol, pattern, z, win);
+  };
+
+  // === STAKE SCALING (OPTIONAL) ===
+  const _stakeCalc = window.calculateStake;
+  window.calculateStake = function(baseStake, symbol, confidence){
+    let stake = baseStake;
+    if(AI_USER_SETTINGS.stakeScaling){
+      const ai = getSymbol(symbol);
+      stake *= stakeMult(ai, confidence);
+    }
+    return stake;
+  };
+
+  // === AI GATE UNLOCK (MANUAL OVERRIDE) ===
+  window.AI_UNLOCK = function(){
+    AI.global.kill = false;
+    saveAI();
+    alert("AI kill-switch unlocked manually");
+  };
+
+  // === UI CONTROLS ===
+  const panel = document.getElementById("ai-stats-panel");
+  if(panel){
+    const controls = document.createElement("div");
+    controls.innerHTML = `
+      <hr>
+      <label><input type="checkbox" id="aiStakeToggle"> AI Stake Scaling</label><br>
+      <button id="aiUnlockBtn">Unlock AI (Kill Switch)</button>
+    `;
+    panel.appendChild(controls);
+
+    const stakeToggle = document.getElementById("aiStakeToggle");
+    stakeToggle.checked = AI_USER_SETTINGS.stakeScaling;
+    stakeToggle.onchange = () => {
+      AI_USER_SETTINGS.stakeScaling = stakeToggle.checked;
+      saveSettings();
+    };
+
+    document.getElementById("aiUnlockBtn").onclick = window.AI_UNLOCK;
+  }
+
+  console.log("AI ENHANCEMENTS ACTIVE");
+})();
+</script>
+<!-- ================================================ -->
+
+
+<!-- ========== AI ADVANCED CONTROL FEATURES ========== -->
+<script>
+(function(){
+
+  // === MODE SETTINGS ===
+  AI_USER_SETTINGS.mode = AI_USER_SETTINGS.mode || "conservative"; // aggressive | conservative
+  AI_USER_SETTINGS.hourBlock = AI_USER_SETTINGS.hourBlock || false;
+  localStorage.setItem("AI_USER_SETTINGS", JSON.stringify(AI_USER_SETTINGS));
+
+  // === HOUR-BASED BLOCKING ===
+  const _aiGate = window.aiGate;
+  window.aiGate = function(symbol, pattern, z, conf){
+    const hour = new Date().getHours();
+    const ai = getSymbol(symbol);
+
+    if(AI_USER_SETTINGS.hourBlock && ai.hourly[hour]){
+      const h = ai.hourly[hour];
+      if(h.l >= 3 && h.l > h.w){
+        return {ok:false, reason:"BAD HOUR"};
+      }
+    }
+
+    return _aiGate(symbol, pattern, z, conf);
+  };
+
+  // === MODE EFFECTS ===
+  const _stakeMult = window.stakeMult;
+  window.stakeMult = function(ai, conf){
+    let m = _stakeMult(ai, conf);
+    if(AI_USER_SETTINGS.mode === "aggressive"){
+      m *= 1.2;
+    } else {
+      m *= 0.9;
+    }
+    return Math.max(0.5, Math.min(2.0, m));
+  };
+
+  // === RESET PER SYMBOL ===
+  window.resetAISymbol = function(symbol){
+    if(!AI.symbols[symbol]) return alert("Symbol not found");
+    delete AI.symbols[symbol];
+    saveAI();
+    alert("AI reset for " + symbol);
+  };
+
+  // === UI CONTROLS ===
+  const panel = document.getElementById("ai-stats-panel");
+  if(panel){
+    const c = document.createElement("div");
+    c.innerHTML = `
+      <hr>
+      <label><input type="checkbox" id="aiHourBlock"> Hour-based blocking</label><br>
+      <label>AI Mode:
+        <select id="aiModeSel">
+          <option value="conservative">Conservative</option>
+          <option value="aggressive">Aggressive</option>
+        </select>
+      </label><br>
+      <button id="aiResetSymbol">Reset AI (Current Symbol)</button>
+    `;
+    panel.appendChild(c);
+
+    const hb = document.getElementById("aiHourBlock");
+    hb.checked = AI_USER_SETTINGS.hourBlock;
+    hb.onchange = ()=>{
+      AI_USER_SETTINGS.hourBlock = hb.checked;
+      localStorage.setItem("AI_USER_SETTINGS", JSON.stringify(AI_USER_SETTINGS));
+    };
+
+    const ms = document.getElementById("aiModeSel");
+    ms.value = AI_USER_SETTINGS.mode;
+    ms.onchange = ()=>{
+      AI_USER_SETTINGS.mode = ms.value;
+      localStorage.setItem("AI_USER_SETTINGS", JSON.stringify(AI_USER_SETTINGS));
+    };
+
+    document.getElementById("aiResetSymbol").onclick = ()=>{
+      const sym = document.getElementById("currentSymbolLabel")?.innerText;
+      if(sym) resetAISymbol(sym);
+    };
+  }
+
+  console.log("AI ADVANCED CONTROLS ACTIVE");
+})();
+</script>
+<!-- ================================================ -->
+
 </body>
 </html>
