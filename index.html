@@ -5273,46 +5273,48 @@ console.log("KUT MILZ AI ENGINE ACTIVE");
 <!-- ================================================ -->
 
 
-<!-- ========== AI ADVANCED CONTROL FEATURES ========== -->
+<!-- ================= AI MODES & CONTROLS ================= -->
 <script>
 (function(){
 
-  // === MODE SETTINGS ===
-  AI_USER_SETTINGS.mode = AI_USER_SETTINGS.mode || "conservative"; // aggressive | conservative
-  AI_USER_SETTINGS.hourBlock = AI_USER_SETTINGS.hourBlock || false;
-  localStorage.setItem("AI_USER_SETTINGS", JSON.stringify(AI_USER_SETTINGS));
+  // === USER MODES ===
+  window.AI_USER_SETTINGS = JSON.parse(localStorage.getItem("AI_USER_SETTINGS")) || {
+    stakeScaling:false,
+    alwaysLearning:true,
+    mode:"conservative", // conservative | aggressive
+    hourBlocking:true
+  };
 
-  // === HOUR-BASED BLOCKING ===
+  function saveSettings(){
+    localStorage.setItem("AI_USER_SETTINGS", JSON.stringify(AI_USER_SETTINGS));
+  }
+
+  // === AGGRESSIVE / CONSERVATIVE MODE ===
   const _aiGate = window.aiGate;
   window.aiGate = function(symbol, pattern, z, conf){
-    const hour = new Date().getHours();
+    const res = _aiGate(symbol, pattern, z, conf);
     const ai = getSymbol(symbol);
 
-    if(AI_USER_SETTINGS.hourBlock && ai.hourly[hour]){
+    if(AI_USER_SETTINGS.mode === "aggressive"){
+      ai.confFloor = Math.max(40, ai.confFloor - 5);
+    } else {
+      ai.confFloor = Math.min(70, ai.confFloor + 0);
+    }
+
+    // Hour-based blocking
+    if(AI_USER_SETTINGS.hourBlocking){
+      const hour = new Date().getHours();
       const h = ai.hourly[hour];
-      if(h.l >= 3 && h.l > h.w){
+      if(h && h.l > h.w + 2){
         return {ok:false, reason:"BAD HOUR"};
       }
     }
-
-    return _aiGate(symbol, pattern, z, conf);
-  };
-
-  // === MODE EFFECTS ===
-  const _stakeMult = window.stakeMult;
-  window.stakeMult = function(ai, conf){
-    let m = _stakeMult(ai, conf);
-    if(AI_USER_SETTINGS.mode === "aggressive"){
-      m *= 1.2;
-    } else {
-      m *= 0.9;
-    }
-    return Math.max(0.5, Math.min(2.0, m));
+    return res;
   };
 
   // === RESET PER SYMBOL ===
   window.resetAISymbol = function(symbol){
-    if(!AI.symbols[symbol]) return alert("Symbol not found");
+    if(!AI.symbols[symbol]) return;
     delete AI.symbols[symbol];
     saveAI();
     alert("AI reset for " + symbol);
@@ -5321,44 +5323,264 @@ console.log("KUT MILZ AI ENGINE ACTIVE");
   // === UI CONTROLS ===
   const panel = document.getElementById("ai-stats-panel");
   if(panel){
-    const c = document.createElement("div");
-    c.innerHTML = `
+    const controls = document.createElement("div");
+    controls.innerHTML = `
       <hr>
-      <label><input type="checkbox" id="aiHourBlock"> Hour-based blocking</label><br>
-      <label>AI Mode:
-        <select id="aiModeSel">
-          <option value="conservative">Conservative</option>
-          <option value="aggressive">Aggressive</option>
-        </select>
-      </label><br>
-      <button id="aiResetSymbol">Reset AI (Current Symbol)</button>
+      <label>AI Mode:</label>
+      <select id="aiModeSel">
+        <option value="conservative">Conservative</option>
+        <option value="aggressive">Aggressive</option>
+      </select><br>
+      <label><input type="checkbox" id="aiHourBlock"> Hour-based Blocking</label><br>
+      <button id="aiResetSym">Reset AI (This Symbol)</button>
     `;
-    panel.appendChild(c);
+    panel.appendChild(controls);
 
-    const hb = document.getElementById("aiHourBlock");
-    hb.checked = AI_USER_SETTINGS.hourBlock;
-    hb.onchange = ()=>{
-      AI_USER_SETTINGS.hourBlock = hb.checked;
-      localStorage.setItem("AI_USER_SETTINGS", JSON.stringify(AI_USER_SETTINGS));
-    };
+    const sel=document.getElementById("aiModeSel");
+    sel.value = AI_USER_SETTINGS.mode;
+    sel.onchange=()=>{ AI_USER_SETTINGS.mode=sel.value; saveSettings(); };
 
-    const ms = document.getElementById("aiModeSel");
-    ms.value = AI_USER_SETTINGS.mode;
-    ms.onchange = ()=>{
-      AI_USER_SETTINGS.mode = ms.value;
-      localStorage.setItem("AI_USER_SETTINGS", JSON.stringify(AI_USER_SETTINGS));
-    };
+    const hb=document.getElementById("aiHourBlock");
+    hb.checked = AI_USER_SETTINGS.hourBlocking;
+    hb.onchange=()=>{ AI_USER_SETTINGS.hourBlocking=hb.checked; saveSettings(); };
 
-    document.getElementById("aiResetSymbol").onclick = ()=>{
-      const sym = document.getElementById("currentSymbolLabel")?.innerText;
-      if(sym) resetAISymbol(sym);
+    document.getElementById("aiResetSym").onclick=()=>{
+      const s=document.getElementById("currentSymbolLabel")?.innerText;
+      if(s) resetAISymbol(s);
     };
   }
 
-  console.log("AI ADVANCED CONTROLS ACTIVE");
+  console.log("AI MODES + HOUR BLOCKING ACTIVE");
 })();
 </script>
 <!-- ================================================ -->
+
+
+<!-- ================= AI VISUALS & EXPORT ================= -->
+<script>
+(function(){
+
+  // === PER-HOUR STAKE BIAS ===
+  const _stakeMult = window.stakeMult;
+  window.stakeMult = function(ai, conf){
+    let m = _stakeMult(ai, conf);
+    const hour = new Date().getHours();
+    const h = ai.hourly?.[hour];
+    if(h && h.w + h.l >= 5){
+      const wr = h.w / (h.w + h.l);
+      if(wr > 0.65) m += 0.2;
+      if(wr < 0.4) m -= 0.2;
+    }
+    return Math.max(0.5, Math.min(2.0, m));
+  };
+
+  // === AUTO MODE SWITCH BASED ON STRONG HOURS ===
+  setInterval(()=>{
+    const symbol = document.getElementById("currentSymbolLabel")?.innerText;
+    if(!symbol) return;
+    const ai = getSymbol(symbol);
+    const hour = new Date().getHours();
+    const h = ai.hourly?.[hour];
+    if(!h || h.w + h.l < 6) return;
+    const wr = h.w / (h.w + h.l);
+    if(wr > 0.7) AI_USER_SETTINGS.mode = "aggressive";
+    if(wr < 0.45) AI_USER_SETTINGS.mode = "conservative";
+    localStorage.setItem("AI_USER_SETTINGS", JSON.stringify(AI_USER_SETTINGS));
+  }, 60000);
+
+  // === HOUR HEATMAP ===
+  window.renderHourHeatmap = function(symbol){
+    const ai = getSymbol(symbol);
+    let html = "<b>Hour Heatmap</b><table style='width:100%;font-size:10px'><tr>";
+    for(let h=0;h<24;h++){
+      const d = ai.hourly[h] || {w:0,l:0};
+      const t = d.w + d.l;
+      let c = "#333";
+      if(t>=5){
+        const wr = d.w/t;
+        if(wr>0.65) c="#1f7";
+        else if(wr<0.4) c="#f55";
+        else c="#ffb";
+      }
+      html += `<td style="padding:2px;background:${c}">${h}</td>`;
+      if(h===11) html += "</tr><tr>";
+    }
+    html += "</tr></table>";
+    return html;
+  };
+
+  // attach heatmap to panel
+  const _renderAI = window.renderAI;
+  window.renderAI = function(symbol){
+    _renderAI(symbol);
+    const el=document.getElementById("ai-stats-panel");
+    if(el) el.innerHTML += renderHourHeatmap(symbol);
+  };
+
+  // === EXPORT AI PERFORMANCE ===
+  window.exportAIJSON = function(){
+    const data = JSON.stringify(AI, null, 2);
+    download(data, "ai_performance.json", "application/json");
+  };
+
+  window.exportAICSV = function(){
+    let csv = "symbol,hour,wins,losses\n";
+    for(const s in AI.symbols){
+      const ai = AI.symbols[s];
+      for(const h in ai.hourly){
+        csv += `${s},${h},${ai.hourly[h].w},${ai.hourly[h].l}\n`;
+      }
+    }
+    download(csv, "ai_performance.csv", "text/csv");
+  };
+
+  function download(data, name, type){
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob([data],{type}));
+    a.download=name;
+    a.click();
+  }
+
+  // === EXPORT BUTTONS ===
+  const panel=document.getElementById("ai-stats-panel");
+  if(panel){
+    const btns=document.createElement("div");
+    btns.innerHTML=`
+      <hr>
+      <button onclick="exportAIJSON()">Export AI (JSON)</button>
+      <button onclick="exportAICSV()">Export AI (CSV)</button>
+    `;
+    panel.appendChild(btns);
+  }
+
+  console.log("AI VISUALS + EXPORT ACTIVE");
+})();
+</script>
+<!-- ================================================ -->
+
+
+<!-- ================= AI IMPORT BUTTON ================= -->
+<script>
+(function(){
+
+  // === IMPORT AI MEMORY ===
+  window.importAIFromFile = function(file){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      try{
+        const data = JSON.parse(e.target.result);
+        if(!data.symbols || !data.global){
+          alert("Invalid AI file");
+          return;
+        }
+        AI = data;
+        saveAI();
+        alert("AI memory imported successfully");
+        const sym=document.getElementById("currentSymbolLabel")?.innerText;
+        if(sym) renderAI(sym);
+      }catch(err){
+        alert("Failed to import AI memory");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // === ADD UI ===
+  const panel = document.getElementById("ai-stats-panel");
+  if(panel){
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <hr>
+      <input type="file" id="aiImportFile" accept=".json">
+      <button id="aiImportBtn">Import AI</button>
+    `;
+    panel.appendChild(div);
+
+    document.getElementById("aiImportBtn").onclick = function(){
+      const f=document.getElementById("aiImportFile").files[0];
+      if(!f){ alert("Select AI JSON file first"); return; }
+      importAIFromFile(f);
+    };
+  }
+
+  console.log("AI IMPORT BUTTON ACTIVE");
+})();
+</script>
+<!-- ================================================ -->
+
+
+<!-- ================= AI AUTO EXPORT TIMER ================= -->
+<script>
+(function(){
+
+  // === AUTO EXPORT SETTINGS ===
+  window.AI_EXPORT_SETTINGS = JSON.parse(localStorage.getItem("AI_EXPORT_SETTINGS")) || {
+    enabled: false,
+    intervalMin: 30, // default 30 minutes
+    lastExport: 0
+  };
+
+  function saveExportSettings(){
+    localStorage.setItem("AI_EXPORT_SETTINGS", JSON.stringify(AI_EXPORT_SETTINGS));
+  }
+
+  function autoExport(){
+    if(!AI_EXPORT_SETTINGS.enabled) return;
+    const now = Date.now();
+    if(now - AI_EXPORT_SETTINGS.lastExport < AI_EXPORT_SETTINGS.intervalMin * 60000) return;
+
+    const data = JSON.stringify(AI, null, 2);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([data], {type:"application/json"}));
+    a.download = "ai_auto_backup.json";
+    a.click();
+
+    AI_EXPORT_SETTINGS.lastExport = now;
+    saveExportSettings();
+    console.log("AI auto-backup exported");
+  }
+
+  // run timer every minute
+  setInterval(autoExport, 60000);
+
+  // === UI CONTROLS ===
+  const panel = document.getElementById("ai-stats-panel");
+  if(panel){
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <hr>
+      <label>
+        <input type="checkbox" id="aiAutoExportToggle">
+        Auto Export AI
+      </label><br>
+      <label>
+        Interval (minutes):
+        <input type="number" id="aiExportInterval" min="5" step="5" style="width:60px">
+      </label>
+    `;
+    panel.appendChild(div);
+
+    const tgl = document.getElementById("aiAutoExportToggle");
+    const inp = document.getElementById("aiExportInterval");
+
+    tgl.checked = AI_EXPORT_SETTINGS.enabled;
+    inp.value = AI_EXPORT_SETTINGS.intervalMin;
+
+    tgl.onchange = ()=>{
+      AI_EXPORT_SETTINGS.enabled = tgl.checked;
+      saveExportSettings();
+    };
+
+    inp.onchange = ()=>{
+      AI_EXPORT_SETTINGS.intervalMin = Math.max(5, parseInt(inp.value)||30);
+      saveExportSettings();
+    };
+  }
+
+  console.log("AI AUTO EXPORT TIMER ACTIVE");
+})();
+</script>
+<!-- ======================================================= -->
 
 </body>
 </html>
