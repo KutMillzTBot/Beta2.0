@@ -4,34 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kut Milz TB</title>
-  <script src="https://cdn.tailwindcss.com">
-/* ===== ROUND ROBIN ENGINE PATCH ===== */
-if (!window.appState) window.appState = {};
-
-appState.roundRobin = appState.roundRobin || {
-  enabled: false,
-  symbols: ["1HZ75V", "1HZ25V", "1HZ10V"],
-  index: 0,
-  stats: {
-    "1HZ75V": { trades: 0, wins: 0, losses: 0 },
-    "1HZ25V": { trades: 0, wins: 0, losses: 0 },
-    "1HZ10V": { trades: 0, wins: 0, losses: 0 }
-  }
-};
-
-function resolveTradeSymbol() {
-  if (!appState.roundRobin.enabled) {
-    return appState.currentSymbol;
-  }
-  const rr = appState.roundRobin;
-  const symbol = rr.symbols[rr.index];
-  rr.index = (rr.index + 1) % rr.symbols.length;
-  console.log("[RR] Routing to symbol:", symbol);
-  return symbol;
-}
-/* ===== END ROUND ROBIN ENGINE PATCH ===== */
-
-</script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Lightweight Charts -->
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
@@ -5635,7 +5608,65 @@ console.log("KUT MILZ AI ENGINE ACTIVE");
 
 
 <script>
-// ================= ROUND ROBIN ENGINE (AI v5) =================
+// ================= ROUND ROBIN ENGINE (AI v5 – SESSION, DERIV) =================
+const DERIV_RR_SYMBOLS = ['VOL75_1S','VOL25_1S','VOL10_1S'];
+let rrIndex = 0;
+
+function loadRRFromAI(){
+  const rr = window.AI?.executionRouting?.roundRobin;
+  if(!rr || !rr.enabled) return;
+  rrIndex = rr.currentIndex ?? 0;
+}
+
+function saveRRToAI(){
+  const rr = window.AI?.executionRouting?.roundRobin;
+  if(!rr) return;
+  rr.currentIndex = rrIndex;
+  saveAI();
+}
+
+function advanceRRSessionIfNeeded(){
+  const rr = window.AI?.executionRouting?.roundRobin;
+  if(!rr || rr.advanceOn !== 'bot_start') return;
+  rrIndex = (rrIndex + 1) % DERIV_RR_SYMBOLS.length;
+  saveRRToAI();
+}
+
+window.rrStats = window.AI?.executionRouting?.roundRobin?.stats || {
+  VOL75_1S:{routedTrades:0,wins:0,losses:0},
+  VOL25_1S:{routedTrades:0,wins:0,losses:0},
+  VOL10_1S:{routedTrades:0,wins:0,losses:0}
+};
+
+function isRoundRobinEnabled(){
+  const el = document.getElementById('roundRobinToggle');
+  return el && el.checked === true;
+}
+
+function resolveSymbolForTrade(){
+  if(!isRoundRobinEnabled()) return;
+  if(typeof appState === 'undefined') return;
+  appState.symbol = DERIV_RR_SYMBOLS[rrIndex];
+}
+
+function rrTradeOpened(symbol){
+  const stats = window.AI?.executionRouting?.roundRobin?.stats;
+  if(stats && stats[symbol]){
+    stats[symbol].routedTrades++;
+    saveAI();
+  }
+}
+
+function rrTradeClosed(symbol,isWin){
+  const stats = window.AI?.executionRouting?.roundRobin?.stats;
+  if(!stats || !stats[symbol]) return;
+  if(isWin) stats[symbol].wins++;
+  else stats[symbol].losses++;
+  saveAI();
+}
+
+loadRRFromAI();
+ (AI v5) =================
 const ROUND_ROBIN_SYMBOLS = ['VOL75_1S','VOL25_1S','VOL10_1S'];
 let rrIndex = 0;
 
