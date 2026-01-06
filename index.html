@@ -5827,5 +5827,62 @@ window.updateDirectionUI = function(symbol){
 })();
 </script>
 
+
+<!-- ===== FINAL AI INTELLIGENCE LAYER ===== -->
+<script>
+/* Pattern → Direction Bias */
+window.applyPatternBias = function(symbol, pattern){
+  const s = AI_BRAIN.norm(symbol);
+  const mem = AI_BRAIN.state.symbols[s]?.patternDirectionBias?.[pattern];
+  if(!mem) return null;
+  return mem.UP >= mem.DOWN ? "UP" : "DOWN";
+};
+
+/* Auto RR Selector */
+window.selectAutoRR = function(symbol, direction){
+  const d = AI_BRAIN.state.symbols[symbol].directions[direction];
+  let best = "1:1", bestScore = -1;
+  for(const rr in d.rrConfidenceMap){
+    if(d.rrConfidenceMap[rr] > bestScore){
+      bestScore = d.rrConfidenceMap[rr];
+      best = rr;
+    }
+  }
+  return best;
+};
+
+/* Symbol Personality Adjuster */
+window.updatePersonality = function(symbol, win){
+  const p = AI_BRAIN.state.symbols[symbol].personality;
+  if(win){
+    p.confidenceWeight = Math.min(1.5, p.confidenceWeight + 0.02);
+    p.stability = Math.min(1, p.stability + 0.01);
+  } else {
+    p.aggression = Math.max(0.1, p.aggression - 0.02);
+  }
+};
+
+/* Debug Brain Panel */
+(function(){
+  const panel = document.createElement('div');
+  panel.id = "ai-debug-panel";
+  panel.style.cssText = "position:fixed;bottom:8px;right:8px;background:#0f172a;color:#e5e7eb;padding:8px;font-size:11px;z-index:9999;border-radius:6px;";
+  document.body.appendChild(panel);
+
+  setInterval(()=>{
+    if(!AI_BRAIN?.state) return;
+    const sym = typeof getCurrentDisplaySymbol === "function" ? getCurrentDisplaySymbol() : null;
+    if(!sym) return;
+    const s = AI_BRAIN.norm(sym);
+    const d = AI_BRAIN.state.symbols[s]?.directions;
+    if(!d) return;
+    panel.innerHTML =
+      `<b>${s}</b><br>
+       UP C:${d.UP.confidence.current}% RR:${d.UP.preferredRR}<br>
+       DOWN C:${d.DOWN.confidence.current}% RR:${d.DOWN.preferredRR}`;
+  }, 2000);
+})();
+</script>
+
 </body>
 </html>
