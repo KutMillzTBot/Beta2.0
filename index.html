@@ -4,7 +4,34 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kut Milz TB</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com">
+/* ===== ROUND ROBIN ENGINE PATCH ===== */
+if (!window.appState) window.appState = {};
+
+appState.roundRobin = appState.roundRobin || {
+  enabled: false,
+  symbols: ["1HZ75V", "1HZ25V", "1HZ10V"],
+  index: 0,
+  stats: {
+    "1HZ75V": { trades: 0, wins: 0, losses: 0 },
+    "1HZ25V": { trades: 0, wins: 0, losses: 0 },
+    "1HZ10V": { trades: 0, wins: 0, losses: 0 }
+  }
+};
+
+function resolveTradeSymbol() {
+  if (!appState.roundRobin.enabled) {
+    return appState.currentSymbol;
+  }
+  const rr = appState.roundRobin;
+  const symbol = rr.symbols[rr.index];
+  rr.index = (rr.index + 1) % rr.symbols.length;
+  console.log("[RR] Routing to symbol:", symbol);
+  return symbol;
+}
+/* ===== END ROUND ROBIN ENGINE PATCH ===== */
+
+</script>
 
   <!-- Lightweight Charts -->
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
