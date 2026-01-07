@@ -4,21 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kut Milz TB</title>
-  <script src="https://cdn.tailwindcss.com">
-// ===== PATCH: DISPLAY CURRENT SYMBOL FROM RR WHEN ENABLED =====
-function getCurrentDisplaySymbol() {
-  if (isRoundRobinEnabled && isRoundRobinEnabled() &&
-      typeof rrIndex !== 'undefined' &&
-      typeof DERIV_RR_SYMBOLS !== 'undefined') {
-    return DERIV_RR_SYMBOLS[rrIndex];
-  }
-  if (typeof appState !== 'undefined' && appState.symbol) {
-    return appState.symbol;
-  }
-  return 'N/A';
-}
-
-</script>
+  <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Lightweight Charts -->
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
@@ -5721,168 +5707,233 @@ function rrTradeClosed(symbol,isWin){
 <!-- ============================================================ -->
 
 
-<!-- ===== AI BRAIN GATE (NON-BREAKING PATCH) ===== -->
+<script src="ai_brain_FINAL.js"></script>
 <script>
-window.AI_BRAIN = {
-  state: null,
-  load(json){ this.state = json; },
-  norm(s){ return (s||'').replace('-','_').toUpperCase(); },
-  ensure(sym, dir){
-    const s=this.state.symbols[sym];
-    if(!s.directions[dir]){
-      s.directions[dir]={
-        stats:{wins:0,losses:0,trades:0},
-        confidence:{current:this.state.global.confidenceFloor,min:this.state.global.confidenceFloor,max:90},
-        lossMemory:{recentLosses:0,blockedUntil:0}
-      };
-    }
-  },
-  canTrade(sym,dir){
-    const now=Date.now(), g=this.state.global, s=this.state.symbols[sym], d=s.directions[dir];
-    if(g.globalKill) return false;
-    if(s.cooldown?.active && now < s.cooldown.until) return false;
-    if(d.lossMemory.blockedUntil > now) return false;
-    if(d.confidence.current < g.confidenceFloor) return false;
-    return true;
-  },
-  record(sym,dir,win){
-    const g=this.state.global, d=this.state.symbols[sym].directions[dir];
-    d.stats.trades++;
-    if(win){
-      d.stats.wins++; d.confidence.current=Math.min(d.confidence.max,d.confidence.current+2);
-      d.lossMemory.recentLosses=0;
-    }else{
-      d.stats.losses++; d.confidence.current=Math.max(d.confidence.min,d.confidence.current-4);
-      if(++d.lossMemory.recentLosses>=3) d.lossMemory.blockedUntil=Date.now()+60000;
-    }
-  }
-};
+setInterval(() => {
+  if (!window.AI) return;
+  const rc = document.getElementById("rrConf");
+  const rs = document.getElementById("rrSym");
+  const cp = document.getElementById("confPrev");
+
+  if (rc) rc.textContent = AI.getRRConfidence() + "%";
+  if (rs) rs.textContent = AI.getCurrentSymbol() + " RR SESSION";
+  if (cp) cp.textContent = AI.getConfidencePreview() + "%";
+}, 500);
 </script>
 
-
-<!-- ===== AI ENHANCEMENTS PACK (SAFE, NON-BLOCKING) ===== -->
-<script>
-/* -------- Session-safe Auto Save -------- */
-(function(){
-  if(!window.AI_BRAIN) return;
-  setInterval(()=>{
-    try{
-      if(typeof saveJSON === 'function' && AI_BRAIN.state){
-        saveJSON(AI_BRAIN.state);
-      }
-    }catch(e){}
-  }, 15000);
-})();
-
-/* -------- RR Routing -> Direction Stats -------- */
-window.recordRRTrade = function(symbol, direction, win){
-  if(!window.AI_BRAIN || !AI_BRAIN.state) return;
-  const s = AI_BRAIN.norm(symbol);
-  AI_BRAIN.ensure(s, direction);
-  AI_BRAIN.record(s, direction, win);
-};
-
-/* -------- Direction Confidence UI -------- */
-window.updateDirectionUI = function(symbol){
-  if(!AI_BRAIN?.state) return;
-  const s = AI_BRAIN.norm(symbol);
-  const dUp = AI_BRAIN.state.symbols[s]?.directions?.UP;
-  const dDn = AI_BRAIN.state.symbols[s]?.directions?.DOWN;
-  const el = document.getElementById('confidence-notes');
-  if(el && dUp && dDn){
-    el.textContent = `UP ${dUp.confidence.current}% | DOWN ${dDn.confidence.current}%`;
-  }
-};
-
-/* -------- Per-Symbol AI Dashboard (text) -------- */
-(function(){
-  const dash = document.createElement('div');
-  dash.id = 'ai-symbol-dashboard';
-  dash.style.cssText = 'margin-top:10px;font-size:11px;color:#374151';
-  const parent = document.querySelector('#confidence-notes')?.parentElement;
-  if(parent) parent.appendChild(dash);
-
-  setInterval(()=>{
-    if(!AI_BRAIN?.state) return;
-    const sym = (typeof getCurrentDisplaySymbol === 'function')
-      ? getCurrentDisplaySymbol() : null;
-    if(!sym) return;
-    const s = AI_BRAIN.norm(sym);
-    const d = AI_BRAIN.state.symbols[s]?.directions;
-    if(!d) return;
-    dash.textContent =
-      `AI ${s} | UP W:${d.UP.stats.wins} L:${d.UP.stats.losses} C:${d.UP.confidence.current}% | ` +
-      `DOWN W:${d.DOWN.stats.wins} L:${d.DOWN.stats.losses} C:${d.DOWN.confidence.current}%`;
-  }, 2000);
-})();
-
-/* -------- AI Guard Drawdown: non-lock behavior -------- */
-(function(){
-  const origCanTrade = AI_BRAIN.canTrade.bind(AI_BRAIN);
-  AI_BRAIN.canTrade = function(sym, dir){
-    const ok = origCanTrade(sym, dir);
-    // Even when blocked, keep scanning (no state freeze)
-    return ok;
-  };
-})();
-</script>
-
-
-<!-- ===== FINAL AI INTELLIGENCE LAYER ===== -->
-<script>
-/* Pattern → Direction Bias */
-window.applyPatternBias = function(symbol, pattern){
-  const s = AI_BRAIN.norm(symbol);
-  const mem = AI_BRAIN.state.symbols[s]?.patternDirectionBias?.[pattern];
-  if(!mem) return null;
-  return mem.UP >= mem.DOWN ? "UP" : "DOWN";
-};
-
-/* Auto RR Selector */
-window.selectAutoRR = function(symbol, direction){
-  const d = AI_BRAIN.state.symbols[symbol].directions[direction];
-  let best = "1:1", bestScore = -1;
-  for(const rr in d.rrConfidenceMap){
-    if(d.rrConfidenceMap[rr] > bestScore){
-      bestScore = d.rrConfidenceMap[rr];
-      best = rr;
-    }
-  }
-  return best;
-};
-
-/* Symbol Personality Adjuster */
-window.updatePersonality = function(symbol, win){
-  const p = AI_BRAIN.state.symbols[symbol].personality;
-  if(win){
-    p.confidenceWeight = Math.min(1.5, p.confidenceWeight + 0.02);
-    p.stability = Math.min(1, p.stability + 0.01);
-  } else {
-    p.aggression = Math.max(0.1, p.aggression - 0.02);
-  }
-};
-
-/* Debug Brain Panel */
-(function(){
-  const panel = document.createElement('div');
-  panel.id = "ai-debug-panel";
-  panel.style.cssText = "position:fixed;bottom:8px;right:8px;background:#0f172a;color:#e5e7eb;padding:8px;font-size:11px;z-index:9999;border-radius:6px;";
-  document.body.appendChild(panel);
-
-  setInterval(()=>{
-    if(!AI_BRAIN?.state) return;
-    const sym = typeof getCurrentDisplaySymbol === "function" ? getCurrentDisplaySymbol() : null;
-    if(!sym) return;
-    const s = AI_BRAIN.norm(sym);
-    const d = AI_BRAIN.state.symbols[s]?.directions;
-    if(!d) return;
-    panel.innerHTML =
-      `<b>${s}</b><br>
-       UP C:${d.UP.confidence.current}% RR:${d.UP.preferredRR}<br>
-       DOWN C:${d.DOWN.confidence.current}% RR:${d.DOWN.preferredRR}`;
-  }, 2000);
-})();
-</script>
+<div style="position:fixed;bottom:10px;right:10px;z-index:9999">
+  <button onclick="AI.exportBrain()">Export AI</button>
+  <button onclick="document.getElementById('aiImport').click()">Import AI</button>
+  <input id="aiImport" type="file" style="display:none"
+    onchange="AI.importBrain(this.files[0])">
+</div>
 
 </body>
 </html>
+
+
+<!-- ABSOLUTE DARK PATCH -->
+<style>
+html, body {
+  background-color: #141414 !important;
+}
+body > * {
+  background-color: transparent !important;
+}
+/* common full-screen wrappers */
+#app, #root, .app, .root, .container, .wrapper {
+  background-color: transparent !important;
+}
+</style>
+
+
+<!-- ALL PATCH: chart + RR panels -->
+<script>
+(function(){
+  // Darken canvas charts safely (generic)
+  document.querySelectorAll('canvas').forEach(c=>{
+    try{
+      const ctx = c.getContext('2d');
+      if(ctx){
+        ctx.save();
+        ctx.fillStyle = '#141414';
+        ctx.globalCompositeOperation = 'destination-over';
+        ctx.fillRect(0,0,c.width,c.height);
+        ctx.restore();
+      }
+    }catch(e){}
+  });
+})();
+</script>
+
+<style>
+/* Extra info panels below RR */
+.ai-extra-panels{
+  background:#1a1a1a;
+  color:#e6e6e6;
+  border:1px solid #2a2a2a;
+  padding:8px;
+  margin-top:8px;
+  font-size:12px;
+}
+.ai-extra-panels h4{
+  margin:4px 0;
+  font-size:13px;
+  color:#9fd3ff;
+}
+</style>
+
+<div class="ai-extra-panels">
+  <h4>RR Confidence</h4>
+  <div id="rrConfidence">Reading…</div>
+  <h4>Per-Symbol RR Performance</h4>
+  <div id="rrPerf">Tracking…</div>
+  <h4>Confidence Preview</h4>
+  <div id="confPreview">Evaluating…</div>
+</div>
+
+
+<!-- RESPONSIVE PATCH -->
+<style>
+/* Mobile-first adjustments */
+@media (max-width: 768px) {
+  body {
+    font-size: 12px;
+  }
+  .ai-extra-panels {
+    font-size: 11px;
+    padding: 6px;
+  }
+  button, input, select {
+    font-size: 14px;
+    min-height: 38px;
+  }
+  canvas {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+}
+
+/* Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+  body {
+    font-size: 13px;
+  }
+}
+
+/* Touch optimization */
+button, input, select {
+  touch-action: manipulation;
+}
+</style>
+
+
+<!-- GOLD TITLE PATCH -->
+<style>
+.kut-milz-gold {
+  color: #e6c36a !important; /* light gold */
+  text-shadow: 0 0 6px rgba(230,195,106,0.35);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+</style>
+<script>
+(function(){
+  const name = "KUT MILZ TB";
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+  let node;
+  while(node = walker.nextNode()){
+    if(node.nodeValue && node.nodeValue.includes(name)){
+      const span = document.createElement('span');
+      span.className = 'kut-milz-gold';
+      span.textContent = name;
+      const parts = node.nodeValue.split(name);
+      const frag = document.createDocumentFragment();
+      for(let i=0;i<parts.length;i++){
+        if(parts[i]) frag.appendChild(document.createTextNode(parts[i]));
+        if(i < parts.length-1) frag.appendChild(span.cloneNode(true));
+      }
+      node.parentNode.replaceChild(frag, node);
+    }
+  }
+})();
+</script>
+
+
+<!-- PANEL COLOR + WATERMARK PATCH -->
+<style>
+/* Force white background for specific panels by title text */
+.panel, .module, .section {
+  position: relative;
+}
+
+/* Match panels containing specific labels */
+.panel:has(h3:contains("Scalp Timing Assist")),
+.panel:has(h3:contains("Accumulator")) {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Fallback for non-structured layouts */
+[data-title*="Scalp Timing Assist"],
+[data-title*="Accumulator"] {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Watermark */
+body::before {
+  content: "KUT MILZ TB";
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  font-size: 64px;
+  font-weight: 700;
+  color: rgba(230,195,106,0.08);
+  letter-spacing: 6px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Keep UI above watermark */
+body > * {
+  position: relative;
+  z-index: 1;
+}
+</style>
+
+
+<!-- REPEATING WATERMARK BACKGROUND PATCH -->
+<style>
+/* Repeating background watermark */
+body::before {
+  content: "KUT MILZ TB   KUT MILZ TB   KUT MILZ TB   KUT MILZ TB";
+  position: fixed;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      -30deg,
+      rgba(230,195,106,0.07) 0px,
+      rgba(230,195,106,0.07) 60px,
+      transparent 60px,
+      transparent 120px
+    );
+  font-size: 48px;
+  font-weight: 700;
+  color: rgba(230,195,106,0.12);
+  letter-spacing: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Keep all UI above pattern */
+body > * {
+  position: relative;
+  z-index: 1;
+}
+</style>
+
