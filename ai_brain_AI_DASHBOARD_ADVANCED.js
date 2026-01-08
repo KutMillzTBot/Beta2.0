@@ -246,3 +246,40 @@ window.logTradeClose = function(symbol, pl) {
   if (_origLogTradeClose) _origLogTradeClose(symbol, pl);
 };
 /* === END PATCH === */
+\n
+/* === LIVE STATS REBUILD FROM BRAIN HISTORY === */
+function rebuildLiveStatsFromBrain() {
+  try {
+    const brainRaw = localStorage.getItem("KUTMILZ_AI_BRAIN_PERSISTENT_V1");
+    if (!brainRaw) return;
+    const brain = JSON.parse(brainRaw);
+    if (!brain || !Array.isArray(brain.history)) return;
+
+    AI_LIVE_STATS.totalTrades = 0;
+    AI_LIVE_STATS.wins = 0;
+    AI_LIVE_STATS.losses = 0;
+    AI_LIVE_STATS.symbolWins = {};
+
+    brain.history.forEach(t => {
+      if (typeof t.pl !== "number") return;
+      AI_LIVE_STATS.totalTrades++;
+      if (t.pl > 0) {
+        AI_LIVE_STATS.wins++;
+        const sym = t.symbol || "UNKNOWN";
+        AI_LIVE_STATS.symbolWins[sym] = (AI_LIVE_STATS.symbolWins[sym] || 0) + 1;
+      } else {
+        AI_LIVE_STATS.losses++;
+      }
+    });
+
+    localStorage.setItem("AI_LIVE_STATS", JSON.stringify(AI_LIVE_STATS));
+    renderLiveStats();
+    console.log("[AI] Live Stats rebuilt from brain history:", AI_LIVE_STATS);
+  } catch (e) {
+    console.warn("[AI] Failed to rebuild Live Stats:", e);
+  }
+}
+
+/* Auto rebuild on load */
+setTimeout(rebuildLiveStatsFromBrain, 500);
+/* === END REBUILD PATCH === */
