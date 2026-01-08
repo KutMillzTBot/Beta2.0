@@ -148,13 +148,6 @@ window.AI.recordTrade = function(data){
   if(data.result === "loss") window.AI_BRAIN.timeStats[hour].losses++;
 
   _origRecord.call(this, data);
-
-// 🔥 Notify dashboard + alerts
-document.dispatchEvent(new CustomEvent("AI_TRADE", { detail: data }));
-if (typeof renderAIDashboard === "function") {
-  renderAIDashboard();
-}
-
 };
 
 // --- STAKE SCALING (READ-ONLY RECOMMENDATION) ---
@@ -205,3 +198,51 @@ document.addEventListener("AI_TRADE", ()=>{
   if(rate >= 0.7) fireAlert("🔥 AI Confidence HIGH — favorable conditions");
   if(rate <= 0.3) fireAlert("⚠️ AI Confidence LOW — consider pausing");
 });
+
+
+/* === LIVE STATS WIRING PATCH === */
+window.AI_LIVE_STATS = JSON.parse(localStorage.getItem("AI_LIVE_STATS") || "{}") || {};
+AI_LIVE_STATS.totalTrades = AI_LIVE_STATS.totalTrades || 0;
+AI_LIVE_STATS.wins = AI_LIVE_STATS.wins || 0;
+AI_LIVE_STATS.losses = AI_LIVE_STATS.losses || 0;
+AI_LIVE_STATS.symbolWins = AI_LIVE_STATS.symbolWins || {};
+
+function updateLiveStats(symbol, pl) {
+  AI_LIVE_STATS.totalTrades++;
+  if (pl > 0) {
+    AI_LIVE_STATS.wins++;
+    AI_LIVE_STATS.symbolWins[symbol] = (AI_LIVE_STATS.symbolWins[symbol] || 0) + 1;
+  } else {
+    AI_LIVE_STATS.losses++;
+  }
+  localStorage.setItem("AI_LIVE_STATS", JSON.stringify(AI_LIVE_STATS));
+  renderLiveStats();
+}
+
+function renderLiveStats() {
+  const total = AI_LIVE_STATS.totalTrades;
+  const wins = AI_LIVE_STATS.wins;
+  const losses = AI_LIVE_STATS.losses;
+  const winRate = total > 0 ? ((wins / total) * 100).toFixed(2) : "0";
+  let topSymbol = "-";
+  let maxWins = 0;
+  for (const s in AI_LIVE_STATS.symbolWins) {
+    if (AI_LIVE_STATS.symbolWins[s] > maxWins) {
+      maxWins = AI_LIVE_STATS.symbolWins[s];
+      topSymbol = s;
+    }
+  }
+  document.getElementById("aiTotalTrades")?.innerText = total;
+  document.getElementById("aiWins")?.innerText = wins;
+  document.getElementById("aiLosses")?.innerText = losses;
+  document.getElementById("aiWinRate")?.innerText = winRate + "%";
+  document.getElementById("aiTopSymbol")?.innerText = topSymbol;
+}
+
+/* Hook into existing trade close log */
+const _origLogTradeClose = window.logTradeClose;
+window.logTradeClose = function(symbol, pl) {
+  try { updateLiveStats(symbol, pl); } catch(e) {}
+  if (_origLogTradeClose) _origLogTradeClose(symbol, pl);
+};
+/* === END PATCH === */
