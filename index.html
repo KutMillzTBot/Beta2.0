@@ -6249,7 +6249,7 @@ console.log("KUT MILZ AI ENGINE ACTIVE");
     const div = document.createElement("div");
     div.innerHTML = `
       <hr>
-      <input type="file" id="aiImportFile" accept=".json">
+      <input type="file" id="aiImportFile" accept=".json,.js">
       <button id="aiImportBtn">Import AI</button>
     `;
     panel.appendChild(div);
@@ -6257,7 +6257,7 @@ console.log("KUT MILZ AI ENGINE ACTIVE");
     document.getElementById("aiImportBtn").onclick = function(){
       const f=document.getElementById("aiImportFile").files[0];
       if(!f){ alert("Select AI JSON file first"); return; }
-      importAIFromFile(f);
+      importAIFile(f);
     };
   }
 
