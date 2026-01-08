@@ -1088,24 +1088,6 @@ button {
 </style>
 
 
-
-<style id="welcome-popup-style">
-#welcomePopup {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.85);
-  color: #fff;
-  padding: 16px 22px;
-  border-radius: 10px;
-  font-size: 14px;
-  z-index: 99999;
-  box-shadow: 0 10px 30px rgba(0,0,0,.4);
-  text-align: center;
-}
-</style>
-
 </head>
 
 <body>
@@ -1267,7 +1249,7 @@ button {
   <p></p>
 </section>
 
-<h2 class="section-title gold"><span class="section-title gold">Transaction Log</span></h2>
+<h2 class="section-title gold"><span class="section-title gold">Transaction Log</span></h2></h2>
         <div class="p-3 bg-slate-900/40 border border-slate-700 rounded-lg text-xs whitespace-pre-wrap min-h-[120px] max-h-[220px] overflow-auto"
              id="tx-log"></div>
         <div class="mt-3 flex gap-2">
@@ -2465,7 +2447,7 @@ const aiLayer = {
       if ((this.perf.tradeTimes?.length || 0) >= maxTPM){
         this.regime = drawdown ? "DRAWDOWN" : this.regime;
         this.perf.blockCount += 1;
-        return { allow:false, reason:`Overtrading Guard (${maxTPM}/min)`, cooldownMs: drawdown ? 90000 : 90000 };
+        return { allow:false, reason:`Overtrading Guard (${maxTPM}/min)`, cooldownMs: drawdown ? 90000 : 30000 };
       }
     }
 
@@ -6249,23 +6231,21 @@ console.log("KUT MILZ AI ENGINE ACTIVE");
     const div = document.createElement("div");
     div.innerHTML = `
       <hr>
-      <input type="file" id="aiImportFile" accept=".json,.js">
+      <input type="file" id="aiImportFile" accept=".json">
       <button id="aiImportBtn">Import AI</button>
     `;
     panel.appendChild(div);
 
-   document.getElementById("aiImportBtn").onclick = function () {
-    const f = document.getElementById("aiImportFile").files[0];
-    if (!f) {
-        alert("Select AI JSON file first");
-        return;
-    }
-    importAiFromFile(f);
-};
-
+    document.getElementById("aiImportBtn").onclick = function(){
+      const f=document.getElementById("aiImportFile").files[0];
+      if(!f){ alert("Select AI JSON file first"); return; }
+      importAIFromFile(f);
+    };
+  }
 
   console.log("AI IMPORT BUTTON ACTIVE");
-
+})();
+</script>
 <!-- ================================================ -->
 
 
@@ -6358,101 +6338,395 @@ document.addEventListener("AI_TRADE", e => {
 </script>
 
 
-<!-- === AI STATS DASHBOARD === -->
-<style>
-#ai-dashboard{
-  position:fixed;
-  bottom:15px;
-  right:15px;
-  width:280px;
-  background:#0f1115;
-  color:#fff;
-  font-family:Arial, sans-serif;
-  border-radius:12px;
-  box-shadow:0 10px 30px rgba(0,0,0,.6);
-  z-index:9999;
-}
-#ai-dashboard h3{
-  margin:0;
-  padding:12px;
-  font-size:15px;
-  background:#171a21;
-  border-radius:12px 12px 0 0;
-  text-align:center;
-}
-#ai-dashboard .row{
-  padding:8px 12px;
-  display:flex;
-  justify-content:space-between;
-  font-size:13px;
-  border-bottom:1px solid #1f2330;
-}
-#ai-dashboard .row:last-child{border-bottom:none}
-#ai-dashboard .win{color:#4caf50}
-#ai-dashboard .loss{color:#f44336}
-#ai-dashboard .small{
-  font-size:11px;
-  opacity:.7;
-  text-align:center;
-  padding:6px;
-}
+<!-- BEGIN: KUTMILZAI WELCOME POPUP (added) -->
+<style id="kut-welcome-style">
+  #kut-welcome-popup{
+    position: fixed;
+    z-index: 99999;
+    left: 50%;
+    top: 14%;
+    transform: translateX(-50%) translateY(-10px);
+    width: min(760px, 90%);
+    max-width: 760px;
+    background: linear-gradient(180deg, #0b1c2d, #0a1524);
+    color: #f5d98c;
+    border-radius: 14px;
+    padding: 18px 20px;
+    box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+    border: 1px solid rgba(245,217,140,0.25);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 300ms ease, transform 300ms ease;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  }
+  #kut-welcome-popup.visible{
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
+  #kut-welcome-popup .kut-row{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+  #kut-welcome-popup .kut-emoji{
+    font-size: 36px;
+    line-height: 1;
+    margin-top:2px;
+  }
+  #kut-welcome-popup h3{ color:#f8e3a1;
+    margin:0;
+    font-size:18px;
+    font-weight:800;
+    letter-spacing:0.02em;
+  }
+  #kut-welcome-popup p{ color:#f5e7b2;
+    margin:6px 0 0 0;
+    font-size:13px;
+    color: #26303f;
+    line-height:1.35;
+    font-weight:600;
+  }
+  #kut-welcome-popup .kut-actions{
+    margin-top:10px;
+    display:flex;
+    justify-content:flex-end;
+    gap:8px;
+  }
+  #kut-welcome-popup button.kut-close{
+    background:rgba(245,217,140,0.08);
+    border:1px solid rgba(245,217,140,0.35); color:#f5d98c;
+    padding:8px 12px;
+    border-radius:10px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  @media (max-width:640px){
+    #kut-welcome-popup{
+    position: fixed;
+    z-index: 99999;
+    left: 50%;
+    top: 14%;
+    transform: translateX(-50%) translateY(-10px);
+    width: min(760px, 90%);
+    max-width: 760px;
+    background: linear-gradient(180deg, #0b1c2d, #0a1524);
+    color: #f5d98c;
+    border-radius: 14px;
+    padding: 18px 20px;
+    box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+    border: 1px solid rgba(245,217,140,0.25);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 300ms ease, transform 300ms ease;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  }
+    #kut-welcome-popup .kut-emoji{ font-size:28px; }
+    #kut-welcome-popup h3{ color:#f8e3a1; font-size:16px; }
+  }
 </style>
 
-<div id="ai-dashboard">
-  <h3>🧠 AI Live Stats</h3>
-  <div class="row"><span>Total Trades</span><span id="ai-trades">0</span></div>
-  <div class="row"><span>Wins</span><span id="ai-wins" class="win">0</span></div>
-  <div class="row"><span>Losses</span><span id="ai-losses" class="loss">0</span></div>
-  <div class="row"><span>Win Rate</span><span id="ai-winrate">0%</span></div>
-  <div class="row"><span>Top Symbol</span><span id="ai-top-symbol">-</span></div>
-  <div class="small">Persistent Learning Enabled</div>
+<div id="kut-welcome-popup" role="dialog" aria-live="polite" aria-label="Welcome to KutMilzAi">
+  <div class="kut-row">
+    <div class="kut-emoji" aria-hidden="true">✅</div>
+    <div style="flex:1">
+      <h3>Welcome to the KutMilzAi</h3>
+      <p><strong>Always remember to follow the rules. If you break the rules without experience, that can lead to your account being affected. Never get greedy. Enjoy your session 😊✨</p>
+      <div class="kut-actions">
+        <button class="kut-close" title="Close (hide now)">Close</button>
+      </div>
+    </div>
+  </div>
 </div>
 
-
-<script src="ai_brain_AI_DASHBOARD_ADVANCED_LIVESTATS_HOOKED.js"></script>
-<!-- ================= AI MEMORY CONTROLS ================= -->
-
-<div id="ai-memory-controls" style="margin-top:15px;text-align:center;">
-
-  <input
-    type="file"
-    id="aiMemoryFileInput"
-    accept=".json,.js"
-    style="display:none"
-  />
-
-  <button class="ai-btn"
-    onclick="document.getElementById('aiMemoryFileInput').click()">
-    Import AI Memory
-  </button>
-
-  <button class="ai-btn"
-    onclick="exportAIBrain()">
-    Export AI Memory
-  </button>
-
-</div>
-
-<div id="welcomePopup">
-  <strong>Hello Welcome to the Kut Millz Ai 😇</strong><br>
-  Always remember to follow instructions.<br>
-  If you break the rules or set your own rules without experience that can result in your account getting blown.<br>
-  Enjoy your session 💯
-</div>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  const input = document.getElementById("aiMemoryFileInput");
-  if (!input) return;
-
-  input.addEventListener("change", function () {
-    if (this.files && this.files[0]) {
-      importAIFile(this.files[0]);
-      this.value = "";
+<script id="kut-welcome-script">
+(function(){
+  try{
+    const popup = document.getElementById("kut-welcome-popup");
+    if(!popup) return;
+    // Show on DOMContentLoaded
+    function show(){
+      popup.classList.add("visible");
+      // Auto-hide after 10 seconds (10000 ms)
+      setTimeout(()=>{
+        popup.classList.remove("visible");
+      }, 10000);
     }
-  });
-});
+    // Attach close button
+    const btn = popup.querySelector(".kut-close");
+    if(btn) btn.addEventListener("click", ()=> popup.classList.remove("visible"));
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", show);
+    } else {
+      show();
+    }
+  }catch(e){ console.warn("Welcome popup error:", e); }
+})();
 </script>
+<!-- END: KUTMILZAI WELCOME POPUP -->
 
+<!-- BEGIN: KUTMILZAI RISK NOTICES (added) -->
+<style id="kut-risk-style">
+  .kut-risk-popup{
+    position: fixed;
+    z-index: 999999;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(720px, 92%);
+    max-width: 720px;
+    background: linear-gradient(180deg, #0b1c2d, #081122);
+    color: #f5d98c;
+    border-radius: 12px;
+    padding: 16px 18px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    border: 1px solid rgba(245,217,140,0.22);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 260ms ease, transform 260ms ease;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+  .kut-risk-popup.visible{ opacity:1; pointer-events:auto; transform: translateX(-50%) translateY(0); }
+  .kut-risk-emoji{ font-size:34px; line-height:1; margin-top:2px; }
+  .kut-risk-body{ flex:1; }
+  .kut-risk-body h4{ margin:0; font-size:15px; font-weight:800; color:#f8e3a1; }
+  .kut-risk-body p{ margin:6px 0 0 0; font-size:13px; color:#f5e7b2; line-height:1.35; font-weight:600; }
+  .kut-risk-actions{ margin-top:10px; display:flex; justify-content:flex-end; gap:8px; }
+  .kut-risk-popup button.kut-close{ background:rgba(245,217,140,0.08); border:1px solid rgba(245,217,140,0.28); padding:8px 12px; border-radius:10px; font-weight:700; cursor:pointer; color:#f5d98c; }
+  /* positions */
+  #kut-greed-note{ top: 22%; }
+  #kut-drawdown-popup{ bottom: 8%; }
+  @media (max-width:640px){
+    .kut-risk-popup{ left:50%; transform:translateX(-50%); width:92%; padding:12px; border-radius:10px; }
+    .kut-risk-emoji{ font-size:28px; }
+  }
+</style>
+
+<!-- Greed note popup (shows after welcome or when triggered) -->
+<div id="kut-greed-note" class="kut-risk-popup" role="status" aria-live="polite" aria-label="Greed warning">
+  <div class="kut-risk-emoji" aria-hidden="true">✅</div>
+  <div class="kut-risk-body">
+    <h4>Note — Don't get greedy</h4>
+    <p>Remember not to get greedy — you're on three clean wins. Lower your stake if the stake is above 50% of the balance.</p>
+    <div class="kut-risk-actions"><button class="kut-close">Close</button></div>
+  </div>
+</div>
+
+<!-- Drawdown popup (trigger manually or by detection) -->
+<div id="kut-drawdown-popup" class="kut-risk-popup" role="alert" aria-live="assertive" aria-label="Drawdown detected">
+  <div class="kut-risk-emoji" aria-hidden="true">⚠️</div>
+  <div class="kut-risk-body">
+    <h4>Caution — Drawdown detected</h4>
+    <p>Lock auto trades off and let the AI observe — you're in a drawdown!</p>
+    <div class="kut-risk-actions"><button class="kut-close">Close</button></div>
+  </div>
+</div>
+
+<script id="kut-risk-script">
+(function(){
+  try{
+    const greed = document.getElementById("kut-greed-note");
+    const draw = document.getElementById("kut-drawdown-popup");
+
+    function hide(el){ el.classList.remove("visible"); }
+    function show(el, duration=null){
+      if(!el) return;
+      el.classList.add("visible");
+      if(duration && duration>0){
+        setTimeout(()=> hide(el), duration);
+      }
+    }
+
+    // Close buttons
+    document.querySelectorAll(".kut-risk-popup .kut-close").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const pop = btn.closest(".kut-risk-popup");
+        if(pop) hide(pop);
+      });
+    });
+
+    // Public triggers (call these from your bot when you detect conditions)
+    window.triggerGreedNotePopup = function(opts){
+      // opts: {durationMs: number}
+      const dur = (opts && opts.durationMs) || 10000;
+      show(greed, dur);
+    };
+    window.triggerDrawdownPopup = function(opts){
+      const dur = (opts && opts.durationMs) || 15000;
+      show(draw, dur);
+    };
+
+    // Auto-show greed note once after the welcome popup hides (non-invasive)
+    (function autoGreedAfterWelcome(){
+      // New behavior: wait until the welcome popup hides, then listen for a streak === 3 event.
+      // When the streak reaches 3 for the first time after welcome, show a two-stage message:
+      //  1) softer message (as requested): shown immediately when streak hits 3
+      //  2) final warning message: shown shortly after the first message
+      const welcome = document.getElementById("kut-welcome-popup");
+      let afterWelcome = false;
+      let checkInterval = null;
+
+      function startListeningForStreak(){
+        if(checkInterval) return;
+        checkInterval = setInterval(()=>{
+          try{
+            // look for common streak variable names
+            const streakNames = ["winStreak","streak","consecutiveWins","winsInRow","wins"];
+            let streak = undefined;
+            for(const n of streakNames){
+              try{ const v = window[n]; if(typeof v !== "undefined"){ streak = Number(v); break; } }catch(e){}
+            }
+            // Also accept a provided function
+            const fnCandidates = ["getWinStreak","fetchWinStreak"];
+            if(typeof streak === "undefined"){
+              for(const fn of fnCandidates){
+                try{ if(typeof window[fn] === "function"){ const r = window[fn](); if(typeof r !== "undefined"){ streak = Number(r); break; } }}catch(e){}
+              }
+            }
+
+            if(typeof streak === "number" && !isNaN(streak) && streak >= 3){
+              // show initial softer message as the user requested (first message after welcome)
+              const greed = document.getElementById("kut-greed-note");
+              if(greed){
+                greed.querySelector(".kut-risk-body h4").textContent = "Note — Don't get greedy";
+                greed.querySelector(".kut-risk-body p").textContent = "Remember not to get greedy — if your on three clean wins. Lower your stake if the stake is above 50% of your balance.";
+                // show it for 9 seconds
+                greed.classList.add("visible");
+                setTimeout(()=>{
+                  greed.classList.remove("visible");
+                  // after the softer message, show the final warning message
+                  setTimeout(()=>{
+                    if(greed){
+                      greed.querySelector(".kut-risk-body h4").textContent = "Final Warning — Risk Management Comes First";
+                      greed.querySelector(".kut-risk-body p").textContent = "Remember not to get greedy — you\u2019re on three clean wins. Lower your stake if the stake is above 50% of your balance. Final Warning: Risk Management Comes First.";
+                      greed.classList.add("visible");
+                      // show final warning for 12 seconds
+                      setTimeout(()=>{ greed.classList.remove("visible"); }, 12000);
+                    }
+                  }, 700); // short delay before final warning
+                }, 9000);
+              }
+              // stop checking after first trigger to avoid repeating
+              clearInterval(checkInterval);
+              checkInterval = null;
+            }
+          }catch(e){ /* fail silently */ }
+        }, 1200);
+        // stop listening after 10 minutes as safety
+        setTimeout(()=>{ if(checkInterval) clearInterval(checkInterval); checkInterval = null; }, 1000*60*10);
+      }
+
+      if(welcome){
+        // observe class changes to detect when welcome becomes hidden
+        const obs = new MutationObserver(()=>{
+          if(!welcome.classList.contains("visible")){
+            afterWelcome = true;
+            startListeningForStreak();
+            obs.disconnect();
+          }
+        });
+        obs.observe(welcome, {attributes:true, attributeFilter:['class']});
+      } else {
+        // if no welcome, start listening after DOM ready
+        if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startListeningForStreak);
+        else startListeningForStreak();
+      }
+    })();
+
+    // --- Simple, safe auto-detection for drawdown / greedy stake ---
+    // This is intentionally conservative: it only reads existing globals if present and won't create or overwrite anything.
+    function firstDefined(names){
+      for(const n of names){
+        try{
+          const v = window[n];
+          if(typeof v !== "undefined") return v;
+        }catch(e){}
+      }
+      return undefined;
+    }
+
+    function getNumberFromCandidates(cands){
+      const v = firstDefined(cands);
+      if(typeof v === "number") return v;
+      if(typeof v === "string" && !isNaN(Number(v))) return Number(v);
+      return undefined;
+    }
+
+    // candidate variable names commonly used by trading UI code
+    const balanceNames = ["balance","accountBalance","currentBalance","funds","walletBalance"];
+    const stakeNames = ["stake","currentStake","betAmount","wager"];
+    const streakNames = ["winStreak","streak","consecutiveWins","winsInRow"];
+    const startingBalanceNames = ["startingBalance","initialBalance","startingAccountBalance"];
+
+    // detection thresholds
+    const DRAWdown_PERCENT = 0.10; // 10% drawdown threshold if starting balance known
+    const POLL_MS = 3000;
+    let seenGreedTrigger = false;
+    let seenDrawdownTrigger = false;
+    let lastKnownStartingBalance = getNumberFromCandidates(startingBalanceNames);
+
+    // try to initialize starting balance if there's a function or variable that provides it
+    if(!lastKnownStartingBalance){
+      const fnCandidates = ["getStartingBalance","fetchStartingBalance"];
+      for(const fn of fnCandidates){
+        try{ if(typeof window[fn] === "function"){ const res = window[fn](); if(typeof res === "number") lastKnownStartingBalance = res; }}catch(e){}
+      }
+    }
+
+    function poll(){
+      try{
+        const balance = getNumberFromCandidates(balanceNames);
+        const stake = getNumberFromCandidates(stakeNames);
+        const streak = getNumberFromCandidates(streakNames);
+        if(balance !== undefined && stake !== undefined && streak !== undefined && !seenGreedTrigger){
+          // If user is on three clean wins and stake > 50% balance => show greed note
+          if(streak >= 3 && stake > 0.5 * balance){
+            seenGreedTrigger = true;
+            window.triggerGreedNotePopup({durationMs:12000});
+          }
+        }
+
+        // Drawdown detection: if starting balance known and current balance dropped by DRAWdown_PERCENT
+        let startBal = lastKnownStartingBalance;
+        if(!startBal){
+          startBal = getNumberFromCandidates(startingBalanceNames);
+        }
+        if(balance !== undefined && startBal !== undefined && !seenDrawdownTrigger){
+          const drop = (startBal - balance) / startBal;
+          if(drop >= DRAWdown_PERCENT){
+            seenDrawdownTrigger = true;
+            window.triggerDrawdownPopup({durationMs:20000});
+          }
+        }
+
+        // Also detect if a drawdownPercent variable exists directly
+        const dd = getNumberFromCandidates(["drawdownPercent","currentDrawdownPercent"]);
+        if(typeof dd === "number" && dd >= DRAWdown_PERCENT && !seenDrawdownTrigger){
+          seenDrawdownTrigger = true;
+          window.triggerDrawdownPopup({durationMs:20000});
+        }
+
+      }catch(e){ /* fail silently */ }
+    }
+
+    // Start polling but only if at least one of the candidate variables exists to avoid unnecessary work
+    const anyKnown = firstDefined(balanceNames.concat(stakeNames).concat(streakNames).concat(startingBalanceNames).concat(["drawdownPercent","currentDrawdownPercent"]));
+    if(typeof anyKnown !== "undefined"){
+      // poll a few times to catch transient conditions
+      poll();
+      const pollInterval = setInterval(poll, POLL_MS);
+      // stop polling after 5 minutes to be non-intrusive
+      setTimeout(()=> clearInterval(pollInterval), 1000 * 60 * 5);
+    }
+
+    // Expose a small helper to manually reset auto-triggers if you want
+    window.__kut_reset_risk_triggers = function(){ seenGreedTrigger = false; seenDrawdownTrigger = false; };
+
+  }catch(err){ console.warn("kut-risk script error", err); }
+})();
+</script>
+<!-- END: KUTMILZAI RISK NOTICES -->
 </body>
 </html>
