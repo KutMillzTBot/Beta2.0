@@ -6410,6 +6410,28 @@ document.addEventListener("AI_TRADE", e => {
 
 
 <script src="ai_brain_AI_DASHBOARD_ADVANCED_LIVESTATS_HOOKED.js"></script>
+<!-- ================= AI MEMORY CONTROLS ================= -->
+
+<div id="ai-memory-controls" style="margin-top:15px;text-align:center;">
+
+  <input
+    type="file"
+    id="aiMemoryFileInput"
+    accept=".json,.js"
+    style="display:none"
+  />
+
+  <button class="ai-btn"
+    onclick="document.getElementById('aiMemoryFileInput').click()">
+    Import AI Memory
+  </button>
+
+  <button class="ai-btn"
+    onclick="exportAIBrain()">
+    Export AI Memory
+  </button>
+
+</div>
 
 <div id="welcomePopup">
   <strong>Hello Welcome to the Kut Millz Ai 😇</strong><br>
@@ -6420,14 +6442,15 @@ document.addEventListener("AI_TRADE", e => {
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const popup = document.getElementById("welcomePopup");
-  if (!popup) return;
-  if (!sessionStorage.getItem("welcomeShown")) {
-    sessionStorage.setItem("welcomeShown", "true");
-    setTimeout(() => popup.remove(), 9000);
-  } else {
-    popup.remove();
-  }
+  const input = document.getElementById("aiMemoryFileInput");
+  if (!input) return;
+
+  input.addEventListener("change", function () {
+    if (this.files && this.files[0]) {
+      importAIFile(this.files[0]);
+      this.value = "";
+    }
+  });
 });
 </script>
 
