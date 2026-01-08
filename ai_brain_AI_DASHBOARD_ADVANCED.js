@@ -27,6 +27,45 @@ function saveBrain(){
 }
 
 window.AI_BRAIN = loadBrain();
+// 🔁 Apply imported AI brain safely
+window.applyImportedBrain = function (data) {
+  if (!data || typeof data !== "object") {
+    console.warn("Invalid AI import data");
+    return;
+  }
+
+  window.AI_BRAIN = data;
+  saveBrain();
+
+  console.log("AI brain imported and applied", window.AI_BRAIN);
+};
+
+// 📥 Import handler (supports .json AND .js exports)
+window.importAIFile = function (file) {
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    try {
+      let content = reader.result;
+
+      // Handle JS exports (ai_performance.js)
+      if (file.name.endsWith(".js")) {
+        const match = content.match(/=\s*(\{[\s\S]*\});?/);
+        if (!match) throw new Error("Invalid JS AI export format");
+        content = match[1];
+      }
+
+      const data = JSON.parse(content);
+      window.applyImportedBrain(data);
+
+    } catch (e) {
+      console.error("AI import failed:", e);
+    }
+  };
+
+  reader.readAsText(file);
+};
+
 
 window.ULTIMATE_AI_ENGINE = {
   recordTrade({ symbol="UNKNOWN", result }){
