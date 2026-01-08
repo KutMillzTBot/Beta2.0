@@ -6316,33 +6316,7 @@ console.log("KUT MILZ AI ENGINE ACTIVE");
         <input type="number" id="aiExportInterval" min="5" step="5" style="width:60px">
       </label>
     `;
-   panel.appendChild(div);
-
-// NOW elements exist — safe to attach listeners
-const toggle = document.getElementById("aiAutoExportToggle");
-const intervalInput = document.getElementById("aiExportInterval");
-
-if (toggle) {
-  toggle.checked = AI_EXPORT_SETTINGS.enabled;
-
-  toggle.addEventListener("change", () => {
-    AI_EXPORT_SETTINGS.enabled = toggle.checked;
-    saveExportSettings();
-    console.log("Auto Export:", toggle.checked);
-  });
-}
-
-if (intervalInput) {
-  intervalInput.value = AI_EXPORT_SETTINGS.interval || 5;
-
-  intervalInput.addEventListener("change", () => {
-    AI_EXPORT_SETTINGS.interval = Number(intervalInput.value);
-    saveExportSettings();
-    console.log("Export interval set to", intervalInput.value, "minutes");
-  });
-}
-
-
+    panel.appendChild(div);
 
     const tgl = document.getElementById("aiAutoExportToggle");
     const inp = document.getElementById("aiExportInterval");
@@ -6432,93 +6406,13 @@ document.addEventListener("AI_TRADE", e => {
   <div class="small">Persistent Learning Enabled</div>
 </div>
 
-  <script>
-function rebuildLiveStatsFromBrain() {
-  if (!window.AI_BRAIN || !Array.isArray(AI_BRAIN.history)) return;
 
-  let wins = 0;
-  let losses = 0;
-  let symbols = {};
-
-  AI_BRAIN.history.forEach(t => {
-    if (t.result === "win") wins++;
-    if (t.result === "loss") losses++;
-
-    if (t.symbol) {
-      symbols[t.symbol] = (symbols[t.symbol] || 0) + 1;
-    }
-  });
-
-  const total = wins + losses;
-  const winRate = total ? ((wins / total) * 100).toFixed(2) : "0.00";
-
-  let topSymbol = "-";
-  let max = 0;
-  for (const s in symbols) {
-    if (symbols[s] > max) {
-      max = symbols[s];
-      topSymbol = s;
-    }
-  }
-
-  document.getElementById("ai-trades").innerText = total;
-  document.getElementById("ai-wins").innerText = wins;
-  document.getElementById("ai-losses").innerText = losses;
-  document.getElementById("ai-winrate").innerText = winRate + "%";
-  document.getElementById("ai-top-symbol").innerText = topSymbol;
-}
-
-// 🔁 Auto rebuild on page load
-document.addEventListener("DOMContentLoaded", rebuildLiveStatsFromBrain);
-</script>
-  
-<script>
-/* === AUTO LINK IMPORTED BRAIN TO LIVE STATS === */
-window.loadImportedBrain = function(json) {
-  if (!json) return;
-
-  // Normalize brain structure
-  window.AI_BRAIN = window.AI_BRAIN || {};
-  window.AI_BRAIN.history =
-    json.history ||
-    json.trades ||
-    json.results ||
-    json.session?.history ||
-    [];
-
-  console.log("AI Brain Loaded:", window.AI_BRAIN.history.length, "records");
-
-  // Rebuild stats immediately
-  if (typeof rebuildLiveStatsFromBrain === "function") {
-    rebuildLiveStatsFromBrain();
-  }
-};
-</script>
-<input type="file" id="importBrain" accept=".json">
-
-<script>
-document.getElementById("importBrain")?.addEventListener("change", e => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const json = JSON.parse(reader.result);
-      loadImportedBrain(json); // ✅ THIS TRIGGERS STATS
-    } catch (err) {
-      console.error("Invalid AI JSON", err);
-    }
-  };
-  reader.readAsText(file);
-});
-</script>
-
+<script src="ai_brain_AI_DASHBOARD_ADVANCED_LIVESTATS_HOOKED.js"></script>
 
 <div id="welcomePopup">
   <strong>Hello Welcome to the Kut Millz Ai 😇</strong><br>
   Always remember to follow instructions.<br>
-  If you break the rules that can result in your account getting blown.<br>
+  If you break the rules or set your own rules without experience that can result in your account getting blown.<br>
   Enjoy your session 💯
 </div>
 
