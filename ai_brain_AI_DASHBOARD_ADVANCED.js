@@ -26,7 +26,7 @@ function saveBrain(){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(window.AI_BRAIN));
 }
 window.importAIFile = function (file) {
-  console.error("importAIFile called before being initialized", file);
+    return window.importAIFromFile(file);
 };
 
 window.applyImportedBrain = function (data) {
@@ -37,13 +37,21 @@ window.applyImportedBrain = function (data) {
 
   // Overwrite brain safely (single brain rule)
   window.AI_BRAIN = data;
+   // 🔥 REBIND LIVE STATE FROM IMPORTED BRAIN
+window.AI_STATS  = data.stats  || window.AI_STATS;
+window.AI_TRADES = data.trades || window.AI_TRADES;
+
+// Optional but recommended: recalc derived metrics
+if (typeof recalcAIStats === "function") {
+    recalcAIStats();
+}
 
   // Persist immediately
   localStorage.setItem("KUTMILZ_AI_BRAIN_V1", JSON.stringify(window.AI_BRAIN));
 
   // Force UI refresh
   if (typeof renderAIDashboard === "function") {
-    renderAIDashboard();
+    renderAIDashboard(true);
   }
 
   console.log("AI brain imported and applied", window.AI_BRAIN);
