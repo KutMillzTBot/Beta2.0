@@ -6254,12 +6254,15 @@ console.log("KUT MILZ AI ENGINE ACTIVE");
     `;
     panel.appendChild(div);
 
-    document.getElementById("aiImportBtn").onclick = function(){
-      const f=document.getElementById("aiImportFile").files[0];
-      if(!f){ alert("Select AI JSON file first"); return; }
-      importAIFile(f);
-    };
-  }
+   document.getElementById("aiImportBtn").onclick = function () {
+    const f = document.getElementById("aiImportFile").files[0];
+    if (!f) {
+        alert("Select AI JSON file first");
+        return;
+    }
+    importAiFromFile(f);
+};
+
 
   console.log("AI IMPORT BUTTON ACTIVE");
 })();
