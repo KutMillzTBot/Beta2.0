@@ -1088,6 +1088,24 @@ button {
 </style>
 
 
+
+<style id="welcome-popup-style">
+#welcomePopup {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.85);
+  color: #fff;
+  padding: 16px 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  z-index: 99999;
+  box-shadow: 0 10px 30px rgba(0,0,0,.4);
+  text-align: center;
+}
+</style>
+
 </head>
 
 <body>
@@ -1249,7 +1267,7 @@ button {
   <p></p>
 </section>
 
-<h2 class="section-title gold"><span class="section-title gold">Transaction Log</span></h2></h2>
+<h2 class="section-title gold"><span class="section-title gold">Transaction Log</span></h2>
         <div class="p-3 bg-slate-900/40 border border-slate-700 rounded-lg text-xs whitespace-pre-wrap min-h-[120px] max-h-[220px] overflow-auto"
              id="tx-log"></div>
         <div class="mt-3 flex gap-2">
@@ -2447,7 +2465,7 @@ const aiLayer = {
       if ((this.perf.tradeTimes?.length || 0) >= maxTPM){
         this.regime = drawdown ? "DRAWDOWN" : this.regime;
         this.perf.blockCount += 1;
-        return { allow:false, reason:`Overtrading Guard (${maxTPM}/min)`, cooldownMs: drawdown ? 90000 : 30000 };
+        return { allow:false, reason:`Overtrading Guard (${maxTPM}/min)`, cooldownMs: drawdown ? 90000 : 90000 };
       }
     }
 
@@ -6390,5 +6408,26 @@ document.addEventListener("AI_TRADE", e => {
 
 
 <script src="ai_brain_AI_DASHBOARD_ADVANCED_LIVESTATS_HOOKED.js"></script>
+
+<div id="welcomePopup">
+  <strong>Hello Welcome to the Kut Millz Ai 😇</strong><br>
+  Always remember to follow instructions.<br>
+  If you break the rules that can result in your account getting blown.<br>
+  Enjoy your session 💯
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const popup = document.getElementById("welcomePopup");
+  if (!popup) return;
+  if (!sessionStorage.getItem("welcomeShown")) {
+    sessionStorage.setItem("welcomeShown", "true");
+    setTimeout(() => popup.remove(), 9000);
+  } else {
+    popup.remove();
+  }
+});
+</script>
+
 </body>
 </html>
