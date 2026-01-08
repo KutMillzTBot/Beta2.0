@@ -25,6 +25,9 @@ function loadBrain(){
 function saveBrain(){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(window.AI_BRAIN));
 }
+window.importAIFile = function (file) {
+  console.error("importAIFile called before being initialized", file);
+};
 
 window.applyImportedBrain = function (data) {
   if (!data || typeof data !== "object") {
