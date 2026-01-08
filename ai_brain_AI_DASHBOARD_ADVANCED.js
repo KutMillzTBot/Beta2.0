@@ -151,45 +151,52 @@ setInterval(renderAIDashboard,1000);
 document.addEventListener("DOMContentLoaded",renderAIDashboard);
 
 console.log("[ULTIMATE AI ENGINE] Active — one brain only");
+
 // ===============================
-// AI IMPORT HANDLER (SINGLE BRAIN)
+// AI MEMORY IMPORT (FIXED — SINGLE BRAIN)
 // ===============================
-window.importAIFile = function (file) {
-  const reader = new FileReader();
+window.importAIFromFile = function (file) {
+  try {
+    const reader = new FileReader();
 
-  reader.onload = function (e) {
-    try {
-      let data = e.target.result;
+    reader.onload = function (e) {
+      try {
+        let data = e.target.result;
 
-      // If JS export, extract JSON
-      if (file.name.endsWith(".js")) {
-        const match = data.match(/\{[\s\S]*\}/);
-        if (!match) throw new Error("Invalid AI JS export");
-        data = match[0];
+        // If JS export, extract JSON
+        if (file.name.endsWith(".js")) {
+          const match = data.match(/\{[\s\S]*\}/);
+          if (!match) throw new Error("Invalid AI JS export");
+          data = match[0];
+        }
+
+        const imported = JSON.parse(data);
+
+        // Safety check
+        if (!imported.session || !imported.meta) {
+          throw new Error("Invalid AI memory format");
+        }
+
+        // OVERWRITE brain safely
+        window.AI_BRAIN = imported;
+        localStorage.setItem(
+          "KUTMILZ_AI_BRAIN_V1",
+          JSON.stringify(imported)
+        );
+
+        console.log("🧠 AI BRAIN IMPORTED");
+        refreshAIDashboard();
+
+      } catch (err) {
+        console.error("❌ AI PARSE ERROR", err);
+        alert("Invalid AI memory file");
       }
+    };
 
-      const imported = JSON.parse(data);
+    reader.readAsText(file);
 
-      // Safety check
-      if (!imported.session || !imported.meta) {
-        throw new Error("Invalid AI memory format");
-      }
-
-      // OVERWRITE brain safely
-      window.AI_BRAIN = imported;
-      localStorage.setItem(
-        "KUTMILZ_AI_BRAIN_V1",
-        JSON.stringify(imported)
-      );
-
-      console.log("✅ AI BRAIN IMPORTED");
-      console.log(window.AI_BRAIN);
-
-    } catch (err) {
-      console.error("❌ AI IMPORT FAILED", err);
-      alert("Failed to import AI memory");
-    }
-  };
-
-  reader.readAsText(file);
+  } catch (err) {
+    console.error("❌ AI IMPORT FAILED", err);
+    alert("Failed to import AI memory");
+  }
 };
