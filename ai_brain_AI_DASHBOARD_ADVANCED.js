@@ -4,7 +4,7 @@
    localStorage Persistent | Browser-Safe
    =============================== */
 
-const STORAGE_KEY = "KUTMILZ_AI_BRAIN_PERSISTENT_V1";
+const STORAGE_KEY = "ai_performance ";
 
 const DEFAULT_BRAIN = {
   meta: {
@@ -200,86 +200,67 @@ document.addEventListener("AI_TRADE", ()=>{
 });
 
 
-/* === LIVE STATS WIRING PATCH === */
-window.AI_LIVE_STATS = JSON.parse(localStorage.getItem("AI_LIVE_STATS") || "{}") || {};
-AI_LIVE_STATS.totalTrades = AI_LIVE_STATS.totalTrades || 0;
-AI_LIVE_STATS.wins = AI_LIVE_STATS.wins || 0;
-AI_LIVE_STATS.losses = AI_LIVE_STATS.losses || 0;
-AI_LIVE_STATS.symbolWins = AI_LIVE_STATS.symbolWins || {};
 
-function updateLiveStats(symbol, pl) {
-  AI_LIVE_STATS.totalTrades++;
-  if (pl > 0) {
-    AI_LIVE_STATS.wins++;
-    AI_LIVE_STATS.symbolWins[symbol] = (AI_LIVE_STATS.symbolWins[symbol] || 0) + 1;
-  } else {
-    AI_LIVE_STATS.losses++;
-  }
-  localStorage.setItem("AI_LIVE_STATS", JSON.stringify(AI_LIVE_STATS));
-  renderLiveStats();
-}
+/* ===== AUTO HOOK: Feed Live Stats from bot trade results (SAFE) ===== */
+(function(){
+  window.AI_DASHBOARD = window.AI_DASHBOARD || {};
 
-function renderLiveStats() {
-  const total = AI_LIVE_STATS.totalTrades;
-  const wins = AI_LIVE_STATS.wins;
-  const losses = AI_LIVE_STATS.losses;
-  const winRate = total > 0 ? ((wins / total) * 100).toFixed(2) : "0";
-  let topSymbol = "-";
-  let maxWins = 0;
-  for (const s in AI_LIVE_STATS.symbolWins) {
-    if (AI_LIVE_STATS.symbolWins[s] > maxWins) {
-      maxWins = AI_LIVE_STATS.symbolWins[s];
-      topSymbol = s;
-    }
-  }
-  document.getElementById("aiTotalTrades")?.innerText = total;
-  document.getElementById("aiWins")?.innerText = wins;
-  document.getElementById("aiLosses")?.innerText = losses;
-  document.getElementById("aiWinRate")?.innerText = winRate + "%";
-  document.getElementById("aiTopSymbol")?.innerText = topSymbol;
-}
+  window.AI_DASHBOARD.recordTrade = window.AI_DASHBOARD.recordTrade || function(result, symbol, payout){
+    try{
+      const brain = window.AI_BRAIN || {};
+      brain.session = brain.session || { wins:0, losses:0 };
+      brain.symbols = brain.symbols || {};
+      brain.history = brain.history || [];
 
-/* Hook into existing trade close log */
-const _origLogTradeClose = window.logTradeClose;
-window.logTradeClose = function(symbol, pl) {
-  try { updateLiveStats(symbol, pl); } catch(e) {}
-  if (_origLogTradeClose) _origLogTradeClose(symbol, pl);
-};
-/* === END PATCH === */
-\n
-/* === LIVE STATS REBUILD FROM BRAIN HISTORY === */
-function rebuildLiveStatsFromBrain() {
-  try {
-    const brainRaw = localStorage.getItem("KUTMILZ_AI_BRAIN_PERSISTENT_V1");
-    if (!brainRaw) return;
-    const brain = JSON.parse(brainRaw);
-    if (!brain || !Array.isArray(brain.history)) return;
+      const win = String(result).toLowerCase() === "win" || payout > 0;
+      if(win) brain.session.wins++; else brain.session.losses++;
 
-    AI_LIVE_STATS.totalTrades = 0;
-    AI_LIVE_STATS.wins = 0;
-    AI_LIVE_STATS.losses = 0;
-    AI_LIVE_STATS.symbolWins = {};
-
-    brain.history.forEach(t => {
-      if (typeof t.pl !== "number") return;
-      AI_LIVE_STATS.totalTrades++;
-      if (t.pl > 0) {
-        AI_LIVE_STATS.wins++;
-        const sym = t.symbol || "UNKNOWN";
-        AI_LIVE_STATS.symbolWins[sym] = (AI_LIVE_STATS.symbolWins[sym] || 0) + 1;
-      } else {
-        AI_LIVE_STATS.losses++;
+      if(symbol){
+        brain.symbols[symbol] = brain.symbols[symbol] || { trades:0, wins:0, losses:0 };
+        brain.symbols[symbol].trades++;
+        if(win) brain.symbols[symbol].wins++; else brain.symbols[symbol].losses++;
       }
-    });
 
-    localStorage.setItem("AI_LIVE_STATS", JSON.stringify(AI_LIVE_STATS));
-    renderLiveStats();
-    console.log("[AI] Live Stats rebuilt from brain history:", AI_LIVE_STATS);
-  } catch (e) {
-    console.warn("[AI] Failed to rebuild Live Stats:", e);
-  }
-}
+      brain.history.push({
+        result: win ? "win":"loss",
+        symbol: symbol || "UNKNOWN",
+        payout: payout || 0,
+        time: Date.now()
+      });
 
-/* Auto rebuild on load */
-setTimeout(rebuildLiveStatsFromBrain, 500);
-/* === END REBUILD PATCH === */
+      if(typeof window.rebuildLiveStats === "function"){
+        window.rebuildLiveStats();
+      }
+    }catch(e){
+      console.warn("LiveStats recordTrade error", e);
+    }
+  };
+
+  const wrap = (obj, fnName) => {
+    if(!obj) return;
+    const orig = obj[fnName];
+    if(typeof orig !== "function") return;
+    if(orig.__wrapped) return;
+    const wrapped = function(){
+      try{
+        const args = Array.from(arguments);
+        const result = args[0];
+        const symbol = args[1];
+        const payout = args[2];
+        window.AI_DASHBOARD.recordTrade(result, symbol, payout);
+      }catch(e){}
+      return orig.apply(this, arguments);
+    };
+    wrapped.__wrapped = true;
+    obj[fnName] = wrapped;
+  };
+
+  const tryHook = () => {
+    wrap(window, "onTradeClosed");
+    wrap(window, "handleTradeClosed");
+    wrap(window, "tradeClosed");
+  };
+  tryHook();
+  setInterval(tryHook, 1500);
+})();
+/* ===== END AUTO HOOK ===== */
