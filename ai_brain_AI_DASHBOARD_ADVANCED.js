@@ -52,7 +52,7 @@ window.applyImportedBrain = function (data) {
 
 
 // 📥 Import handler (supports .json AND .js exports)
-window.importAIFile = function (file) {
+window.importAIFromFile = function (file) {
   const reader = new FileReader();
 
   reader.onload = () => {
