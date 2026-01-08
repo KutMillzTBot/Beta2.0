@@ -26,19 +26,27 @@ function saveBrain(){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(window.AI_BRAIN));
 }
 
-window.AI_BRAIN = loadBrain();
-// 🔁 Apply imported AI brain safely
 window.applyImportedBrain = function (data) {
   if (!data || typeof data !== "object") {
-    console.warn("Invalid AI import data");
+    alert("Invalid AI brain data");
     return;
   }
 
+  // Overwrite brain safely (single brain rule)
   window.AI_BRAIN = data;
-  saveBrain();
+
+  // Persist immediately
+  localStorage.setItem("KUTMILZ_AI_BRAIN_V1", JSON.stringify(window.AI_BRAIN));
+
+  // Force UI refresh
+  if (typeof renderAIDashboard === "function") {
+    renderAIDashboard();
+  }
 
   console.log("AI brain imported and applied", window.AI_BRAIN);
+  alert("✅ AI Brain Imported Successfully");
 };
+
 
 // 📥 Import handler (supports .json AND .js exports)
 window.importAIFile = function (file) {
@@ -132,3 +140,45 @@ setInterval(renderAIDashboard,1000);
 document.addEventListener("DOMContentLoaded",renderAIDashboard);
 
 console.log("[ULTIMATE AI ENGINE] Active — one brain only");
+// ===============================
+// AI IMPORT HANDLER (SINGLE BRAIN)
+// ===============================
+window.importAIFile = function (file) {
+  const reader = new FileReader();
+
+  reader.onload = function (e) {
+    try {
+      let data = e.target.result;
+
+      // If JS export, extract JSON
+      if (file.name.endsWith(".js")) {
+        const match = data.match(/\{[\s\S]*\}/);
+        if (!match) throw new Error("Invalid AI JS export");
+        data = match[0];
+      }
+
+      const imported = JSON.parse(data);
+
+      // Safety check
+      if (!imported.session || !imported.meta) {
+        throw new Error("Invalid AI memory format");
+      }
+
+      // OVERWRITE brain safely
+      window.AI_BRAIN = imported;
+      localStorage.setItem(
+        "KUTMILZ_AI_BRAIN_V1",
+        JSON.stringify(imported)
+      );
+
+      console.log("✅ AI BRAIN IMPORTED");
+      console.log(window.AI_BRAIN);
+
+    } catch (err) {
+      console.error("❌ AI IMPORT FAILED", err);
+      alert("Failed to import AI memory");
+    }
+  };
+
+  reader.readAsText(file);
+};
