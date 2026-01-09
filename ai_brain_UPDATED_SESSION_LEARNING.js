@@ -4,6 +4,9 @@
    localStorage Persistent | Browser-Safe
    =============================== */
 
+
+// === Added Crash/Boom symbols (you may need to adjust these to match your broker's exact symbol strings) ===
+const CUSTOM_ADDED_MARKETS = ['BOOM300', 'BOOM500', 'BOOM600', 'BOOM900', 'BOOM1000', 'CRASH300', 'CRASH500', 'CRASH600', 'CRASH900', 'CRASH1000'];
 const STORAGE_KEY = "KUTMILZ_AI_BRAIN_PERSISTENT_V1";
 
 const DEFAULT_BRAIN = {
