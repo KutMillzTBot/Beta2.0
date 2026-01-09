@@ -4966,6 +4966,13 @@ function handleResponse(res){
           if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "Cooldown";
           updateTradeStatus("Trade Closed. Cooldown...", "bg-orange-500 text-white");
           logLine("Trade closed. P/L: " + profit.toFixed(2));
+addTransactionEntry({
+  market: appState.currentSymbol || "UNKNOWN",
+  payout: profit,
+  duration: appState.lastTradeDuration || null,
+  status: profit > 0 ? "WON" : "LOST",
+  system: "MillzAI"
+});
 
 
           // AI trade outcome feed (safety-only)
