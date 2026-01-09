@@ -1,3 +1,4 @@
+if (!window.__txQueue) window.__txQueue = [];
 /* === Performance helpers added by optimizer (safe, non-breaking) === */
 if (!window.__bot_perf_helpers_added) {
   window.__bot_perf_helpers_added = true;
@@ -188,3 +189,77 @@ window.AI = {
 };
 
 console.log("[AI] Session-learning brain loaded");
+
+/* ================= Transaction Popup UI (Safe Patch) ================= */
+(function () {
+  function formatTime(ts) {
+    try {
+      const d = ts ? new Date(ts) : new Date();
+      return d.toLocaleString();
+    } catch (e) { return String(ts || ""); }
+  }
+  function getTxRoot() {
+    let root = document.getElementById("tx-popup-root");
+    if (!root) {
+      root = document.createElement("div");
+      root.id = "tx-popup-root";
+      root.className = "tx-popup-wrapper";
+      document.body.appendChild(root);
+    }
+    return root;
+  }
+  window.addTransactionEntry = function(tx) {
+    const root = getTxRoot();
+    const card = document.createElement("div");
+    card.className = "tx-card";
+    const icon = document.createElement("div");
+    icon.className = "tx-icon";
+    icon.textContent = (tx.symbol || "SYS").slice(0,3).toUpperCase();
+    const info = document.createElement("div");
+    info.className = "tx-info";
+    const top = document.createElement("div");
+    top.className = "tx-top";
+    const sym = document.createElement("div");
+    sym.className = "tx-symbol";
+    sym.textContent = (tx.symbol || "UNKNOWN").toUpperCase();
+    const status = document.createElement("div");
+    status.className = "tx-status";
+    status.textContent = (tx.status || "PENDING").toUpperCase();
+    top.appendChild(sym); top.appendChild(status);
+    const details = document.createElement("div");
+    details.className = "tx-details";
+    details.innerHTML = `<div>System: <strong>${tx.system||"TradeX"}</strong><br>Ticks: <strong>${tx.ticks ?? "-"}</strong></div>
+                         <div style="text-align:right">Stake: <strong>${tx.stake ?? "-"} USD</strong><br>Payout: <strong>${tx.payout ?? "-"} USD</strong></div>`;
+    const meta = document.createElement("div");
+    meta.className = "tx-meta";
+    meta.innerHTML = `<div>${formatTime(tx.time)}</div><div>${tx.durationSecs ? "Duration: "+tx.durationSecs+"s":""}</div>`;
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "tx-close";
+    closeBtn.textContent = "✕";
+    closeBtn.onclick = ()=>{card.classList.remove("tx-visible"); setTimeout(()=>card.remove(),360);};
+    info.appendChild(top); info.appendChild(details); info.appendChild(meta);
+    card.appendChild(icon); card.appendChild(info); card.appendChild(closeBtn);
+    if (tx.colorHint === "won") { status.style.background="#1f6f46"; }
+    if (tx.colorHint === "lost") { status.style.background="#7a2036"; }
+    root.prepend(card);
+    requestAnimationFrame(()=>card.classList.add("tx-visible"));
+    setTimeout(()=>{card.classList.remove("tx-visible"); setTimeout(()=>card.remove(),360);}, tx.timeoutMs||8000);
+    return card;
+  };
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", getTxRoot);
+  } else { getTxRoot(); }
+})();
+/* ================= End Transaction Popup UI ================= */
+
+
+
+// Flush any queued addTransactionEntry calls (if page queued calls before real function loaded)
+try {
+  if (window.__txQueue && window.__txQueue.length && typeof window.addTransactionEntry === 'function') {
+    window.__txQueue.forEach(function(args){
+      try { window.addTransactionEntry.apply(null, args); } catch(e){/* ignore individual errors */}
+    });
+    window.__txQueue.length = 0;
+  }
+} catch(e){}
