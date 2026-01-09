@@ -6769,7 +6769,7 @@ document.addEventListener("AI_TRADE", e => {
 })();
         card.innerHTML =
   '<div style="font-weight:700;margin-bottom:6px">MilzAi Alert 💰</div>' +
-  '<div>Symbol: ' + (tx.symbol || tx.symbolName || tx.market || tx.instrument || '-') + '</div>' +
+ '<div>Symbol: ' + resolveSymbol(tx) + '</div>' +
   '<div>Closed: ' + closedTime + '</div>' +
   '<div>Status: ' + (tx.status || '-') + '</div>' +
   '<div>Stake: ' + (tx.stake || '-') + '</div>' +
