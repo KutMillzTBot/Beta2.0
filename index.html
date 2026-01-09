@@ -1089,21 +1089,7 @@ button {
 
 
 
-<!-- Transaction popup stub (ensures addTransactionEntry is available immediately) -->
-<script>
-(function(){
-  if (!window.__txQueue) window.__txQueue = [];
-  if (!window.addTransactionEntry) {
-    window.addTransactionEntry = function() {
-      try {
-        window.__txQueue.push(Array.from(arguments));
-        console.info("addTransactionEntry: queued call (will run when real function loads).");
-      } catch(e){}
-    };
-  }
-})();
-</script>
-<!-- End tx stub -->
+
 </head>
 
 <body>
