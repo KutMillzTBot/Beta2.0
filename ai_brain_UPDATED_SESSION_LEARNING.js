@@ -263,3 +263,163 @@ try {
     window.__txQueue.length = 0;
   }
 } catch(e){}
+
+
+
+// === FORCE GLOBAL TRANSACTION POPUP (SAFE) ===
+document.addEventListener("DOMContentLoaded", function () {
+  window.addTransactionEntry = function(tx) {
+    if (!tx) return;
+    const card = document.createElement("div");
+    card.style.cssText = `
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: linear-gradient(135deg, #0f3d2e, #1f7a4d);
+      color: #f5e6b3;
+      padding: 16px 18px;
+      border-radius: 14px;
+      min-width: 260px;
+      box-shadow: 0 20px 40px rgba(0,0,0,.45);
+      font-family: system-ui, sans-serif;
+      z-index: 99999;
+      animation: slideIn .4s ease-out;
+    `;
+
+    card.innerHTML = `
+      <strong>${tx.symbol || "SYMBOL"} — ${tx.system || "SYSTEM"}</strong><br>
+      Status: ${tx.status}<br>
+      Ticks: ${tx.ticks}<br>
+      Stake: $${tx.stake}<br>
+      Payout: $${tx.payout}<br>
+      Duration: ${tx.durationSecs || 0}s
+    `;
+
+    document.body.appendChild(card);
+    setTimeout(() => card.remove(), 8000);
+  };
+
+  // flush queued
+  if (window.__txQueue && window.__txQueue.length) {
+    window.__txQueue.forEach(args => window.addTransactionEntry(args[0]));
+    window.__txQueue.length = 0;
+  }
+});
+
+
+
+
+/* AUTO_TX_WIRE_MARKER */
+// Automatic wiring: watch console output for trade close lines and emit transaction popup.
+// This is defensive and non-invasive — it only reads console strings and queues calls if addTransactionEntry isn't ready.
+(function(){
+  // helper to safely trigger popup or queue it
+  function triggerPopup(tx) {
+    try {
+      if (typeof window.addTransactionEntry === 'function') {
+        window.addTransactionEntry(tx);
+      } else {
+        window.__txQueue = window.__txQueue || [];
+        window.__txQueue.push([tx]);
+      }
+    } catch(e){}
+  }
+
+  // parse "TX:" style lines like:
+  // TX: [12:35:06 AM] CLOSED | BOOM500 | ACCU | +0.10
+  function parseTxLine(str) {
+    try {
+      var m = str.match(/TX:\s*\[([^\]]+)\]\s*CLOSED\s*\|\s*([^\|]+)\s*\|[^\|]*\|\s*([+\-]?[0-9]*\.?[0-9]+)/i);
+      if (m) {
+        var timeStr = m[1];
+        var symbol = m[2].trim();
+        var profit = parseFloat(m[3]);
+        var status = (profit > 0) ? "WON" : (profit < 0 ? "LOST" : "NEUTRAL");
+        triggerPopup({
+          symbol: symbol,
+          system: "TradeX",
+          time: Date.now(),
+          ticks: null,
+          stake: null,
+          payout: null,
+          status: status,
+          durationSecs: null,
+          colorHint: (profit>0) ? "won" : (profit<0) ? "lost" : "neutral",
+          note: "Auto-detected from console: " + str.slice(0,120)
+        });
+        return true;
+      }
+      // fallback parse for "Trade closed. P/L: 0.10" lines
+      var m2 = str.match(/Trade closed\.\s*P\/L:\s*([+\-]?[0-9]*\.?[0-9]+)/i);
+      if (m2) {
+        var profit2 = parseFloat(m2[1]);
+        var status2 = (profit2 > 0) ? "WON" : (profit2 < 0 ? "LOST" : "NEUTRAL");
+        triggerPopup({
+          symbol: null,
+          system: "TradeX",
+          time: Date.now(),
+          ticks: null,
+          stake: null,
+          payout: null,
+          status: status2,
+          durationSecs: null,
+          colorHint: (profit2>0) ? "won" : (profit2<0) ? "lost" : "neutral",
+          note: "Auto-detected P/L: " + profit2
+        });
+        return true;
+      }
+    } catch(e){}
+    return false;
+  }
+
+  // wrap console methods to inspect messages
+  ['log','info','warn','error'].forEach(function(method){
+    var orig = console[method];
+    console[method] = function(){
+      try {
+        for (var i=0;i<arguments.length;i++){
+          try {
+            var arg = arguments[i];
+            var s = (arg === null || arg === undefined) ? String(arg) : (typeof arg === 'string' ? arg : (arg && arg.toString ? arg.toString() : JSON.stringify(arg)));
+            // inspect for patterns
+            if (s && (s.indexOf('TX:')!==-1 || s.indexOf('Trade closed')!==-1 || s.indexOf('Trade closed.')!==-1)) {
+              parseTxLine(s);
+            }
+          } catch(e){}
+        }
+      } catch(e){}
+      try { orig.apply(console, arguments); } catch(e){ /* ignore */ }
+    };
+  });
+
+  // also monitor console output DOM area if exists (some apps render console text into a page element)
+  function monitorLogContainer() {
+    try {
+      var candidates = document.querySelectorAll('div, pre, code, .console, .log, #console');
+      candidates.forEach(function(node){
+        if (!node.__txMonitored) {
+          node.__txMonitored = true;
+          var obs = new MutationObserver(function(muts){
+            muts.forEach(function(m){
+              try {
+                var txt = node.innerText || node.textContent || '';
+                // try parse last line
+                var lines = txt.trim().split(/\n+/);
+                if (lines.length) parseTxLine(lines[lines.length-1]);
+              } catch(e){}
+            });
+          });
+          obs.observe(node, {childList:true, subtree:true, characterData:true});
+        }
+      });
+    } catch(e){}
+  }
+
+  // attempt to monitor log container after DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', monitorLogContainer);
+  } else {
+    setTimeout(monitorLogContainer, 500);
+  }
+
+})();
