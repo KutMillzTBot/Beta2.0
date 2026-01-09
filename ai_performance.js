@@ -1,63 +1,52 @@
 
-/* ================================
-   AI PERFORMANCE – FIXED & READY
-   ================================ */
+/* ===============================
+   KUT MILZ AI BRAIN — SESSION LEARNING CORE
+   localStorage Persistent | Browser-Safe
+   =============================== */
 
-/* SAFETY: ensure transaction logger exists */
-if (typeof window.addTransactionEntry !== 'function') {
-  window.addTransactionEntry = function(entry) {
-    try {
-      if (!window.AI_BRAIN) return;
-      if (!window.AI_BRAIN.transactions) {
-        window.AI_BRAIN.transactions = [];
-      }
-      window.AI_BRAIN.transactions.push({
-        ...entry,
-        timestamp: entry.timestamp || Date.now()
-      });
-    } catch (e) {
-      console.warn('Transaction log fallback used:', e);
-    }
-  };
-}
 
-/* STORAGE */
-const STORAGE_KEY = 'AI_BRAIN_V2';
+// === Added Crash/Boom symbols (you may need to adjust these to match your broker's exact symbol strings) ===
+const CUSTOM_ADDED_MARKETS = ['BOOM300', 'BOOM500', 'BOOM600', 'BOOM900', 'BOOM1000', 'CRASH300', 'CRASH500', 'CRASH600', 'CRASH900', 'CRASH1000'];
+const STORAGE_KEY = "KUTMILZ_AI_BRAIN_PERSISTENT_V1";
 
-/* DEFAULT BRAIN */
 const DEFAULT_BRAIN = {
   meta: {
-    autosaveMs: 5000
+    version: "8.0",
+    created: Date.now(),
+    autosaveMs: 10000
   },
-  transactions: []
+  session: {
+    trades: 0,
+    wins: 0,
+    losses: 0
+  },
+  symbols: {},
+  history: []
 };
 
-function deepClone(obj) {
+function deepClone(obj){
   return JSON.parse(JSON.stringify(obj));
 }
 
-function loadBrain() {
-  try {
+function loadBrain(){
+  try{
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch (e) {}
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
   return deepClone(DEFAULT_BRAIN);
 }
 
-function saveBrain() {
+function saveBrain(){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(window.AI_BRAIN));
 }
 
-/* INIT */
 window.AI_BRAIN = loadBrain();
+
 setInterval(saveBrain, window.AI_BRAIN.meta.autosaveMs);
 
-/* ================================
-   TRADE RECORDER (SAFE)
-   ================================ */
 function recordTrade(symbol, result, stake = null, payout = null) {
 
-  const resolvedSymbol =
+   const resolvedSymbol =
     symbol ||
     window.currentSymbol ||
     window.activeSymbol ||
@@ -65,6 +54,7 @@ function recordTrade(symbol, result, stake = null, payout = null) {
     window.lastSymbol ||
     'UNKNOWN';
 
+  // FORCE stake resolution
   const resolvedStake =
     (typeof stake === 'number' && stake > 0) ? stake :
     (typeof window.lastStake === 'number' && window.lastStake > 0) ? window.lastStake :
@@ -72,24 +62,158 @@ function recordTrade(symbol, result, stake = null, payout = null) {
     (typeof window.orderAmount === 'number' && window.orderAmount > 0) ? window.orderAmount :
     null;
 
-  const resolvedPayout =
+  const resolvedPL =
     (typeof payout === 'number' && payout > 0) ? payout :
     window.lastPayout ||
     window.profit ||
     null;
 
-  const entry = {
+  window.__LAST_TRADE__ = {
     symbol: resolvedSymbol,
-    result,
     stake: resolvedStake,
-    payout: resolvedPayout,
-    time: new Date().toISOString()
+    pl: resolvedPL,
+    status: result === 'win' ? 'WON' : 'LOST',
+    closedTime: Date.now()
   };
 
-  addTransactionEntry(entry);
+  window.dispatchEvent(
+    new CustomEvent('kut:transaction', {
+      detail: window.__LAST_TRADE__
+    })
+  );
+
+  const brain = window.AI_BRAIN;
+  brain.session.trades++;
+  if (result === 'win') brain.session.wins++;
+  else brain.session.losses++;
 }
 
-/* EXPOSE */
-window.recordTrade = recordTrade;
 
-console.log('AI Performance module loaded (FIXED).');
+  function exportBrain() {
+  const blob = new Blob(
+    [JSON.stringify(window.AI_BRAIN, null, 2)],
+    { type: "application/json" }
+  );
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "kutmilz_ai_brain.json";
+  a.click();
+}
+
+
+function  importBrain(file){
+    const r = new FileReader();
+    r.onload = e => {
+      window.AI_BRAIN = JSON.parse(e.target.result);
+      saveBrain();
+      location.reload();
+    };
+    r.readAsText(file);
+  },
+
+  resetSession(){
+    window.AI_BRAIN.session = { trades:0, wins:0, losses:0 };
+    saveBrain();
+  }
+};
+
+console.log("[AI] Session-learning brain loaded");
+
+
+
+/* AUTO-FIXED: GLOBAL TRANSACTION POPUP BRIDGE */
+(function () {
+
+  function addTransactionEntry(tx) {
+    try {
+      if (!tx || typeof tx !== "object") return;
+
+      const data = {
+      symbol: (() => {
+  if (tx.symbol) return tx.symbol;
+  if (tx.symbolName) return tx.symbolName;
+  if (tx.market) return tx.market;
+  if (tx.instrument) return tx.instrument;
+  if (tx.underlying) return tx.underlying;
+
+  // fallback: parse from tx.log
+  if (typeof tx.log === "string") {
+    const parts = tx.log.split("|").map(p => p.trim());
+    if (parts.length >= 2) return parts[1];
+  }
+
+  return "UNKNOWN";
+})(),
+        system: tx.system || "AI",
+        ticks: tx.ticks ?? tx.tickCount ?? null,
+       stake: tx.stake ?? tx.amount ?? tx.buy_price ?? tx.entry_price ?? null,
+        pl: Number(tx.payout ?? tx.profit ?? tx.payoutAmount ?? 0),
+        status: tx.status || ( (Number(tx.payout ?? tx.profit ?? tx.payoutAmount ?? 0) > 0) ? 'WON' : (Number(tx.payout ?? tx.profit ?? tx.payoutAmount ?? 0) < 0 ? 'LOST' : 'CLOSED')),
+        durationSecs: tx.durationSecs || tx.duration || null,
+        note: tx.note || ""
+      };
+
+      // fire event for UI / popup
+      window.dispatchEvent(
+        new CustomEvent("kut:transaction", { detail: data })
+      );
+
+    } catch (e) {
+      console.warn("addTransactionEntry error", e);
+    }
+  }
+
+  // 🔒 HARD LOCK IT
+  Object.defineProperty(window, "addTransactionEntry", {
+    value: addTransactionEntry,
+    writable: false,
+    configurable: false
+  });
+
+})();
+// GLOBAL transaction popup listener (runs once)
+function resolveSymbol(tx) {
+  if (!tx || typeof tx !== 'object') return 'UNKNOWN';
+
+  // direct fields
+  if (tx.symbol) return tx.symbol;
+  if (tx.symbolName) return tx.symbolName;
+  if (tx.market) return tx.market;
+  if (tx.instrument) return tx.instrument;
+
+  // nested objects (VERY COMMON)
+  if (tx.contract?.symbol) return tx.contract.symbol;
+  if (tx.asset?.symbol) return tx.asset.symbol;
+  if (tx.trade?.symbol) return tx.trade.symbol;
+
+  // parse from log / message text
+  const text =
+    tx.log ||
+    tx.message ||
+    tx.description ||
+    tx.info ||
+    '';
+
+  if (typeof text === 'string') {
+    // Examples it catches:
+    // "CLOSED | Crash900 | WON"
+    // "Symbol: Boom500"
+    const match = text.match(/(Crash\d+|Boom\d+|R_\d+|Volatility\s?\d+)/i);
+    if (match) return match[1];
+  }
+
+  return 'UNKNOWN';
+}
+
+window.addEventListener("kut:transaction", (e) => {
+  if (!e.detail) return;
+
+  // safety check
+  if (typeof showTransactionPopup === "function") {
+    showTransactionPopup(e.detail);
+  } else {
+    console.warn("showTransactionPopup not defined", e.detail);
+  }
+});
+window.exportBrain = exportBrain;
+window.importBrain = importBrain;
