@@ -62,7 +62,7 @@ function recordTrade(symbol, result, stake = null, payout = null) {
     (typeof window.orderAmount === 'number' && window.orderAmount > 0) ? window.orderAmount :
     null;
 
-  const resolvedPL =
+  const resolvedPayout =
     (typeof payout === 'number' && payout > 0) ? payout :
     window.lastPayout ||
     window.profit ||
@@ -71,7 +71,7 @@ function recordTrade(symbol, result, stake = null, payout = null) {
   window.__LAST_TRADE__ = {
     symbol: resolvedSymbol,
     stake: resolvedStake,
-    pl: resolvedPL,
+    payout: resolvedPayout,
     status: result === 'win' ? 'WON' : 'LOST',
     closedTime: Date.now()
   };
@@ -147,8 +147,12 @@ console.log("[AI] Session-learning brain loaded");
         system: tx.system || "AI",
         ticks: tx.ticks ?? tx.tickCount ?? null,
        stake: tx.stake ?? tx.amount ?? tx.buy_price ?? tx.entry_price ?? null,
-        pl: Number(tx.payout ?? tx.profit ?? tx.payoutAmount ?? 0),
-        status: tx.status || ( (Number(tx.payout ?? tx.profit ?? tx.payoutAmount ?? 0) > 0) ? 'WON' : (Number(tx.payout ?? tx.profit ?? tx.payoutAmount ?? 0) < 0 ? 'LOST' : 'CLOSED')),
+        payout: tx.payout ?? tx.profit ?? tx.payoutAmount ?? "",
+        status: tx.status || (
+          typeof tx.payout === "number"
+            ? (tx.payout > 0 ? "WON" : "LOST")
+            : "CLOSED"
+        ),
         durationSecs: tx.durationSecs || tx.duration || null,
         note: tx.note || ""
       };
@@ -217,3 +221,23 @@ window.addEventListener("kut:transaction", (e) => {
 });
 window.exportBrain = exportBrain;
 window.importBrain = importBrain;
+
+
+
+/* BEGIN: KUTMILZ JS SAFETY PATCH (added by ChatGPT) */
+try{
+  // ensure export/import functions exist and are safe to call
+  if(typeof window.exportBrain !== "function"){
+    window.exportBrain = function(){ try{ console.warn("exportBrain not implemented in this build."); }catch(e){} };
+  }
+  if(typeof window.importBrain !== "function"){
+    window.importBrain = function(f){ try{ console.warn("importBrain not implemented in this build."); }catch(e){} };
+  }
+  if(typeof window.resetSession !== "function"){
+    window.resetSession = function(){ try{ if(window.AI_BRAIN) { window.AI_BRAIN.session = { trades:0, wins:0, losses:0 }; localStorage.setItem("KUTMILZ_AI_BRAIN_PERSISTENT_V1", JSON.stringify(window.AI_BRAIN)); } }catch(e){} };
+  }
+} catch(e){
+  console.warn("kut js safety patch failed", e);
+}
+/* END: KUTMILZ JS SAFETY PATCH */
+
