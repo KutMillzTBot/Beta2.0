@@ -90,7 +90,7 @@ function recordTrade(symbol, result, stake = null, payout = null)
 }
 
 
-  exportBrain(){
+  exportBrain()
     const blob = new Blob([JSON.stringify(window.AI_BRAIN,null,2)], {type:"application/json"});
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
