@@ -45,9 +45,37 @@ window.AI_BRAIN = loadBrain();
 setInterval(saveBrain, window.AI_BRAIN.meta.autosaveMs);
 
 window.AI = {
-  recordTrade({symbol, result, stake=0, payout=0}){
-    if(!symbol) return;
+  recordTrade(symbol, result, stake = 0, payout = 0) {
 
+ // expose last trade globally for popup
+window.__LAST_TRADE__ = {
+  symbol:
+    symbol ||
+    window.currentSymbol ||
+    window.activeSymbol ||
+    window.marketSymbol ||
+    'UNKNOWN',
+
+  stake:
+    stake ||
+    window.lastStake ||
+    window.tradeAmount ||
+    window.orderAmount ||
+    0,
+
+  payout: payout || 0,
+  status: result === 'win' ? 'WON' : 'LOST',
+  closedTime: Date.now()
+};
+
+
+// notify popup listener
+window.dispatchEvent(
+  new CustomEvent('kut:transaction', {
+    detail: window.__LAST_TRADE__
+  })
+);
+    
     const brain = window.AI_BRAIN;
     brain.session.trades++;
 
