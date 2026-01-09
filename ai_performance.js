@@ -90,15 +90,19 @@ function recordTrade(symbol, result, stake = null, payout = null)
 }
 
 
-  exportBrain()
-    const blob = new Blob([JSON.stringify(window.AI_BRAIN,null,2)], {type:"application/json"});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "kutmilz_ai_brain.json";
-    a.click();
-  },
+  function exportBrain() {
+  const blob = new Blob(
+    [JSON.stringify(window.AI_BRAIN, null, 2)],
+    { type: "application/json" }
+  );
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "kutmilz_ai_brain.json";
+  a.click();
+}
 
-  importBrain(file){
+
+function  importBrain(file){
     const r = new FileReader();
     r.onload = e => {
       window.AI_BRAIN = JSON.parse(e.target.result);
@@ -216,3 +220,5 @@ window.addEventListener("kut:transaction", (e) => {
     console.warn("showTransactionPopup not defined", e.detail);
   }
 });
+window.exportBrain = exportBrain;
+window.importBrain = importBrain;
