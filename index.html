@@ -2061,7 +2061,57 @@ function logLine(msg){
 // Transaction log lines: CLOSED | SYMBOL | CALL/PUT | +/-value
 function txLogLine(msg){
   const t = new Date().toLocaleTimeString();
-  const line = `[${t}] ${msg}`;
+  const line = `[${t}
+/* =========================================================
+   TRANSACTION POPUP BRIDGE (safe fallback UI handler)
+   showTransactionPopup(detail) will be called by ai_performance.js when transactions are detected.
+   It safely normalizes fields, writes to tx-log and system-log, and shows a tiny transient popup.
+========================================================= */
+function showTransactionPopup(detail){
+  if(!detail || typeof detail !== 'object') return;
+  try{
+    const sym = detail.symbol || detail.market || detail.symbolName || 'UNKNOWN';
+    const dur = detail.durationSecs ?? detail.duration ?? null;
+    const rawPl = detail.pl ?? detail.payout ?? detail.profit ?? detail.payoutAmount ?? 0;
+    const pl = Number(rawPl) || 0;
+    const status = detail.status || (pl>0 ? 'WON' : (pl<0 ? 'LOST' : 'CLOSED'));
+
+    // Format and add to tx log
+    const pnl = (pl >= 0 ? '+' : '') + pl.toFixed(2);
+    const dir = status === 'WON' ? 'CALL/PUT' : 'CALL/PUT'; // placeholder; keep format
+    txLogLine(`CLOSED | ${sym} | ${status} | ${pnl}`);
+
+    // Add a system log line for visibility
+    logLine(`TX LOGGED: ${sym} ${status} ${pnl} ${dur ? ('dur:' + dur) : ''}`);
+
+    // transient on-screen popup (non-blocking)
+    const popupId = 'kut-tx-popup';
+    let pop = document.getElementById(popupId);
+    if(!pop){
+      pop = document.createElement('div');
+      pop.id = popupId;
+      pop.style.position = 'fixed';
+      pop.style.right = '18px';
+      pop.style.bottom = '18px';
+      pop.style.zIndex = 999999;
+      pop.style.padding = '10px 14px';
+      pop.style.borderRadius = '10px';
+      pop.style.background = 'rgba(16,24,40,0.95)';
+      pop.style.color = '#fff';
+      pop.style.boxShadow = '0 8px 30px rgba(0,0,0,0.6)';
+      pop.style.fontFamily = 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial';
+      pop.style.fontWeight = 700;
+      document.body.appendChild(pop);
+    }
+    pop.textContent = `${sym} • ${status} • ${pnl}`;
+    pop.style.opacity = '1';
+    if(pop.hideTimeout) clearTimeout(pop.hideTimeout);
+    pop.hideTimeout = setTimeout(()=>{ pop.style.opacity='0'; }, 4200);
+  }catch(e){
+    console.warn('showTransactionPopup error', e);
+  }
+}
+] ${msg}`;
   console.log("TX:", line);
   if (TXLOG){
     TXLOG.textContent = (TXLOG.textContent ? (TXLOG.textContent + "\n") : "") + line;
