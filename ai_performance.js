@@ -1,60 +1,62 @@
 
-/* ===============================
-   AI PERFORMANCE – FIXED VERSION
-   =============================== */
+/* ================================
+   AI PERFORMANCE – FIXED & READY
+   ================================ */
 
-/* ---------- SAFETY HELPERS ---------- */
-function safeNumber(v) {
-  return (typeof v === 'number' && !isNaN(v)) ? v : null;
-}
-
-/* ---------- TRANSACTION POPUP (RESTORED) ---------- */
-function showTransactionPopup(tx) {
-  try {
-    const msg =
-      `TRADE CLOSED\n` +
-      `Symbol: ${tx.symbol}\n` +
-      `Stake: ${tx.stake ?? 'N/A'}\n` +
-      `Payout: ${tx.payout ?? 'N/A'}\n` +
-      `Result: ${tx.result}`;
-
-    alert(msg);
-  } catch (e) {
-    console.warn('Popup failed:', e);
-  }
-}
-
-/* ---------- TRANSACTION LOG FALLBACK ---------- */
-/* This fixes: Uncaught ReferenceError: addTransactionEntry is not defined */
+/* SAFETY: ensure transaction logger exists */
 if (typeof window.addTransactionEntry !== 'function') {
-  window.addTransactionEntry = function (tx) {
-    console.log('[TX LOG]', tx);
+  window.addTransactionEntry = function(entry) {
+    try {
+      if (!window.AI_BRAIN) return;
+      if (!window.AI_BRAIN.transactions) {
+        window.AI_BRAIN.transactions = [];
+      }
+      window.AI_BRAIN.transactions.push({
+        ...entry,
+        timestamp: entry.timestamp || Date.now()
+      });
+    } catch (e) {
+      console.warn('Transaction log fallback used:', e);
+    }
   };
 }
 
-/* ---------- BRAIN STORAGE ---------- */
+/* STORAGE */
 const STORAGE_KEY = 'AI_BRAIN_V2';
+
+/* DEFAULT BRAIN */
+const DEFAULT_BRAIN = {
+  meta: {
+    autosaveMs: 5000
+  },
+  transactions: []
+};
+
+function deepClone(obj) {
+  return JSON.parse(JSON.stringify(obj));
+}
 
 function loadBrain() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
   } catch (e) {}
-  return {
-    meta: { autosaveMs: 5000 },
-    trades: []
-  };
+  return deepClone(DEFAULT_BRAIN);
 }
 
 function saveBrain() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(window.AI_BRAIN));
 }
 
+/* INIT */
 window.AI_BRAIN = loadBrain();
 setInterval(saveBrain, window.AI_BRAIN.meta.autosaveMs);
 
-/* ---------- CORE TRADE RECORDER ---------- */
+/* ================================
+   TRADE RECORDER (SAFE)
+   ================================ */
 function recordTrade(symbol, result, stake = null, payout = null) {
+
   const resolvedSymbol =
     symbol ||
     window.currentSymbol ||
@@ -64,43 +66,30 @@ function recordTrade(symbol, result, stake = null, payout = null) {
     'UNKNOWN';
 
   const resolvedStake =
-    safeNumber(stake) ??
-    safeNumber(window.lastStake) ??
-    safeNumber(window.tradeAmount) ??
-    safeNumber(window.orderAmount);
+    (typeof stake === 'number' && stake > 0) ? stake :
+    (typeof window.lastStake === 'number' && window.lastStake > 0) ? window.lastStake :
+    (typeof window.tradeAmount === 'number' && window.tradeAmount > 0) ? window.tradeAmount :
+    (typeof window.orderAmount === 'number' && window.orderAmount > 0) ? window.orderAmount :
+    null;
 
   const resolvedPayout =
-    safeNumber(payout) ??
-    safeNumber(window.lastPayout) ??
-    safeNumber(window.profit);
+    (typeof payout === 'number' && payout > 0) ? payout :
+    window.lastPayout ||
+    window.profit ||
+    null;
 
-  const tx = {
-    time: Date.now(),
+  const entry = {
     symbol: resolvedSymbol,
+    result,
     stake: resolvedStake,
     payout: resolvedPayout,
-    result
+    time: new Date().toISOString()
   };
 
-  window.AI_BRAIN.trades.push(tx);
-
-  /* Log entry (now guaranteed not to crash) */
-  window.addTransactionEntry(tx);
-
-  /* Popup (restored) */
-  showTransactionPopup(tx);
+  addTransactionEntry(entry);
 }
 
-/* ---------- EVENT BRIDGE ---------- */
-window.addEventListener('kut:transaction', (e) => {
-  if (!e.detail) return;
-  recordTrade(
-    e.detail.symbol,
-    e.detail.result,
-    e.detail.stake,
-    e.detail.payout
-  );
-});
-
-/* ---------- EXPORTS ---------- */
+/* EXPOSE */
 window.recordTrade = recordTrade;
+
+console.log('AI Performance module loaded (FIXED).');
