@@ -95,55 +95,43 @@ console.log("[AI] Session-learning brain loaded");
 
 
 
-/* AUTO-ADDED: GLOBAL TRANSACTION POPUP BRIDGE & CONSOLE-WRAP */
-if (!window.addTransactionEntry) {
-  window.addTransactionEntry = function(tx) {
-    try {
-      if (!tx || typeof tx !== 'object') return;
-      var data = {
-        symbol: tx.symbol || tx.symbolName || tx.market || 'N/A',
-        system: tx.system || 'AI',
-        ticks: tx.ticks != null ? tx.ticks : (tx.tickCount != null ? tx.tickCount : '-'),
-        stake: tx.stake != null ? tx.stake : tx.amount || '-',
-        payout: tx.payout != null ? tx.payout : tx.profit || tx.payoutAmount || '-',
-        status: tx.status || (typeof tx.payout === 'number' ? (tx.payout>0?'WON':'LOST') : 'UNKNOWN'),
-        durationSecs: tx.durationSecs || tx.duration || null,
-        note: tx.note || ''
-      };
-      var ev = new CustomEvent('kut:transaction', { detail: data });
-      window.dispatchEvent(ev);
-      console.info('TX POPUP DISPATCHED:', data.symbol, data.status, data.payout);
-    } catch (e) { console.warn('addTransactionEntry error', e); }
-  };
-}
+/* AUTO-FIXED: GLOBAL TRANSACTION POPUP BRIDGE */
+(function () {
 
-(function(){
-  if (window.__txConsoleWrapped) return;
-  window.__txConsoleWrapped = true;
-  ['log','info','warn','error'].forEach(function(m) {
-    var orig = console[m] && console[m].bind(console);
-    console[m] = function() {
-      try {
-        for (var i=0;i<arguments.length;i++) {
-          try {
-            var s = arguments[i];
-            if (typeof s !== 'string') s = (s && s.toString) ? s.toString() : JSON.stringify(s);
-            if (!s) continue;
-            var m1 = s.match(/TX:\s*\[[^\]]+\]\s*CLOSED\s*\|\s*([^\|]+)\s*\|[^\|]*\|\s*([+\-]?[0-9]*\.?[0-9]+)/i);
-            if (m1) {
-              var symbol = m1[1].trim();
-              var profit = parseFloat(m1[2]);
-              try { window.addTransactionEntry({ symbol: symbol, system: 'TradeX', payout: profit, status: profit>0? 'WON':'LOST' }); } catch(e){}
-            }
-            var m2 = s.match(/Trade closed\.\s*P\/L:\s*([+\-]?[0-9]*\.?[0-9]+)/i);
-            if (m2) {
-              var profit2 = parseFloat(m2[1]);
-              try { window.addTransactionEntry({ symbol: null, system: 'TradeX', payout: profit2, status: profit2>0? 'WON':'LOST' }); } catch(e){}
-            }
-          } catch(e) {}
-        }
-      } catch(e) {}
-      if (orig) try { orig.apply(console, arguments); } catch(e) {}
-    };
+  function addTransactionEntry(tx) {
+    try {
+      if (!tx || typeof tx !== "object") return;
+
+      const data = {
+        symbol: tx.symbol || tx.symbolName || tx.market || "N/A",
+        system: tx.system || "AI",
+        ticks: tx.ticks ?? tx.tickCount ?? null,
+        stake: tx.stake ?? tx.amount ?? "",
+        payout: tx.payout ?? tx.profit ?? tx.payoutAmount ?? "",
+        status: tx.status || (
+          typeof tx.payout === "number"
+            ? (tx.payout > 0 ? "WON" : "LOST")
+            : "CLOSED"
+        ),
+        durationSecs: tx.durationSecs || tx.duration || null,
+        note: tx.note || ""
+      };
+
+      // fire event for UI / popup
+      window.dispatchEvent(
+        new CustomEvent("kut:transaction", { detail: data })
+      );
+
+    } catch (e) {
+      console.warn("addTransactionEntry error", e);
+    }
+  }
+
+  // 🔒 HARD LOCK IT
+  Object.defineProperty(window, "addTransactionEntry", {
+    value: addTransactionEntry,
+    writable: false,
+    configurable: false
   });
+
 })();
