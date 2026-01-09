@@ -6747,40 +6747,5 @@ document.addEventListener("AI_TRADE", e => {
 <!-- END: KUTMILZAI RISK NOTICES -->
 
 <script src="./ai_performance.js"></script>
-
-<!-- AUTO-ADDED: transaction listener fallback -->
-<script>
-(function(){
-  try {
-    window.addEventListener('kut:transaction', function(e){
-      try {
-        var tx = e.detail || {};
-        if (typeof window.showTransactionPopup === 'function') {
-          window.showTransactionPopup(tx);
-          return;
-        }
-        var card = document.createElement('div');
-        card.style.cssText = 'position:fixed;right:20px;bottom:20px;background:linear-gradient(180deg,#0f4a36,#0b3d2e);color:#e6d7a1;padding:14px;border-radius:12px;box-shadow:0 8px 30px rgba(3,15,10,0.45);z-index:99999;min-width:260px;';
-       var closedTime = (() => {
-  if (tx.closeTime) return new Date(tx.closeTime).toLocaleTimeString();
-  if (tx.timestamp) return new Date(tx.timestamp).toLocaleTimeString();
-  if (tx.time) return new Date(tx.time).toLocaleTimeString();
-  return new Date().toLocaleTimeString();
-})();
-        card.innerHTML =
-  '<div style="font-weight:700;margin-bottom:6px">MilzAi Alert 💰</div>' +
- '<div>Symbol: ' + resolveSymbol(tx) + '</div>' +
-  '<div>Closed: ' + closedTime + '</div>' +
-  '<div>Status: ' + (tx.status || '-') + '</div>' +
-  '<div>Stake: ' + (tx.stake || '-') + '</div>' +
-  '<div>Payout: ' + (tx.payout || '-') + '</div>';
-        document.body.appendChild(card);
-        setTimeout(function(){ try{ card.remove(); } catch(e){} }, 8000);
-      } catch(e){ console.warn('transaction listener error', e); }
-    });
-  } catch(e){}
-})();
-</script>
-<!-- END AUTO-ADDED -->
 </body>
 </html>
