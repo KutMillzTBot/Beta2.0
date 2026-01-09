@@ -149,6 +149,39 @@ console.log("[AI] Session-learning brain loaded");
 
 })();
 // GLOBAL transaction popup listener (runs once)
+function resolveSymbol(tx) {
+  if (!tx || typeof tx !== 'object') return 'UNKNOWN';
+
+  // direct fields
+  if (tx.symbol) return tx.symbol;
+  if (tx.symbolName) return tx.symbolName;
+  if (tx.market) return tx.market;
+  if (tx.instrument) return tx.instrument;
+
+  // nested objects (VERY COMMON)
+  if (tx.contract?.symbol) return tx.contract.symbol;
+  if (tx.asset?.symbol) return tx.asset.symbol;
+  if (tx.trade?.symbol) return tx.trade.symbol;
+
+  // parse from log / message text
+  const text =
+    tx.log ||
+    tx.message ||
+    tx.description ||
+    tx.info ||
+    '';
+
+  if (typeof text === 'string') {
+    // Examples it catches:
+    // "CLOSED | Crash900 | WON"
+    // "Symbol: Boom500"
+    const match = text.match(/(Crash\d+|Boom\d+|R_\d+|Volatility\s?\d+)/i);
+    if (match) return match[1];
+  }
+
+  return 'UNKNOWN';
+}
+
 window.addEventListener("kut:transaction", (e) => {
   if (!e.detail) return;
 
