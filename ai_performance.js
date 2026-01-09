@@ -135,3 +135,14 @@ console.log("[AI] Session-learning brain loaded");
   });
 
 })();
+// GLOBAL transaction popup listener (runs once)
+window.addEventListener("kut:transaction", (e) => {
+  if (!e.detail) return;
+
+  // safety check
+  if (typeof showTransactionPopup === "function") {
+    showTransactionPopup(e.detail);
+  } else {
+    console.warn("showTransactionPopup not defined", e.detail);
+  }
+});
