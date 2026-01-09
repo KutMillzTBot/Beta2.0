@@ -44,10 +44,9 @@ window.AI_BRAIN = loadBrain();
 
 setInterval(saveBrain, window.AI_BRAIN.meta.autosaveMs);
 
-function recordTrade(symbol, result, stake = null, payout = null)
+function recordTrade(symbol, result, stake = null, payout = null) {
 
-  // FORCE symbol resolution
-  const resolvedSymbol =
+   const resolvedSymbol =
     symbol ||
     window.currentSymbol ||
     window.activeSymbol ||
