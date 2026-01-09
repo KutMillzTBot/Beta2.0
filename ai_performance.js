@@ -44,56 +44,51 @@ window.AI_BRAIN = loadBrain();
 
 setInterval(saveBrain, window.AI_BRAIN.meta.autosaveMs);
 
-window.AI = {
-  recordTrade(symbol, result, stake = 0, payout = 0) {
+recordTrade(symbol, result, stake = null, payout = null) {
 
- // expose last trade globally for popup
-window.__LAST_TRADE__ = {
-  symbol:
+  // FORCE symbol resolution
+  const resolvedSymbol =
     symbol ||
     window.currentSymbol ||
     window.activeSymbol ||
     window.marketSymbol ||
-    'UNKNOWN',
+    window.lastSymbol ||
+    'UNKNOWN';
 
-  stake:
-    stake ||
-    window.lastStake ||
-    window.tradeAmount ||
-    window.orderAmount ||
-    0,
+  // FORCE stake resolution
+  const resolvedStake =
+    (typeof stake === 'number' && stake > 0) ? stake :
+    (typeof window.lastStake === 'number' && window.lastStake > 0) ? window.lastStake :
+    (typeof window.tradeAmount === 'number' && window.tradeAmount > 0) ? window.tradeAmount :
+    (typeof window.orderAmount === 'number' && window.orderAmount > 0) ? window.orderAmount :
+    null;
 
-  payout: payout || 0,
-  status: result === 'win' ? 'WON' : 'LOST',
-  closedTime: Date.now()
-};
+  const resolvedPayout =
+    (typeof payout === 'number' && payout > 0) ? payout :
+    window.lastPayout ||
+    window.profit ||
+    null;
 
+  window.__LAST_TRADE__ = {
+    symbol: resolvedSymbol,
+    stake: resolvedStake,
+    payout: resolvedPayout,
+    status: result === 'win' ? 'WON' : 'LOST',
+    closedTime: Date.now()
+  };
 
-// notify popup listener
-window.dispatchEvent(
-  new CustomEvent('kut:transaction', {
-    detail: window.__LAST_TRADE__
-  })
-);
-    
-    const brain = window.AI_BRAIN;
-    brain.session.trades++;
+  window.dispatchEvent(
+    new CustomEvent('kut:transaction', {
+      detail: window.__LAST_TRADE__
+    })
+  );
 
-    if(result === "win") brain.session.wins++;
-    if(result === "loss") brain.session.losses++;
+  const brain = window.AI_BRAIN;
+  brain.session.trades++;
+  if (result === 'win') brain.session.wins++;
+  else brain.session.losses++;
+}
 
-    brain.symbols[symbol] ??= { trades:0, wins:0, losses:0 };
-    brain.symbols[symbol].trades++;
-    if(result==="win") brain.symbols[symbol].wins++;
-    if(result==="loss") brain.symbols[symbol].losses++;
-
-    brain.history.push({
-      symbol, result, stake, payout, time: Date.now()
-    });
-
-    if(brain.history.length > 200) brain.history.shift();
-    saveBrain();
-  },
 
   exportBrain(){
     const blob = new Blob([JSON.stringify(window.AI_BRAIN,null,2)], {type:"application/json"});
