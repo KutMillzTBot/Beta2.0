@@ -132,18 +132,21 @@ window.resetSession = resetSession;
 /* listener to write to tx-log (if present) and show the styled popup */
 
     // append to #tx-log if available (keeps existing transaction log behavior)
-    try{
-      const txLog = document.getElementById('tx-log');
-      if(txLog){
-        const time = new Date().toLocaleTimeString();
-        const line = `${time} | ${e.detail.symbol || 'UNKNOWN'} | ${e.detail.status || 'CLOSED'} | ${typeof e.detail.payout === 'number' ? e.detail.payout : (e.detail.payout || '')} ${e.detail.note ? (' | ' + e.detail.note) : ''}`;
-        txLog.textContent = (txLog.textContent ? txLog.textContent + "\\n" : "") + line;
-        txLog.scrollTop = txLog.scrollHeight;
-      }
-    }catch(e){}
-  }catch(err){ console.warn("kut:transaction handler error", err); }
-});
+    try {
+  const txLog = document.getElementById("tx-log");
 
+  if (txLog) {
+    const time = new Date().toLocaleTimeString();
+    const line = `${time} | ${e.detail?.symbol || "UNKNOWN"}`;
+
+    txLog.textContent =
+      (txLog.textContent ? txLog.textContent + "\n" : "") + line;
+
+    txLog.scrollTop = txLog.scrollHeight;
+  }
+} catch (err) {
+  console.warn("kut:transaction handler error", err);
+}
 
 
 // ===============================
