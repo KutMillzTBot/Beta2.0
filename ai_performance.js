@@ -103,13 +103,14 @@ console.log("[AI] Session-learning brain loaded");
       if (!tx || typeof tx !== "object") return;
 
       const data = {
-       symbol: (() => {
+      symbol: (() => {
   if (tx.symbol) return tx.symbol;
   if (tx.symbolName) return tx.symbolName;
   if (tx.market) return tx.market;
   if (tx.instrument) return tx.instrument;
+  if (tx.underlying) return tx.underlying;
 
-  // fallback: parse from TX log like "CLOSED | BOOM500 | ACCU"
+  // fallback: parse from tx.log
   if (typeof tx.log === "string") {
     const parts = tx.log.split("|").map(p => p.trim());
     if (parts.length >= 2) return parts[1];
@@ -119,7 +120,7 @@ console.log("[AI] Session-learning brain loaded");
 })(),
         system: tx.system || "AI",
         ticks: tx.ticks ?? tx.tickCount ?? null,
-        stake: tx.stake ?? tx.amount ?? "",
+       stake: tx.stake ?? tx.amount ?? tx.buy_price ?? tx.entry_price ?? null,
         payout: tx.payout ?? tx.profit ?? tx.payoutAmount ?? "",
         status: tx.status || (
           typeof tx.payout === "number"
