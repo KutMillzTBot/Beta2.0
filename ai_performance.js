@@ -247,5 +247,5 @@ window.addEventListener("kut:transaction", (e) => {
 
  } catch (err) {
   console.warn("MilzAi single popup error", err);
+  }
 });
-
