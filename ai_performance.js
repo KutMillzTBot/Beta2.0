@@ -124,29 +124,31 @@ window.resetSession = resetSession;
   try{
     Object.defineProperty(window, "addTransactionEntry", { value: addTransactionEntry, writable: false, configurable: false });
   }catch(e){ window.addTransactionEntry = addTransactionEntry; }
-})();
-
-
 
 
 /* listener to write to tx-log (if present) and show the styled popup */
+window.addEventListener("kut:transaction", (e) => {
+  try {
+    const txLog = document.getElementById("tx-log");
+    if (!txLog) return;
 
-    // append to #tx-log if available (keeps existing transaction log behavior)
-    try {
-  const txLog = document.getElementById("tx-log");
-
-  if (txLog) {
     const time = new Date().toLocaleTimeString();
-    const line = `${time} | ${e.detail?.symbol || "UNKNOWN"}`;
+    const detail = e?.detail || {};
+   const symbol =
+  typeof detail.symbol === "string" && detail.symbol.trim()
+    ? detail.symbol
+    : "UNKNOWN";
 
+const line = `${time} | ${symbol}`;
     txLog.textContent =
       (txLog.textContent ? txLog.textContent + "\n" : "") + line;
 
     txLog.scrollTop = txLog.scrollHeight;
+  } catch (err) {
+    console.warn("kut:transaction handler error", err);
   }
-} catch (err) {
-  console.warn("kut:transaction handler error", err);
-}
+});
+
 
 
 // ===============================
