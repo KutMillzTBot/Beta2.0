@@ -6745,67 +6745,6 @@ document.addEventListener("AI_TRADE", e => {
 })();
 </script>
 <!-- END: KUTMILZAI RISK NOTICES -->
-<script>
-(function () {
-
-  // 1️⃣ DEFINE FUNCTION FIRST
-  function resolveTradeValues(tx) {
-    let stake = 'N/A';
-    let payout = 'N/A';
-
-    if (typeof tx.stake === 'number' && tx.stake > 0) {
-      stake = tx.stake;
-    } else if (typeof tx.amount === 'number' && tx.amount > 0) {
-      stake = tx.amount;
-    } else if (typeof window.lastStake === 'number' && window.lastStake > 0) {
-      stake = window.lastStake;
-    } else if (typeof window.tradeAmount === 'number' && window.tradeAmount > 0) {
-      stake = window.tradeAmount;
-    }
-
-    if (typeof tx.payout === 'number' && tx.payout > 0) {
-      payout = tx.payout;
-    } else if (typeof tx.profit === 'number' && tx.profit > 0) {
-      payout = tx.profit;
-    } else if (typeof tx.payoutAmount === 'number' && tx.payoutAmount > 0) {
-      payout = tx.payoutAmount;
-    }
-
-    return { stake, payout };
-  }
-
-  // 2️⃣ EVENT LISTENER AFTER
-  window.addEventListener('kut:transaction', function (e) {
-    const tx = e.detail || {};
-    console.log('TX DETAIL:', tx);
-
-    const { stake, payout } = resolveTradeValues(tx);
-
-    const symbol =
-      tx.symbol ||
-      tx.symbolName ||
-      tx.market ||
-      window.currentSymbol ||
-      window.activeSymbol ||
-      window.marketSymbol ||
-      'UNKNOWN';
-
-    const time = new Date().toLocaleTimeString();
-
-    const card = document.createElement('div');
-    card.innerHTML =
-      '<div><b>MilzAI Alert 🔥</b></div>' +
-      '<div>Symbol: ' + symbol + '</div>' +
-      '<div>Time: ' + time + '</div>' +
-      '<div>Stake: ' + stake + '</div>' +
-      '<div>Payout: ' + payout + '</div>';
-
-    document.body.appendChild(card);
-    setTimeout(() => card.remove(), 8000);
-  });
-
-})();
-</script>
 
 <script src="./ai_performance.js"></script>
 </body>
