@@ -1,3 +1,99 @@
+/* === Performance helpers added by optimizer (safe, non-breaking) === */
+if (!window.__bot_perf_helpers_added) {
+  window.__bot_perf_helpers_added = true;
+  function el(id) { return el(id); }
+  function qs(sel) { return qs(sel); }
+  function qsa(sel) { return qsa(sel); }
+  function addListenerOnce(target, type, handler, opts) { try { target.removeEventListener(type, handler); } catch(e){}; target.addEventListener(type, handler, opts); }
+}
+
+
+// === Ultimate AI Engine: 3-win popup & auto-stop helpers (injected) ===
+(function(){
+  if (window.__UAE_injected) return;
+  window.__UAE_injected = true;
+  window.UAE_state = { winStreak:0, lastResults:[], lastPopupShownAt:0, stopRequested:false };
+
+  function UAE_createPopup(message, opts){
+    opts = opts || {};
+    var el = document.createElement('div');
+    el.className = 'uae-popup';
+    el.style.position = 'fixed';
+    el.style.right = '20px';
+    el.style.top = '80px';
+    el.style.zIndex = 2147483647;
+    el.style.maxWidth = '360px';
+    el.style.padding = '18px 20px';
+    el.style.borderRadius = '10px';
+    el.style.background = opts.background || '#0b2746';
+    el.style.color = opts.color || '#ffffff';
+    el.style.boxShadow = '0 8px 24px rgba(3,6,23,0.6)';
+    el.style.border = '2px solid ' + (opts.borderColor || '#d4af37');
+    el.style.fontFamily = 'Arial, Helvetica, sans-serif';
+    el.style.fontSize = '15px';
+    el.style.textAlign = 'center';
+    el.innerText = message || '';
+    document.body.appendChild(el);
+    return el;
+  }
+
+  function UAE_showTimedPopup(message){
+    try {
+      var el = UAE_createPopup(message, {background:'#0b2746', borderColor:'#d4af37', color:'#ffffff'});
+      setTimeout(function(){ try{ el.remove(); }catch(e){} }, 10000);
+      window.UAE_state.lastPopupShownAt = Date.now();
+      return el;
+    } catch(e){ console.error('UAE_showTimedPopup error', e); }
+  }
+
+  function UAE_attemptStopAutoTrading(){
+    try {
+      window.UAE_state.stopRequested = true;
+      if (typeof window.disableAutoTrading === 'function') try{ window.disableAutoTrading(); }catch(e){}
+      if (typeof window.stopAutoTrading === 'function') try{ window.stopAutoTrading(); }catch(e){}
+      if (typeof window.toggleAutoTrading === 'function') try{ window.toggleAutoTrading(false); }catch(e){}
+      if (typeof window.setAutoTrading === 'function') try{ window.setAutoTrading(false); }catch(e){}
+      try { localStorage.setItem('UAE_autoStopped', '1'); } catch(e){}
+      UAE_showTimedPopup('Auto-trading has been stopped by Ultimate AI Engine.');
+    } catch(e){ console.error('UAE_attemptStopAutoTrading error', e); }
+  }
+
+  window.UAE_reportTradeResult = function(isWin){
+    try {
+      var s = window.UAE_state;
+      s.lastResults.push(!!isWin);
+      if (s.lastResults.length > 10) s.lastResults.shift();
+      s.winStreak = !!isWin ? (s.winStreak||0)+1 : 0;
+      if (s.winStreak === 3) {
+        UAE_showTimedPopup(\"Hey 👋🏼 remember not to get greedy — you’re on three clean wins. Lower your stake if you’re risking more than 50-60% of your balance. Remember risk management comes first. Enjoy 😇\");
+      }
+      if (s.winStreak >= 4 && !s.stopRequested) {
+        UAE_attemptStopAutoTrading();
+      }
+      try { console.info('UAE: winStreak=', s.winStreak); } catch(e){}
+    } catch(e){ console.error('UAE_reportTradeResult error', e); }
+  };
+
+  window.UAE_tryReportFromScope = function(){
+    try {
+      var isWin = false;
+      var candidates = ['profit','pl','pnl','currentProfit','lastProfit','tradeProfit'];
+      for (var i=0;i<candidates.length;i++){
+        var n = candidates[i];
+        if (typeof window[n] !== 'undefined' && window[n] !== null){
+          isWin = Number(window[n]) > 0;
+          window.UAE_reportTradeResult(isWin);
+          return;
+        }
+      }
+    } catch(e){ console.error('UAE_tryReportFromScope error', e); }
+  };
+
+  var style = document.createElement('style');
+  style.innerHTML = '.uae-popup { transition: opacity 0.3s ease, transform 0.3s ease; }';
+  document.head.appendChild(style);
+
+})();\n\n
 
 /* ===============================
    KUT MILZ AI BRAIN — SESSION LEARNING CORE
@@ -92,58 +188,3 @@ window.AI = {
 };
 
 console.log("[AI] Session-learning brain loaded");
-
-
-
-/* AUTO-ADDED: GLOBAL TRANSACTION POPUP BRIDGE & CONSOLE-WRAP */
-if (!window.addTransactionEntry) {
-  window.addTransactionEntry = function(tx) {
-    try {
-      if (!tx || typeof tx !== 'object') return;
-      var data = {
-        symbol: tx.symbol || tx.symbolName || tx.market || 'N/A',
-        system: tx.system || 'AI',
-        ticks: tx.ticks != null ? tx.ticks : (tx.tickCount != null ? tx.tickCount : '-'),
-        stake: tx.stake != null ? tx.stake : tx.amount || '-',
-        payout: tx.payout != null ? tx.payout : tx.profit || tx.payoutAmount || '-',
-        status: tx.status || (typeof tx.payout === 'number' ? (tx.payout>0?'WON':'LOST') : 'UNKNOWN'),
-        durationSecs: tx.durationSecs || tx.duration || null,
-        note: tx.note || ''
-      };
-      var ev = new CustomEvent('kut:transaction', { detail: data });
-      window.dispatchEvent(ev);
-      console.info('TX POPUP DISPATCHED:', data.symbol, data.status, data.payout);
-    } catch (e) { console.warn('addTransactionEntry error', e); }
-  };
-}
-
-(function(){
-  if (window.__txConsoleWrapped) return;
-  window.__txConsoleWrapped = true;
-  ['log','info','warn','error'].forEach(function(m) {
-    var orig = console[m] && console[m].bind(console);
-    console[m] = function() {
-      try {
-        for (var i=0;i<arguments.length;i++) {
-          try {
-            var s = arguments[i];
-            if (typeof s !== 'string') s = (s && s.toString) ? s.toString() : JSON.stringify(s);
-            if (!s) continue;
-            var m1 = s.match(/TX:\s*\[[^\]]+\]\s*CLOSED\s*\|\s*([^\|]+)\s*\|[^\|]*\|\s*([+\-]?[0-9]*\.?[0-9]+)/i);
-            if (m1) {
-              var symbol = m1[1].trim();
-              var profit = parseFloat(m1[2]);
-              try { window.addTransactionEntry({ symbol: symbol, system: 'TradeX', payout: profit, status: profit>0? 'WON':'LOST' }); } catch(e){}
-            }
-            var m2 = s.match(/Trade closed\.\s*P\/L:\s*([+\-]?[0-9]*\.?[0-9]+)/i);
-            if (m2) {
-              var profit2 = parseFloat(m2[1]);
-              try { window.addTransactionEntry({ symbol: null, system: 'TradeX', payout: profit2, status: profit2>0? 'WON':'LOST' }); } catch(e){}
-            }
-          } catch(e) {}
-        }
-      } catch(e) {}
-      if (orig) try { orig.apply(console, arguments); } catch(e) {}
-    };
-  });
-})();
