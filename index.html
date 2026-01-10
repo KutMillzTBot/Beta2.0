@@ -1628,6 +1628,54 @@ button {
           </div>
 
 
+<!-- MILZXAI -->
+          <div class="mt-4 p-4 rounded-lg border border-slate-700 bg-slate-900/30">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <div class="text-sm font-extrabold text-slate-200">MILZXAI</div>
+                <div class="text-xs text-slate-400">AI Market Routing - Cycles through selected markets after each trade.</div>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="milzxai-toggle" class="sr-only peer" disabled>
+                <div class="w-11 h-6 bg-slate-500 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer
+                  peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                  after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+              </label>
+            </div>
+
+            <div id="milzxai-settings" class="mt-3">
+              <div>
+                <label class="block text-sm font-medium mb-1">Select Markets (Multi-Select)</label>
+                <select id="milzxai-markets" multiple class="w-full p-2 rounded bg-slate-700 border border-slate-600 text-slate-50 focus:ring-teal-500 focus:border-teal-500" disabled>
+<option value="R_10">Volatility 10 Index (R_10)</option>
+              <option value="R_25">Volatility 25 Index (R_25)</option>
+              <option value="R_50">Volatility 50 Index (R_50)</option>
+              <option value="R_75">Volatility 75 Index (R_75)</option>
+              <option value="R_100">Volatility 100 Index (R_100)</option>
+              <option value="1HZ10V">Volatility 10 (1s) (1HZ10V)</option>
+              <option value="1HZ25V">Volatility 25 (1s) (1HZ25V)</option>
+              <option value="1HZ50V">Volatility 50 (1s) (1HZ50V)</option>
+              <option value="1HZ75V">Volatility 75 (1s) (1HZ75V)</option>
+              <option value="1HZ100V">Volatility 100 (1s) (1HZ100V)</option>
+    <option value="BOOM300">Boom 300 Index</option>
+    <option value="BOOM500">Boom 500 Index</option>
+    <option value="BOOM600">Boom 600 Index</option>
+    <option value="BOOM900">Boom 900 Index</option>
+    <option value="BOOM1000">Boom 1000 Index</option>
+    <option value="CRASH300">Crash 300 Index</option>
+    <option value="CRASH500">Crash 500 Index</option>
+    <option value="CRASH600">Crash 600 Index</option>
+    <option value="CRASH900">Crash 900 Index</option>
+    <option value="CRASH1000">Crash 1000 Index</option>
+</select>
+                <p class="text-xs text-slate-400 mt-2">
+                  Selected markets: <span id="milzxai-selected-count" class="text-teal-300 font-semibold">0</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+
       <!-- Protected Defaults -->
       <div class="card">
         <div class="flex justify-between items-start mb-4 border-b border-slate-700 pb-3">
@@ -2286,6 +2334,13 @@ duration:5,
     growthRate:0.01,      // 1%..5% (0.01..0.05)
     takeProfit:null,      // profit amount ($) for server-side auto-sell (limit_order.take_profit)
     safe:true             // caps growth to 12% when ON
+  },
+
+  // MILZXAI - AI Market Routing
+  milzxai:{
+    enabled:false,
+    markets:[],
+    currentIndex:0
   },
 
 
@@ -3579,6 +3634,12 @@ const dom = {
   accuTP: $("accu-tp"),
   accuSafe: $("accu-safe"),
 
+  // MILZXAI
+  milzxaiToggle: $("milzxai-toggle"),
+  milzxaiSettings: $("milzxai-settings"),
+  milzxaiMarkets: $("milzxai-markets"),
+  milzxaiSelectedCount: $("milzxai-selected-count"),
+
 };
 
 /* =========================================================
@@ -4008,6 +4069,7 @@ function setSettingsLock(isLocked){
     dom.scalpIndBoostMin, dom.scalpIndGateMin, dom.scalpIndHardConf,
     dom.chartAssistToggle, dom.chartAssistMode, dom.chartAssistMinCd,
     dom.accuToggle, dom.accuSafe, dom.accuTP, dom.accuGrowth,
+    dom.milzxaiToggle, dom.milzxaiMarkets,
     dom.sessLimitEnabled, dom.sessMaxProfit, dom.sessMaxLoss, dom.sessMaxTrades, dom.sessMaxWins, dom.sessMaxLosses, dom.sessLimitReset
   ].filter(Boolean);
 
@@ -4022,6 +4084,12 @@ function setSettingsLock(isLocked){
   if (dom.accuSettings){
     dom.accuSettings.classList.toggle("pointer-events-none", isLocked);
     dom.accuSettings.classList.toggle("opacity-60", isLocked);
+  }
+
+  // MILZXAI settings box
+  if (dom.milzxaiSettings){
+    dom.milzxaiSettings.classList.toggle("pointer-events-none", isLocked);
+    dom.milzxaiSettings.classList.toggle("opacity-60", isLocked);
   }
 
   if (dom.unlockBtn){
@@ -4249,6 +4317,20 @@ function initChart(){
   }
   if (dom.accuSettings){
     dom.accuSettings.style.display = (appState.accu?.enabled ? "grid" : "none");
+  }
+
+  // MILZXAI UI
+  if (dom.milzxaiToggle && document.activeElement !== dom.milzxaiToggle){
+    dom.milzxaiToggle.checked = !!appState.milzxai?.enabled;
+  }
+  if (dom.milzxaiMarkets){
+    // Update selected options
+    Array.from(dom.milzxaiMarkets.options).forEach(opt => {
+      opt.selected = appState.milzxai?.markets?.includes(opt.value) || false;
+    });
+  }
+  if (dom.milzxaiSelectedCount){
+    dom.milzxaiSelectedCount.textContent = String(appState.milzxai?.markets?.length || 0);
   }
 
 }
@@ -4971,6 +5053,22 @@ function handleResponse(res){
           // AI trade outcome feed (safety-only)
           aiLayer.onTradeClosed(profit, Date.now());
 
+          // MILZXAI: Cycle to next market after trade completion
+          if (appState.milzxai?.enabled && appState.milzxai.markets?.length > 0) {
+            appState.milzxai.currentIndex = (appState.milzxai.currentIndex + 1) % appState.milzxai.markets.length;
+            console.log(`[MILZXAI] Cycled to market index ${appState.milzxai.currentIndex}: ${appState.milzxai.markets[appState.milzxai.currentIndex]}`);
+          }
+
+          // Dispatch AI_TRADE event for AI brain recording
+          document.dispatchEvent(new CustomEvent("AI_TRADE", {
+            detail: {
+              symbol: appState.currentSymbolAtEntry,
+              win: profit > 0,
+              stake: appState.stakeAmount,
+              payout: Number(c.sell_price)
+            }
+          }));
+
           if (appState.autoResume){
             setTimeout(() => {
               if (!appState.isBotRunning) return;
@@ -5118,10 +5216,18 @@ function checkAndEnterTrade(){
   }
 
   const stake = getEffectiveStake();
-  enterTrade(direction, stake);
+
+  // Determine symbol for this trade
+  let tradeSymbol = appState.symbol;
+  if (appState.milzxai?.enabled && appState.milzxai.markets?.length > 0) {
+    tradeSymbol = appState.milzxai.markets[appState.milzxai.currentIndex];
+    console.log(`[MILZXAI] Using market: ${tradeSymbol} (index ${appState.milzxai.currentIndex})`);
+  }
+
+  enterTrade(direction, stake, tradeSymbol);
 }
 
-function enterTrade(direction, stake){
+function enterTrade(direction, stake, tradeSymbol = appState.symbol){
   if (!appState.ws || !appState.isAuthenticated) return;
 
 
@@ -5130,7 +5236,7 @@ function enterTrade(direction, stake){
     stage: "ENTER_TRADE",
     direction,
     stake,
-    symbol: appState.symbol,
+    symbol: tradeSymbol,
     mode: appState.mode,
     accuEnabled: !!(appState.accu && appState.accu.enabled),
     tickBuffer: appState.tickBuffer,
@@ -5155,7 +5261,7 @@ function enterTrade(direction, stake){
   }
 
   appState.currentDirection = (appState.accu && appState.accu.enabled) ? 'ACCU' : direction;
-  appState.currentSymbolAtEntry = appState.symbol;
+  appState.currentSymbolAtEntry = tradeSymbol;
 
   appState.isEntryInProgress = true;
   appState.pendingProposalId = null;
@@ -5176,7 +5282,7 @@ function enterTrade(direction, stake){
       basis: "stake",
       contract_type: "ACCU",
       currency: "USD",
-      symbol: appState.symbol,
+      symbol: tradeSymbol,
       growth_rate: growthRate
     };
 
@@ -5194,7 +5300,7 @@ function enterTrade(direction, stake){
       currency: "USD",
       duration: appState.duration,
       duration_unit: appState.durationUnit,
-      symbol: appState.symbol
+      symbol: tradeSymbol
     };
   }
 
@@ -5364,7 +5470,7 @@ function manualPlaceTrade(mult=1){
     return;
   }
 
-  enterTrade(dir, appState.stakeAmount * mult);
+  enterTrade(dir, appState.stakeAmount * mult, appState.symbol);
 }
 
 function clearHistory(){
@@ -5529,6 +5635,26 @@ document.addEventListener("DOMContentLoaded", () => {
       dom.accuSafe.addEventListener("change", () => {
         appState.accu.safe = !!dom.accuSafe.checked;
         updateUI();
+      });
+    }
+
+    // MILZXAI master toggle
+    if (dom.milzxaiToggle){
+      dom.milzxaiToggle.addEventListener("change", () => {
+        appState.milzxai.enabled = !!dom.milzxaiToggle.checked;
+        updateUI();
+        logLine(`[MILZXAI] ${appState.milzxai.enabled ? "ON" : "OFF"}`);
+      });
+    }
+
+    // MILZXAI markets selector
+    if (dom.milzxaiMarkets){
+      dom.milzxaiMarkets.addEventListener("change", () => {
+        const selected = Array.from(dom.milzxaiMarkets.selectedOptions).map(opt => opt.value);
+        appState.milzxai.markets = selected;
+        appState.milzxai.currentIndex = 0; // reset index when markets change
+        updateUI();
+        logLine(`[MILZXAI] Markets updated: ${selected.length} selected`);
       });
     }
 
@@ -6738,5 +6864,6 @@ document.addEventListener("AI_TRADE", e => {
 })();
 </script>
 <!-- END: KUTMILZAI RISK NOTICES -->
+<script src="ai_performance.js"></script>
 </body>
 </html>
