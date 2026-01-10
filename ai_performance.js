@@ -130,7 +130,9 @@ window.resetSession = resetSession;
 window.addEventListener("kut:transaction", (e) => {
   try {
     const txLog = document.getElementById("tx-log");
-    if (!txLog) return;
+  if (!txLog) {
+  return;
+}
 
     const time = new Date().toLocaleTimeString();
     const detail = e?.detail || {};
