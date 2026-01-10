@@ -149,6 +149,77 @@ const line = `${time} | ${symbol}`;
   }
 });
 
+// ================================
+// MilzAi Alert Popup (SAFE)
+// ================================
+window.renderMilzPopup = function (detail = {}) {
+  try {
+    const existing = document.getElementById("milzai-popup");
+    if (existing) existing.remove();
+
+    const time = new Date().toLocaleTimeString();
+
+    const symbol =
+      typeof detail.symbol === "string" && detail.symbol.trim()
+        ? detail.symbol
+        : "UNKNOWN";
+
+    const stake =
+      typeof detail.stake === "number"
+        ? `$${detail.stake.toFixed(2)}`
+        : "—";
+
+    const profit =
+      typeof detail.profit === "number"
+        ? `$${detail.profit.toFixed(2)}`
+        : "—";
+
+    if (detail.result !== "win") return;
+
+    const popup = document.createElement("div");
+    popup.id = "milzai-popup";
+
+    popup.innerHTML = `
+      <div style="font-weight:700;font-size:15px;margin-bottom:6px;">
+        MilzAi Alert 🔥
+      </div>
+      <div style="font-size:13px;">
+        ${time} | ${symbol}
+      </div>
+      <div style="font-size:13px;margin-top:4px;">
+        Stake: <span style="color:#f5d88a">${stake}</span>
+      </div>
+      <div style="font-size:13px;">
+        Profit: <span style="color:#8dffb0">${profit}</span>
+      </div>
+    `;
+
+    Object.assign(popup.style, {
+      position: "fixed",
+      top: "20px",
+      right: "20px",
+      background: "#0b1a2f",
+      color: "#f5d88a",
+      padding: "14px 16px",
+      borderRadius: "10px",
+      boxShadow: "0 10px 30px rgba(0,0,0,.45)",
+      fontFamily: "Arial, sans-serif",
+      zIndex: 999999,
+      minWidth: "220px"
+    });
+
+    document.body.appendChild(popup);
+
+    setTimeout(() => {
+      popup.style.opacity = "0";
+      popup.style.transition = "opacity .4s ease";
+      setTimeout(() => popup.remove(), 400);
+    }, 9000);
+
+  } catch (err) {
+    console.warn("MilzAi popup render error", err);
+  }
+};
 
 
 // ===============================
@@ -159,9 +230,19 @@ let __MILZ_POPUP_LOCK__ = false;
 window.addEventListener("kut:transaction", (e) => {
   try {
     if (!e.detail || __MILZ_POPUP_LOCK__) return;
+
     __MILZ_POPUP_LOCK__ = true;
-    renderMilzPopup(e.detail);
-    setTimeout(() => { __MILZ_POPUP_LOCK__ = false; }, 300);
+
+    if (typeof window.renderMilzPopup === "function") {
+      window.renderMilzPopup(e.detail);
+    } else {
+      console.warn("MilzAi popup skipped: renderMilzPopup not defined");
+    }
+
+    setTimeout(() => {
+      __MILZ_POPUP_LOCK__ = false;
+    }, 9300);
+
   } catch (err) {
     console.warn("MilzAi single popup error", err);
   }
