@@ -1398,7 +1398,7 @@ button {
               <div class="text-red-400 text-xl">🚀</div>
               <div>
                 <div class="font-semibold text-slate-200">RuShXAi Mode</div>
-                <div class="text-xs text-slate-400">Override news/event pause - AI takes control</div>
+                <div class="text-xs text-slate-400">🚀 Override news & time restrictions • AI observation mode • 2-loss = 120s cooldown</div>
               </div>
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
@@ -2236,6 +2236,9 @@ const appState = {
 
 autoTradingEnabled:true,
 
+  rushXAiEnabled:false,
+  rushXAiLossCount:0,
+  rushXAiCooldownUntil:0,
 
   // Chart Assist: optional chart-pattern helper (does NOT change core strategy unless user sets mode=GATE)
   chartAssist:{
@@ -3924,6 +3927,14 @@ function updateAIInsights(){
       }
     }
 
+    // RuShXAi specific insights
+    if(appState.rushXAiEnabled && window.AI.getRuShXAiInsights) {
+      const rushInsights = window.AI.getRuShXAiInsights();
+      rushInsights.forEach(insight => {
+        dom.aiInsightsList.innerHTML += `<div class="mt-1 text-red-300">${insight}</div>`;
+      });
+    }
+
   } catch(e) {
     console.error('[AI] Error updating insights:', e);
     if(dom.aiOverallStats) dom.aiOverallStats.innerHTML = 'AI analytics loading...';
@@ -5196,6 +5207,24 @@ function handleResponse(res){
             console.log(`[MILZXAI] Cycled to market index ${appState.milzxai.currentIndex}: ${appState.milzxai.markets[appState.milzxai.currentIndex]}`);
           }
 
+          // RuShXAi: Track losses and implement cooldown
+          if (appState.rushXAiEnabled) {
+            if (profit <= 0) {
+              appState.rushXAiLossCount++;
+              console.log(`[RuShXAi] Loss count: ${appState.rushXAiLossCount}`);
+              
+              if (appState.rushXAiLossCount >= 2) {
+                appState.rushXAiCooldownUntil = Date.now() + (120 * 1000); // 120 seconds
+                appState.rushXAiLossCount = 0; // Reset counter
+                UAE_showTimedPopup('🚨 RuShXA Cooldown: Two losses detected. Entering 120-second observation mode to analyze patterns.', 10000);
+                console.log('[RuShXAi] Cooldown activated - 120 seconds');
+              }
+            } else {
+              // Win resets loss counter
+              appState.rushXAiLossCount = 0;
+            }
+          }
+
           // Dispatch AI_TRADE event for AI brain recording
           document.dispatchEvent(new CustomEvent("AI_TRADE", {
             detail: {
@@ -5238,7 +5267,7 @@ function checkAndEnterTrade(){
   requestHTFCandles();
 
   // Respect bot cooldown + AI cooldown
-  let effectiveCooldownUntil = Math.max(appState.cooldownUntil || 0, aiLayer.cooldownExtraUntil || 0, appState.burstCooldownUntil || 0, appState.softScoreCooldownUntil || 0);
+  let effectiveCooldownUntil = Math.max(appState.cooldownUntil || 0, aiLayer.cooldownExtraUntil || 0, appState.burstCooldownUntil || 0, appState.softScoreCooldownUntil || 0, appState.rushXAiCooldownUntil || 0);
 
   if (Date.now() < effectiveCooldownUntil){
     // Chart Assist can shorten ONLY the bot cooldown when it sees a strong quick setup
@@ -5332,7 +5361,7 @@ function checkAndEnterTrade(){
   }
 
   /* TIME-BASED TRADING WINDOWS */
-  if (window.AI && window.AI.isOptimalTradingTime && !window.AI.isOptimalTradingTime(appState.symbol)) {
+  if (window.AI && window.AI.isOptimalTradingTime && !window.AI.isOptimalTradingTime(appState.symbol) && !appState.rushXAiEnabled) {
     if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "Outside Optimal Hours";
     return;
   }
@@ -6030,7 +6059,7 @@ document.addEventListener("DOMContentLoaded", () => {
       logLine("RuShXAi Mode: " + (appState.rushXAiEnabled ? "ON" : "OFF"));
       if (appState.rushXAiEnabled) {
         // Show risk popup
-        UAE_showTimedPopup('🚀 RuShXA is activated! Remember not to get greedy. AI is now overriding news/event pauses for maximum opportunity capture.', 15000);
+        UAE_showTimedPopup('🚀 RuShXA ACTIVATED! AI observation mode engaged. News/event pauses AND time restrictions overridden. Two consecutive losses trigger 120-second cooldown. Remember: high reward = high risk!', 15000);
       }
       updateUI();
     });
