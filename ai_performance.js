@@ -249,4 +249,4 @@ window.addEventListener("kut:transaction", (e) => {
   console.warn("MilzAi single popup error", err);
 }
 });
-
+}
