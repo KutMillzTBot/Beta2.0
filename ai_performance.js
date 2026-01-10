@@ -586,6 +586,36 @@ window.AI = {
     saveBrain();
   },
 
+  // RuShXAi observation mode - more aggressive recommendations
+  getRuShXAiInsights() {
+    const insights = [];
+    const brain = window.AI_BRAIN;
+
+    // More aggressive market recommendations
+    const topMarkets = this.getBestMarkets(3);
+    if(topMarkets.length > 0) {
+      insights.push(`🚀 RuShXAi: PRIORITIZE these markets: ${topMarkets.join(', ')}`);
+    }
+
+    // Higher confidence thresholds for RuShXAi
+    const recent = brain.history.slice(-5);
+    const recentWinRate = recent.filter(t => t.result === 'win').length / recent.length;
+    if(recentWinRate > 0.6) {
+      insights.push('🔥 RuShXAi: Hot streak detected - increase stake size!');
+    }
+
+    // Time-sensitive opportunities
+    const now = new Date();
+    const hour = now.getHours();
+    if(hour >= 1 && hour <= 3) { // London open
+      insights.push('🌅 RuShXAi: London session volatility - high opportunity window');
+    }
+
+    insights.push('⚡ RuShXAi: AI observation mode active - learning aggressively');
+
+    return insights;
+  },
+
   resetAll(){
     window.AI_BRAIN = deepClone(DEFAULT_BRAIN);
     saveBrain();
