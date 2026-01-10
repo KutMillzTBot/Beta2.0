@@ -1676,6 +1676,41 @@ button {
           </div>
 
 
+<!-- AI Learning Dashboard -->
+          <div class="mt-4 p-4 rounded-lg border border-slate-700 bg-slate-900/30">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <div class="text-sm font-extrabold text-slate-200">AI Learning Dashboard</div>
+                <div class="text-xs text-slate-400">Advanced analytics and adaptive learning insights.</div>
+              </div>
+              <button id="ai-insights-btn" class="text-xs text-cyan-400 hover:text-cyan-300 font-medium py-1 px-3 rounded-full border border-cyan-500 transition duration-150">
+                Get Insights
+              </button>
+            </div>
+
+            <div id="ai-analytics" class="mt-3 space-y-2">
+              <div class="text-xs text-slate-400">
+                <div id="ai-overall-stats">Loading AI analytics...</div>
+              </div>
+              <div class="text-xs text-slate-400">
+                <div id="ai-insights-list">Click "Get Insights" to see learning recommendations</div>
+              </div>
+            </div>
+
+            <div class="mt-3 flex gap-2">
+              <button id="ai-export-btn" class="text-xs text-green-400 hover:text-green-300 font-medium py-1 px-2 rounded border border-green-500">
+                Export Brain
+              </button>
+              <button id="ai-reset-session-btn" class="text-xs text-yellow-400 hover:text-yellow-300 font-medium py-1 px-2 rounded border border-yellow-500">
+                Reset Session
+              </button>
+              <button id="ai-reset-all-btn" class="text-xs text-red-400 hover:text-red-300 font-medium py-1 px-2 rounded border border-red-500">
+                Reset All
+              </button>
+            </div>
+          </div>
+
+
       <!-- Protected Defaults -->
       <div class="card">
         <div class="flex justify-between items-start mb-4 border-b border-slate-700 pb-3">
@@ -3640,6 +3675,15 @@ const dom = {
   milzxaiMarkets: $("milzxai-markets"),
   milzxaiSelectedCount: $("milzxai-selected-count"),
 
+  // AI Learning Dashboard
+  aiInsightsBtn: $("ai-insights-btn"),
+  aiAnalytics: $("ai-analytics"),
+  aiOverallStats: $("ai-overall-stats"),
+  aiInsightsList: $("ai-insights-list"),
+  aiExportBtn: $("ai-export-btn"),
+  aiResetSessionBtn: $("ai-reset-session-btn"),
+  aiResetAllBtn: $("ai-reset-all-btn"),
+
 };
 
 /* =========================================================
@@ -3785,18 +3829,88 @@ function updateTrendUI(){
 function getEffectiveStake(){
   const manual = Number(appState.stakeAmount) || 0;
   const rs = appState.riskSizing;
+  let stake = manual;
+
   if (rs && rs.enabled){
     const bal = Number(appState.currentBalance) || 0;
     const pct = Number(rs.pct) || 0;
-    let stake = (bal > 0 && pct > 0) ? (bal * pct / 100) : manual;
+    stake = (bal > 0 && pct > 0) ? (bal * pct / 100) : manual;
     const min = Number(rs.minStake) || 0;
     const max = Number(rs.maxStake) || 0;
     if (min > 0) stake = Math.max(stake, min);
     if (max > 0) stake = Math.min(stake, max);
     stake = Math.round(stake * 100) / 100;
-    if (Number.isFinite(stake) && stake > 0) return stake;
   }
+
+  // Apply AI dynamic stake scaling
+  if(window.AI && window.AI.getDynamicStake) {
+    stake = window.AI.getDynamicStake(stake, appState.symbol);
+  }
+
+  // Apply risk multiplier
+  if(window.AI && window.AI.getRiskMultiplier) {
+    const riskMult = window.AI.getRiskMultiplier(appState.symbol);
+    stake *= riskMult;
+  }
+
+  if (Number.isFinite(stake) && stake > 0) return stake;
   return manual;
+}
+
+function updateAIInsights(){
+  if(!window.AI || !dom.aiOverallStats || !dom.aiInsightsList) return;
+
+  try {
+    const analytics = window.AI.getAnalytics();
+    const insights = window.AI.getInsights();
+
+    // Update overall stats
+    dom.aiOverallStats.innerHTML = `
+      <div><strong>Total Trades:</strong> ${analytics.overall.trades} | <strong>Win Rate:</strong> ${analytics.overall.winRate} | <strong>Best Streak:</strong> ${analytics.overall.bestStreak}</div>
+      <div><strong>Total P&L:</strong> $${analytics.overall.totalProfit}</div>
+    `;
+
+    // Update insights
+    if(insights.length > 0) {
+      dom.aiInsightsList.innerHTML = insights.map(insight => `<div>• ${insight}</div>`).join('');
+    } else {
+      dom.aiInsightsList.innerHTML = 'No insights available yet. Keep trading to generate learning data!';
+    }
+
+    // Update MILZXAI suggestions if available
+    if(window.AI.getBestMarkets && appState.milzxai) {
+      const bestMarkets = window.AI.getBestMarkets(5);
+      if(bestMarkets.length > 0 && dom.aiInsightsList) {
+        dom.aiInsightsList.innerHTML += `<div class="mt-2 text-cyan-300"><strong>MILZXAI Suggestion:</strong> Try these top markets: ${bestMarkets.join(', ')}</div>`;
+      }
+    }
+
+    // Add sentiment and enhancement insights
+    if(window.AI.getMarketSentiment) {
+      const sentiment = window.AI.getMarketSentiment(appState.symbol);
+      dom.aiInsightsList.innerHTML += `<div class="mt-1 text-green-300"><strong>Market Sentiment:</strong> ${sentiment.trend} (${(sentiment.strength * 100).toFixed(0)}% strength)</div>`;
+    }
+
+    if(window.AI.shouldPauseForNews && window.AI.shouldPauseForNews()) {
+      dom.aiInsightsList.innerHTML += `<div class="mt-1 text-yellow-300"><strong>News Alert:</strong> Trading paused for potential news events</div>`;
+    }
+
+    if(window.AI.isOptimalTradingTime && !window.AI.isOptimalTradingTime(appState.symbol)) {
+      dom.aiInsightsList.innerHTML += `<div class="mt-1 text-orange-300"><strong>Time Window:</strong> Outside optimal trading hours</div>`;
+    }
+
+    if(window.AI.getCorrelatedMarkets) {
+      const correlated = window.AI.getCorrelatedMarkets(appState.symbol);
+      if(correlated.length > 0) {
+        dom.aiInsightsList.innerHTML += `<div class="mt-1 text-purple-300"><strong>Correlations:</strong> Consider trading: ${correlated.join(', ')}</div>`;
+      }
+    }
+
+  } catch(e) {
+    console.error('[AI] Error updating insights:', e);
+    if(dom.aiOverallStats) dom.aiOverallStats.innerHTML = 'AI analytics loading...';
+    if(dom.aiInsightsList) dom.aiInsightsList.innerHTML = 'Learning insights will appear here';
+  }
 }
 
 function updateUI(){
@@ -5065,7 +5179,10 @@ function handleResponse(res){
               symbol: appState.currentSymbolAtEntry,
               win: profit > 0,
               stake: appState.stakeAmount,
-              payout: Number(c.sell_price)
+              payout: Number(c.sell_price),
+              direction: appState.currentDirection,
+              strategy: appState.mode,
+              confidence: 75 // Could be enhanced with actual confidence scoring
             }
           }));
 
@@ -5169,6 +5286,31 @@ function checkAndEnterTrade(){
 
   /*  CANDLE STRUCTURE CHECKS (AUTO) */
   if (!passesCandleStructure(direction)){
+    return;
+  }
+
+  /* MARKET SENTIMENT ANALYSIS */
+  if (window.AI && window.AI.getMarketSentiment) {
+    const sentiment = window.AI.getMarketSentiment(appState.symbol);
+    if (sentiment.trend === 'bearish' && direction === 'CALL') {
+      if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "Sentiment: Bearish vs CALL";
+      return;
+    }
+    if (sentiment.trend === 'bullish' && direction === 'PUT') {
+      if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "Sentiment: Bullish vs PUT";
+      return;
+    }
+  }
+
+  /* NEWS/EVENT FILTER */
+  if (window.AI && window.AI.shouldPauseForNews && window.AI.shouldPauseForNews()) {
+    if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "News/Event Pause";
+    return;
+  }
+
+  /* TIME-BASED TRADING WINDOWS */
+  if (window.AI && window.AI.isOptimalTradingTime && !window.AI.isOptimalTradingTime(appState.symbol)) {
+    if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "Outside Optimal Hours";
     return;
   }
 
@@ -5658,6 +5800,44 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
+    // AI Learning Dashboard
+    if (dom.aiInsightsBtn){
+      dom.aiInsightsBtn.addEventListener("click", () => {
+        updateAIInsights();
+        logLine("[AI] Insights updated");
+      });
+    }
+
+    if (dom.aiExportBtn){
+      dom.aiExportBtn.addEventListener("click", () => {
+        if(window.AI && window.AI.exportBrain) {
+          window.AI.exportBrain();
+          logLine("[AI] Brain exported");
+        }
+      });
+    }
+
+    if (dom.aiResetSessionBtn){
+      dom.aiResetSessionBtn.addEventListener("click", () => {
+        if(window.AI && window.AI.resetSession) {
+          window.AI.resetSession();
+          updateAIInsights();
+          logLine("[AI] Session reset");
+        }
+      });
+    }
+
+    if (dom.aiResetAllBtn){
+      dom.aiResetAllBtn.addEventListener("click", () => {
+        if(confirm("Reset ALL AI learning data? This cannot be undone!")) {
+          if(window.AI && window.AI.resetAll) {
+            window.AI.resetAll();
+            logLine("[AI] All data reset");
+          }
+        }
+      });
+    }
+
     // Growth rate selector (dropdown)
     if (dom.accuGrowth){
       dom.accuGrowth.addEventListener("change", () => {
@@ -5923,6 +6103,13 @@ dom.clearLogBtn?.addEventListener("click", () => { if (LOG) LOG.textContent = ""
     updateProfit(appState.sessionProfit);
     updateLoss(appState.sessionLoss);
     updateUI();
+
+    // Initialize AI Learning Dashboard
+    setTimeout(() => {
+      updateAIInsights();
+      // Update insights every 30 seconds
+      setInterval(updateAIInsights, 30000);
+    }, 2000);
 
     logLine("Kut Milz TB loaded. Ready.");
     txLogLine("READY | Transaction log initialized");
