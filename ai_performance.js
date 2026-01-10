@@ -65,7 +65,7 @@ if (!window.__bot_perf_helpers_added) {
       if (s.lastResults.length > 10) s.lastResults.shift();
       s.winStreak = !!isWin ? (s.winStreak||0)+1 : 0;
       if (s.winStreak === 3) {
-        UAE_showTimedPopup(\"Hey 👋🏼 remember not to get greedy — you’re on three clean wins. Lower your stake if you’re risking more than 50-60% of your balance. Remember risk management comes first. Enjoy 😇\");
+        UAE_showTimedPopup('Hey 👋🏼 remember not to get greedy — you\'re on three clean wins. Lower your stake if you\'re risking more than 50-60% of your balance. Remember risk management comes first. Enjoy 😇');
       }
       if (s.winStreak >= 4 && !s.stopRequested) {
         UAE_attemptStopAutoTrading();
@@ -93,7 +93,8 @@ if (!window.__bot_perf_helpers_added) {
   style.innerHTML = '.uae-popup { transition: opacity 0.3s ease, transform 0.3s ease; }';
   document.head.appendChild(style);
 
-})();\n\n
+})();
+
 
 /* ===============================
    KUT MILZ AI BRAIN — SESSION LEARNING CORE
@@ -101,8 +102,13 @@ if (!window.__bot_perf_helpers_added) {
    =============================== */
 
 
-// === Added Crash/Boom symbols (you may need to adjust these to match your broker's exact symbol strings) ===
-const CUSTOM_ADDED_MARKETS = ['BOOM300', 'BOOM500', 'BOOM600', 'BOOM900', 'BOOM1000', 'CRASH300', 'CRASH500', 'CRASH600', 'CRASH900', 'CRASH1000'];
+// === Added Crash/Boom/Volatility symbols (matches HTML dropdown) ===
+const CUSTOM_ADDED_MARKETS = [
+  'R_10', 'R_25', 'R_50', 'R_75', 'R_100',
+  '1HZ10V', '1HZ25V', '1HZ50V', '1HZ75V', '1HZ100V',
+  'BOOM300', 'BOOM500', 'BOOM600', 'BOOM900', 'BOOM1000',
+  'CRASH300', 'CRASH500', 'CRASH600', 'CRASH900', 'CRASH1000'
+];
 const STORAGE_KEY = "KUTMILZ_AI_BRAIN_PERSISTENT_V1";
 
 const DEFAULT_BRAIN = {
