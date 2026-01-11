@@ -1,9 +1,9 @@
 /* === Performance helpers added by optimizer (safe, non-breaking) === */
 if (!window.__bot_perf_helpers_added) {
   window.__bot_perf_helpers_added = true;
-  function el(id) { return el(id); }
-  function qs(sel) { return qs(sel); }
-  function qsa(sel) { return qsa(sel); }
+  function el(id) { return document.getElementById(id); }
+  function qs(sel) { return document.querySelector(sel); }
+  function qsa(sel) { return document.querySelectorAll(sel); }
   function addListenerOnce(target, type, handler, opts) { try { target.removeEventListener(type, handler); } catch(e){}; target.addEventListener(type, handler, opts); }
 }
 
@@ -113,7 +113,7 @@ const STORAGE_KEY = "KUTMILZ_AI_BRAIN_PERSISTENT_V1";
 
 const DEFAULT_BRAIN = {
   meta: {
-    version: "9.0",
+    version: "10.0",
     created: Date.now(),
     autosaveMs: 5000,
     totalTrades: 0,
@@ -135,11 +135,13 @@ const DEFAULT_BRAIN = {
   daily: {}, // Performance by day
   patterns: {}, // Pattern recognition
   strategies: {}, // Strategy performance
+  symbolSettings: {}, // Per-symbol settings memory
   learning: {
     marketRankings: {}, // Best performing markets
     timePreferences: {}, // Best trading hours
     adaptiveParams: {}, // Learned optimal parameters
-    mistakes: [] // Learning from errors
+    mistakes: [], // Learning from errors
+    winningPatterns: {} // Track winning patterns for TAKE indicator
   },
   history: []
 };
@@ -173,6 +175,8 @@ function migrateBrain(brain) {
   if (!brain.learning.timePreferences) brain.learning.timePreferences = {};
   if (!brain.learning.adaptiveParams) brain.learning.adaptiveParams = {};
   if (!brain.learning.mistakes) brain.learning.mistakes = [];
+  if (!brain.learning.winningPatterns) brain.learning.winningPatterns = {};
+  if (!brain.symbolSettings) brain.symbolSettings = {};
 
   return brain;
 }
@@ -272,13 +276,45 @@ window.AI = {
       brain.patterns[pattern.key].profit += (payout - stake);
     }
 
-    // Learning from mistakes
+    // Learning from mistakes - Enhanced to reduce losses
     if(result === "loss" && brain.learning && brain.learning.mistakes) {
+      const mistakeReason = this.analyzeMistake(symbol, direction, confidence);
       brain.learning.mistakes.push({
         symbol, direction, stake, strategy, confidence,
-        time: now, reason: this.analyzeMistake(symbol, direction, confidence)
+        time: now, reason: mistakeReason
       });
       if(brain.learning.mistakes.length > 50) brain.learning.mistakes.shift();
+      
+      // Adjust symbol risk profile after loss
+      if(sym && sym.trades >= 3) {
+        // Reduce recommended stake for symbols with poor performance
+        if(sym.winRate < 0.4 && sym.trades >= 5) {
+          if(!brain.symbolSettings[symbol]) brain.symbolSettings[symbol] = {};
+          if(brain.symbolSettings[symbol].recommendedStake === undefined) {
+            brain.symbolSettings[symbol].recommendedStake = sym.avgStake;
+          }
+          brain.symbolSettings[symbol].recommendedStake = Math.max(
+            sym.avgStake * 0.6,
+            brain.symbolSettings[symbol].recommendedStake * 0.9
+          );
+        }
+      }
+    }
+    
+    // Learn from consecutive losses - reduce risk
+    if(result === "loss") {
+      const recentLosses = brain.history.slice(-5).filter(t => t.result === "loss").length;
+      if(recentLosses >= 3) {
+        // Multiple consecutive losses - increase risk reduction
+        if(!brain.learning.consecutiveLossCount) brain.learning.consecutiveLossCount = 0;
+        brain.learning.consecutiveLossCount++;
+        console.log(`[AI] Warning: ${recentLosses} consecutive losses detected. Risk reduction recommended.`);
+      }
+    } else {
+      // Reset consecutive loss counter on win
+      if(brain.learning.consecutiveLossCount) {
+        brain.learning.consecutiveLossCount = 0;
+      }
     }
 
     // Update rankings
@@ -296,7 +332,7 @@ window.AI = {
     console.log(`[AI LEARN] ${symbol}: ${result.toUpperCase()} | WinRate: ${(sym.winRate*100).toFixed(1)}% | Streak: ${sym.streak}`);
   },
 
-  // Analyze trading patterns
+  // Analyze trading patterns - Enhanced with winning pattern detection
   analyzePattern(symbol, direction, result) {
     // Simple pattern recognition based on recent trades
     const recent = window.AI_BRAIN.history.slice(-10);
@@ -306,12 +342,58 @@ window.AI = {
       const last3 = symbolTrades.slice(-3).map(t => t.result);
       const pattern = last3.join('-');
 
+      // Track winning patterns for TAKE indicator
+      if(result === 'win') {
+        const patternKey = `${symbol}_${direction}_${pattern}`;
+        if(!window.AI_BRAIN.learning.winningPatterns[patternKey]) {
+          window.AI_BRAIN.learning.winningPatterns[patternKey] = {
+            count: 0,
+            wins: 0,
+            lastSeen: Date.now()
+          };
+        }
+        window.AI_BRAIN.learning.winningPatterns[patternKey].count++;
+        window.AI_BRAIN.learning.winningPatterns[patternKey].wins++;
+        window.AI_BRAIN.learning.winningPatterns[patternKey].lastSeen = Date.now();
+      }
+
       return {
         key: `${symbol}_${direction}_${pattern}`,
         confidence: result === 'win' ? 0.7 : 0.3
       };
     }
     return null;
+  },
+  
+  // Get winning patterns for a symbol/direction
+  getWinningPatterns(symbol, direction) {
+    if(!window.AI_BRAIN.learning || !window.AI_BRAIN.learning.winningPatterns) return [];
+    
+    const patterns = window.AI_BRAIN.learning.winningPatterns;
+    const prefix = `${symbol}_${direction}_`;
+    const relevant = [];
+    
+    Object.keys(patterns).forEach(key => {
+      if(key.startsWith(prefix)) {
+        const p = patterns[key];
+        const winRate = p.wins / p.count;
+        if(p.count >= 3 && winRate >= 0.6) {
+          relevant.push({
+            pattern: key.replace(prefix, ''),
+            winRate: winRate,
+            count: p.count,
+            wins: p.wins,
+            lastSeen: p.lastSeen
+          });
+        }
+      }
+    });
+    
+    // Sort by win rate and recency
+    return relevant.sort((a, b) => {
+      if(Math.abs(a.winRate - b.winRate) > 0.1) return b.winRate - a.winRate;
+      return b.lastSeen - a.lastSeen;
+    });
   },
 
   // Analyze why a trade was a loss
@@ -638,6 +720,122 @@ window.AI = {
     insights.push('⚡ RuShXAi: AI observation mode active - learning aggressively');
 
     return insights;
+  },
+
+  // Save symbol-specific settings
+  saveSymbolSettings(symbol, settings) {
+    if(!symbol) return;
+    const brain = window.AI_BRAIN;
+    if(!brain.symbolSettings) brain.symbolSettings = {};
+    
+    brain.symbolSettings[symbol] = {
+      ...brain.symbolSettings[symbol],
+      ...settings,
+      lastUpdated: Date.now()
+    };
+    saveBrain();
+    console.log(`[AI] Saved settings for ${symbol}:`, settings);
+  },
+  
+  // Load symbol-specific settings
+  loadSymbolSettings(symbol) {
+    if(!symbol || !window.AI_BRAIN.symbolSettings) return null;
+    return window.AI_BRAIN.symbolSettings[symbol] || null;
+  },
+  
+  // Get recommended settings for a symbol based on past performance - Enhanced loss reduction
+  getRecommendedSettings(symbol) {
+    if(!symbol || !window.AI_BRAIN.symbols[symbol]) return null;
+    
+    const sym = window.AI_BRAIN.symbols[symbol];
+    if(sym.trades < 5) return null; // Need at least 5 trades to recommend
+    
+    const brain = window.AI_BRAIN;
+    const recentTrades = brain.history.slice(-10).filter(t => t.symbol === symbol);
+    const recentWinRate = recentTrades.length > 0 ? 
+      recentTrades.filter(t => t.result === "win").length / recentTrades.length : sym.winRate;
+    
+    // Check for consecutive losses
+    const recentLossStreak = (() => {
+      let streak = 0;
+      for(let i = brain.history.length - 1; i >= 0; i--) {
+        const t = brain.history[i];
+        if(t.symbol !== symbol) break;
+        if(t.result === "loss") streak++;
+        else break;
+      }
+      return streak;
+    })();
+    
+    const recommendations = {
+      stake: sym.avgStake,
+      confidence: sym.winRate,
+      recentWinRate: recentWinRate,
+      recommended: sym.winRate > 0.55 && recentWinRate > 0.4,
+      reason: '',
+      riskLevel: 'medium'
+    };
+    
+    // Enhanced risk assessment
+    if(sym.winRate > 0.65 && recentWinRate > 0.6 && recentLossStreak === 0) {
+      recommendations.reason = 'High win rate - safe to trade';
+      recommendations.riskLevel = 'low';
+      recommendations.stake = sym.avgStake * 1.1;
+    } else if(sym.winRate > 0.55 && recentWinRate > 0.5) {
+      recommendations.reason = 'Good win rate - proceed with caution';
+      recommendations.riskLevel = 'medium';
+      recommendations.stake = sym.avgStake;
+    } else if(sym.winRate > 0.45 || recentLossStreak >= 2) {
+      recommendations.reason = 'Below average - reduce stake significantly';
+      recommendations.riskLevel = 'high';
+      recommendations.stake = sym.avgStake * 0.6;
+      recommendations.recommended = false;
+    } else {
+      recommendations.reason = 'Poor performance - avoid or use minimal stake';
+      recommendations.riskLevel = 'very_high';
+      recommendations.stake = sym.avgStake * 0.4;
+      recommendations.recommended = false;
+    }
+    
+    // Apply additional risk reduction for consecutive losses
+    if(recentLossStreak >= 3) {
+      recommendations.stake = Math.max(recommendations.stake * 0.7, sym.avgStake * 0.3);
+      recommendations.reason += ` (${recentLossStreak} consecutive losses detected)`;
+      recommendations.recommended = false;
+    }
+    
+    // Check if saved settings have recommended stake override
+    if(brain.symbolSettings && brain.symbolSettings[symbol] && 
+       brain.symbolSettings[symbol].recommendedStake !== undefined) {
+      recommendations.stake = Math.min(
+        recommendations.stake,
+        brain.symbolSettings[symbol].recommendedStake
+      );
+    }
+    
+    return recommendations;
+  },
+  
+  // Get risk warning for current symbol
+  getRiskWarning(symbol) {
+    if(!symbol || !window.AI_BRAIN.symbols[symbol]) return null;
+    
+    const sym = window.AI_BRAIN.symbols[symbol];
+    const recommendations = this.getRecommendedSettings(symbol);
+    
+    if(!recommendations) return null;
+    
+    if(!recommendations.recommended) {
+      return {
+        level: recommendations.riskLevel,
+        message: recommendations.reason,
+        suggestion: recommendations.riskLevel === 'very_high' ? 
+          'Consider avoiding this symbol or using minimal stake' :
+          'Reduce stake size before trading'
+      };
+    }
+    
+    return null;
   },
 
   resetAll(){
