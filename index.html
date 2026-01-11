@@ -6,8 +6,143 @@
   <title>Kut Milz TB</title>
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Lightweight Charts -->
-  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+  <!-- Fallback styles when Tailwind fails -->
+  <style>
+  /* Basic fallback styles if Tailwind CDN fails */
+  .hidden { display: none !important; }
+  .fixed { position: fixed !important; }
+  .inset-0 { top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; }
+  .z-50 { z-index: 50 !important; }
+  .flex { display: flex !important; }
+  .items-center { align-items: center !important; }
+  .justify-center { justify-content: center !important; }
+  .w-full { width: 100% !important; }
+  .max-w-md { max-width: 28rem !important; }
+  .p-8 { padding: 2rem !important; }
+  .bg-slate-800\/90 { background: rgba(30, 41, 59, 0.9) !important; }
+  .rounded-2xl { border-radius: 1rem !important; }
+  .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important; }
+  .border { border-width: 1px !important; }
+  .border-slate-700\/50 { border-color: rgba(51, 65, 85, 0.5) !important; }
+  .text-center { text-align: center !important; }
+  .mb-8 { margin-bottom: 2rem !important; }
+  .w-16 { width: 4rem !important; }
+  .h-16 { height: 4rem !important; }
+  .mx-auto { margin-left: auto !important; margin-right: auto !important; }
+  .mb-4 { margin-bottom: 1rem !important; }
+  .text-2xl { font-size: 1.5rem !important; }
+  .font-bold { font-weight: bold !important; }
+  .text-white { color: white !important; }
+  .mb-2 { margin-bottom: 0.5rem !important; }
+  .text-slate-400 { color: #94a3b8 !important; }
+  .space-y-6 > * + * { margin-top: 1.5rem !important; }
+  .block { display: block !important; }
+  .text-sm { font-size: 0.875rem !important; }
+  .font-medium { font-weight: 500 !important; }
+  .text-slate-300 { color: #cbd5e1 !important; }
+  .px-4 { padding-left: 1rem !important; padding-right: 1rem !important; }
+  .py-3 { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
+  .bg-slate-700\/50 { background: rgba(51, 65, 85, 0.5) !important; }
+  .border-slate-600 { border-color: #475569 !important; }
+  .rounded-lg { border-radius: 0.5rem !important; }
+  .placeholder-slate-400::placeholder { color: #94a3b8 !important; }
+  .focus\:ring-2:focus { box-shadow: 0 0 0 2px #06b6d4 !important; }
+  .focus\:ring-cyan-500:focus { --tw-ring-color: #06b6d4 !important; }
+  .transition { transition: all 0.2s !important; }
+  .bg-gradient-to-r { background: linear-gradient(to right, #06b6d4, #7c3aed) !important; }
+  .from-cyan-500 { --tw-gradient-from: #06b6d4 !important; }
+  .to-purple-600 { --tw-gradient-to: #7c3aed !important; }
+  .font-semibold { font-weight: 600 !important; }
+  .hover\:scale-105:hover { transform: scale(1.05) !important; }
+  .focus\:outline-none:focus { outline: none !important; }
+  .mt-4 { margin-top: 1rem !important; }
+  .text-red-400 { color: #ef4444 !important; }
+  .container-wrapper {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease-in, visibility 0.4s ease-in;
+}
+
+.container-wrapper:not(.hidden) {
+  opacity: 1;
+  visibility: visible;
+}
+  .brand-title { font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; background: linear-gradient(90deg, #f6d365 0%, #fda085 35%, #f6d365 70%, #ffd700 100%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 10px 30px rgba(124,58,237,0.18); }
+  </style>
+
+  <!-- Lightweight Charts with error handling and fallback CDN -->
+  <script>
+    // Dynamic chart library loader with fallback CDN
+    (function() {
+      var script = document.createElement('script');
+      var cdns = [
+        'https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js',
+        'https://cdn.jsdelivr.net/npm/lightweight-charts/dist/lightweight-charts.standalone.production.js'
+      ];
+      var currentCdn = 0;
+      
+      function tryLoadCDN() {
+        if (currentCdn >= cdns.length) {
+          window.LightweightChartsError = true;
+          console.warn('Failed to load Lightweight Charts from all CDNs.');
+          return;
+        }
+        
+        script.src = cdns[currentCdn];
+        script.onerror = function() {
+          currentCdn++;
+          tryLoadCDN();
+        };
+        script.onload = function() {
+          window.LightweightChartsLoaded = true;
+        };
+        document.head.appendChild(script);
+      }
+      
+      tryLoadCDN();
+    })();
+
+    // Check for Tailwind CSS load
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        if (typeof window.tailwind === 'undefined' && !document.querySelector('link[href*="tailwind"]')) {
+          console.warn('Tailwind CSS may not have loaded properly. Some styling might be affected.');
+        }
+      }, 2000);
+    });
+
+    // Global error handler for failed network requests
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'SCRIPT' && e.target.src) {
+        console.warn('Failed to load external script:', e.target.src);
+        // Don't show popup for script errors to avoid spam
+      } else if (e.target && e.target.tagName === 'LINK' && e.target.href) {
+        console.warn('Failed to load external stylesheet:', e.target.href);
+      }
+    }, true);
+
+    // Handle Tailwind loading failure
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        if (typeof window.tailwind === 'undefined' && !document.querySelector('link[href*="tailwind"]')) {
+          console.warn('Tailwind CSS may not have loaded properly. Using fallback styles.');
+        }
+      }, 2000);
+    });
+  </script>
+
+  <!-- AI Performance Engine -->
+  <script>
+    (function() {
+      var script = document.createElement('script');
+      script.src = 'ai_performance.js';
+      script.onerror = function() {
+        console.warn('Failed to load AI performance engine. AI features will be limited.');
+        window.AI = null; // Ensure AI is null if script fails
+      };
+      document.head.appendChild(script);
+    })();
+  </script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -1085,13 +1220,245 @@ button {
 .separate-card{
   margin-top:18px;
 }
+/* Login Overlay Styles */
+#login-overlay {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+}
+
+#login-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Mobile responsiveness for login */
+@media (max-width: 640px) {
+  #login-overlay .relative.z-10 {
+    margin: 1rem;
+    padding: 1rem;
+  }
+
+  #login-overlay .bg-slate-800\/90 {
+    padding: 1.5rem;
+  }
+
+  #login-overlay h2 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Cross-platform compatibility */
+@supports not (backdrop-filter: blur(8px)) {
+  #login-overlay {
+    background: rgba(15, 23, 42, 0.95);
+  }
+}
+
+/* Ensure AI Learning Dashboard is always visible */
+#ai-analytics {
+  min-height: 60px;
+}
+
+/* Improve button hover effects for touch devices */
+@media (hover: none) {
+  button:hover {
+    transform: none !important;
+  }
+}
 </style>
 
 
 </head>
 
 <body>
-<div class="container-wrapper" id="app-root">
+<!-- Login Overlay -->
+<style>
+/* Fallback styles for login screen when external resources fail */
+#login-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+#login-overlay.hidden { display: none; }
+
+.login-container {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+}
+
+.login-card {
+  background: rgba(30, 41, 59, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  padding: 2rem;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.login-icon {
+  width: 4rem;
+  height: 4rem;
+  background: linear-gradient(135deg, #06b6d4 0%, #7c3aed 100%);
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 0.5rem;
+}
+
+.login-subtitle {
+  color: #94a3b8;
+  font-size: 0.875rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #cbd5e1;
+  margin-bottom: 0.5rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(51, 65, 85, 0.5);
+  border: 1px solid #475569;
+  border-radius: 0.5rem;
+  color: white;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #06b6d4;
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+}
+
+.login-button {
+  width: 100%;
+  background: linear-gradient(135deg, #06b6d4 0%, #7c3aed 100%);
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.login-button:hover {
+  transform: scale(1.02);
+}
+
+.login-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Offline notice */
+#offline-notice {
+  font-size: 0.75rem;
+  color: #fbbf24;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .login-container {
+    margin: 1rem;
+    padding: 1rem;
+  }
+  .login-card {
+    padding: 1.5rem;
+  }
+  .login-title {
+    font-size: 1.25rem;
+  }
+}
+</style>
+<div id="login-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+  <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%239C92AC" fill-opacity="0.1"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+  <div class="relative z-10 w-full max-w-md p-8 login-container">
+    <div class="bg-slate-800/90 backdrop-blur-sm rounded-2xl shadow-2xl border border-slate-700/50 p-8 login-card">
+      <div class="text-center mb-8 login-header">
+        <div class="w-16 h-16 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center login-icon">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-bold text-white mb-2 login-title">Kut Milz Access</h2>
+        <p class="text-slate-400 login-subtitle">Enter your credentials to access the trading bot</p>
+        <div id="offline-notice" class="text-xs text-yellow-400 mt-2 hidden">
+          ⚠️ Some features may be limited due to network connectivity
+        </div>
+      </div>
+
+      <form id="login-form" class="space-y-6 login-form">
+        <div class="form-group">
+          <label for="kutmilz-key" class="block text-sm font-medium text-slate-300 mb-2 form-label">KutMilz Key</label>
+          <input type="password" id="kutmilz-key" name="key" class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition duration-200 form-input" placeholder="Enter KutMilz Key" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password" class="block text-sm font-medium text-slate-300 mb-2 form-label">Password</label>
+          <input type="password" id="password" name="password" class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition duration-200 form-input" placeholder="Enter Password" required>
+        </div>
+
+        <button type="submit" id="login-submit-btn" class="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-slate-800 login-button">
+          Access Bot
+        </button>
+      </form>
+
+      <div id="login-error" class="mt-4 text-red-400 text-sm text-center hidden login-error">
+        Access Denied - Invalid credentials
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-wrapper hidden" id="app-root">
   <h1 class="text-3xl text-center mb-6 brand-title">KUT MILZ TB</h1>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1324,7 +1691,7 @@ button {
               <option value="R_25">Volatility 25 Index (R_25)</option>
               <option value="R_50">Volatility 50 Index (R_50)</option>
               <option value="R_75">Volatility 75 Index (R_75)</option>
-              <option selected>Volatility 100 Index (R_100)</option>
+              <option value="R_100" selected>Volatility 100 Index (R_100)</option>
               <option value="1HZ10V">Volatility 10 (1s) (1HZ10V)</option>
               <option value="1HZ25V">Volatility 25 (1s) (1HZ25V)</option>
               <option value="1HZ50V">Volatility 50 (1s) (1HZ50V)</option>
@@ -1653,7 +2020,7 @@ button {
                 <div class="text-xs text-slate-400">AI Market Routing - Cycles through selected markets after each trade.</div>
               </div>
               <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="milzxai-toggle" class="sr-only peer" disabled>
+                <input type="checkbox" id="milzxai-toggle" class="sr-only peer" checked>
                 <div class="w-11 h-6 bg-slate-500 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer
                   peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px]
                   after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
@@ -2052,23 +2419,30 @@ button {
 
         <div class="relative mb-3">
           <label for="api-token" class="block text-sm font-medium mb-1 text-slate-300">Deriv API Token</label>
-          <div class="flex items-center rounded-lg bg-slate-700 border border-slate-600 focus-within:ring-2 focus-within:ring-sky-500 transition duration-150">
-            <span class="p-3 text-sky-400">
-              <svg xmlns="https://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3v2.25m-15.75 6a3 3 0 0 1 3-3h2.25m3.75-10.25v12a3 3 0 0 1-3 3h-2.25a3 3 0 0 1-3-3v-2.25m15.75-6a3 3 0 0 1-3 3h-2.25a3 3 0 0 1-3-3v-2.25m3.75 10.25v-12a3 3 0 0 1 3-3h2.25a3 3 0 0 1 3 3v2.25" />
-              </svg>
-            </span>
+          <div class="flex items-center gap-3">
+            <div class="flex items-center flex-1 rounded-lg bg-slate-700 border border-slate-600 focus-within:ring-2 focus-within:ring-sky-500 transition duration-150">
+              <span class="p-3 text-sky-400">
+                <svg xmlns="https://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3v2.25m-15.75 6a3 3 0 0 1 3-3h2.25m3.75-10.25v12a3 3 0 0 1-3 3h-2.25a3 3 0 0 1-3-3v-2.25m15.75-6a3 3 0 0 1-3 3h-2.25a3 3 0 0 1-3-3v-2.25m3.75 10.25v-12a3 3 0 0 1 3-3h2.25a3 3 0 0 1 3 3v2.25" />
+                </svg>
+              </span>
 
-            <input type="password" id="api-token" placeholder="Paste your API token here..."
-              class="flex-1 p-3 bg-transparent border-none text-slate-50 focus:ring-0 focus:outline-none placeholder-slate-400"
-              autocomplete="off">
+              <input type="password" id="api-token" placeholder="Paste your API token here..."
+                class="flex-1 p-3 bg-transparent border-none text-slate-50 focus:ring-0 focus:outline-none placeholder-slate-400"
+                autocomplete="off">
 
-            <button id="toggle-visibility-btn" class="p-3 text-slate-400 hover:text-sky-300 transition duration-150"
-              type="button" title="Show Token">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1 1 0 0 1 0-.644C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.577 3.01 9.964 7.178a1 1 0 0 1 0 .644C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.577-3.01-9.964-7.178Z" />
-  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-</svg>
+              <button id="toggle-visibility-btn" class="p-3 text-slate-400 hover:text-sky-300 transition duration-150"
+                type="button" title="Show Token">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1 1 0 0 1 0-.644C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.577 3.01 9.964 7.178a1 1 0 0 1 0 .644C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.577-3.01-9.964-7.178Z" />
+    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+  </svg>
+              </button>
+            </div>
+
+            <button id="connect-api-btn"
+              class="px-6 py-3 rounded-lg font-bold transition duration-200 bg-blue-600 hover:bg-blue-700 text-white shadow-lg whitespace-nowrap">
+              CONNECT API
             </button>
           </div>
         </div>
@@ -2083,10 +2457,15 @@ button {
           </p>
         </div>
 
-        <button id="toggle-bot-btn"
-          class="w-full py-3 rounded-lg font-bold transition duration-200 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg">
-          START BOT
-        </button>
+        <div class="mb-3">
+          <button id="toggle-bot-btn"
+            class="w-full py-3 rounded-lg font-bold transition duration-200 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled>
+            START BOT
+          </button>
+        </div>
+
+        <p id="connection-status" class="text-sm text-slate-400 mt-2 text-center hidden">API connected - Bot ready to trade</p>
 
         <p id="token-error-message" class="text-sm text-red-400 mt-3 hidden">API token required to start the bot.</p>
 
@@ -2194,6 +2573,7 @@ const appState = {
   token: localStorage.getItem('derivToken') || '',
   isBotRunning:false,
   isAuthenticated:false,
+  isApiConnected:false,
   isEntryInProgress:false,
 
   symbol: "R_100",
@@ -2393,7 +2773,7 @@ duration:5,
 
   // MILZXAI - AI Market Routing
   milzxai:{
-    enabled:false,
+    enabled:true,
     markets:[],
     currentIndex:0
   },
@@ -3412,6 +3792,14 @@ function applyTradeManagement(currentProfit, contract){
 
     // Tick Ladder (optional): dynamic 1/2/3 target based on early "double-touch" momentum.
     // Only applies in SCALP mode + tick duration.
+    // Momentum-aware fallback (SCALP only): near the end of tick-duration trades, grab 1 tick if momentum stalls.
+    const eps = 1e-9;
+    const stallReq = Math.max(1, parseInt(stCfg.stallTicksRequired ?? 1) || 1);
+    const prevP = mg.lastProfit;
+    const hasPrev = (prevP != null);
+    const deltaP = hasPrev ? (currentProfit - prevP) : 0;
+    mg.lastProfit = currentProfit;
+
     if (appState.tickLadder?.enabled && appState.mode === "SCALP" && unit === "t" && dur > 0){
       const lad = appState.tickLadder;
       const startT = Math.max(1, parseInt(lad.startTicks ?? 1) || 1);
@@ -3435,14 +3823,6 @@ function applyTradeManagement(currentProfit, contract){
     }
 
     const fallbackTicks = Math.max(1, parseInt(stCfg.fallbackTicks ?? 1) || 1);
-
-    // Momentum-aware fallback (SCALP only): near the end of tick-duration trades, grab 1 tick if momentum stalls.
-    const eps = 1e-9;
-    const stallReq = Math.max(1, parseInt(stCfg.stallTicksRequired ?? 1) || 1);
-    const prevP = mg.lastProfit;
-    const hasPrev = (prevP != null);
-    const deltaP = hasPrev ? (currentProfit - prevP) : 0;
-    mg.lastProfit = currentProfit;
 
     // Track consecutive "weak" ticks (profit not improving).
     if (!mg.weakCount) mg.weakCount = 0;
@@ -3526,7 +3906,9 @@ const dom = {
   sellableDisplay: $("sellable-display"),
 
   // controls
+  connectApiBtn: $("connect-api-btn"),
   toggleBotBtn: $("toggle-bot-btn"),
+  connectionStatus: $("connection-status"),
   unlockBtn: $("unlock-settings-btn"),
   modeSelect: $("mode-select"),
   modePill: $("mode-pill"),
@@ -3882,6 +4264,12 @@ function updateAIInsights(){
   if(!window.AI || !dom.aiOverallStats || !dom.aiInsightsList) return;
 
   try {
+    if (!window.AI || !window.AI.getAnalytics || !window.AI.getInsights) {
+      dom.aiOverallStats.innerHTML = 'AI system loading...';
+      dom.aiInsightsList.innerHTML = 'Learning insights will appear here';
+      return;
+    }
+
     const analytics = window.AI.getAnalytics();
     const insights = window.AI.getInsights();
 
@@ -4402,8 +4790,12 @@ function initChart(){
   if (!container) return;
 
   if (typeof LightweightCharts === "undefined"){
-    if (dom.chartStatus) setPill(dom.chartStatus, "CHART CDN ERROR", "bg-red-700 text-white");
-    logLine("Chart library failed to load.");
+    if (dom.chartStatus) setPill(dom.chartStatus, "CHART OFFLINE", "bg-yellow-700 text-white");
+    logLine("Chart library failed to load from CDN. Running in offline mode.");
+    // Add a message to the chart container
+    if (container) {
+      container.innerHTML = '<div class="flex items-center justify-center h-full text-slate-400 text-sm">Chart unavailable (offline mode)</div>';
+    }
     return;
   }
 
@@ -4850,6 +5242,7 @@ function stopBot(){
 
   appState.isBotRunning = false;
   appState.isAuthenticated = false;
+  appState.isApiConnected = false;
   appState.isEntryInProgress = false;
   appState.currentContractId = null;
   appState.isSelling = false;
@@ -4867,6 +5260,16 @@ function stopBot(){
   if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "None";
 
   if (dom.chartStatus) setPill(dom.chartStatus, "WAITING", "bg-slate-700 text-slate-200");
+
+  // Disable START BOT button and hide connection status
+  if (dom.toggleBotBtn) {
+    dom.toggleBotBtn.disabled = true;
+    dom.toggleBotBtn.textContent = 'START BOT';
+  }
+  if (dom.connectionStatus) {
+    dom.connectionStatus.classList.add('hidden');
+  }
+
   logLine("Bot stopped.");
   updateUI();
 }
@@ -4922,9 +5325,9 @@ function startBot(){
   updateLoss(appState.sessionLoss);
 
   appState.isBotRunning = true;
-  logLine("Bot started.");
+  logLine("Bot started - trading active.");
   updateUI();
-  connectToDeriv();
+  // Note: API connection is handled separately by Connect button
 }
 
 function subscribeTicks(symbol){
@@ -4997,6 +5400,24 @@ function handleResponse(res){
       if (dom.chartStatus) setPill(dom.chartStatus, "LIVE", "bg-sky-700 text-white");
 
       updateUI();
+
+      // Mark API as connected and show success popup
+      appState.isApiConnected = true;
+      if (typeof UAE_showTimedPopup === 'function') {
+        UAE_showTimedPopup('✅ Connected as scscsfull! API connected and monitoring market data.', 5000);
+      }
+
+      // Enable the START BOT button
+      if (dom.toggleBotBtn) {
+        dom.toggleBotBtn.disabled = false;
+        dom.toggleBotBtn.textContent = 'START BOT';
+      }
+
+      // Show connection status
+      if (dom.connectionStatus) {
+        dom.connectionStatus.classList.remove('hidden');
+      }
+
       break;
     }
 
@@ -5204,7 +5625,9 @@ function handleResponse(res){
           // MILZXAI: Cycle to next market after trade completion
           if (appState.milzxai?.enabled && appState.milzxai.markets?.length > 0) {
             appState.milzxai.currentIndex = (appState.milzxai.currentIndex + 1) % appState.milzxai.markets.length;
-            console.log(`[MILZXAI] Cycled to market index ${appState.milzxai.currentIndex}: ${appState.milzxai.markets[appState.milzxai.currentIndex]}`);
+            const newSymbol = appState.milzxai.markets[appState.milzxai.currentIndex];
+            console.log(`[MILZXAI] Cycled to market index ${appState.milzxai.currentIndex}: ${newSymbol}`);
+            setSymbol(newSymbol); // Update the current symbol
           }
 
           // RuShXAi: Track losses and implement cooldown
@@ -5216,7 +5639,9 @@ function handleResponse(res){
               if (appState.rushXAiLossCount >= 2) {
                 appState.rushXAiCooldownUntil = Date.now() + (120 * 1000); // 120 seconds
                 appState.rushXAiLossCount = 0; // Reset counter
-                UAE_showTimedPopup('🚨 RuShXA Cooldown: Two losses detected. Entering 120-second observation mode to analyze patterns.', 10000);
+                if (typeof UAE_showTimedPopup === 'function') {
+                  UAE_showTimedPopup('🚨 RuShXA Cooldown: Two losses detected. Entering 120-second observation mode to analyze patterns.', 10000);
+                }
                 console.log('[RuShXAi] Cooldown activated - 120 seconds');
               }
             } else {
@@ -5795,6 +6220,14 @@ function setSymbol(newSymbol){
 ========================================================= */
 document.addEventListener("DOMContentLoaded", () => {
   try{
+    // Check for offline/network issues
+    setTimeout(() => {
+      if (window.LightweightChartsError) {
+        console.log('Bot running in offline mode - some features may be limited');
+        // Could add a subtle notification here if needed
+      }
+    }, 3000);
+
     // =========================
     // Continue normal app init
     // =========================
@@ -5971,7 +6404,40 @@ document.addEventListener("DOMContentLoaded", () => {
       el.addEventListener("change", updateStateFromUI);
     });
 
+    dom.connectApiBtn?.addEventListener("click", () => {
+      if (appState.isApiConnected) {
+        if (typeof UAE_showTimedPopup === 'function') {
+          UAE_showTimedPopup('✅ Already connected to API!', 3000);
+        }
+        return;
+      }
+
+      const token = (dom.apiToken?.value || "").trim();
+      if (!token){
+        dom.tokenError?.classList.remove("hidden");
+        if (typeof UAE_showTimedPopup === 'function') {
+          UAE_showTimedPopup('❌ Please enter your API token first.', 3000);
+        }
+        return;
+      }
+      dom.tokenError?.classList.add("hidden");
+
+      // Store token and connect
+      localStorage.setItem("derivToken", token);
+      appState.token = token;
+
+      logLine("Connecting to API...");
+      connectToDeriv();
+    });
+
     dom.toggleBotBtn?.addEventListener("click", () => {
+      if (!appState.isApiConnected){
+        if (typeof UAE_showTimedPopup === 'function') {
+          UAE_showTimedPopup('❌ Please connect to API first using the CONNECT API button.', 3000);
+        }
+        return;
+      }
+
       if (!appState.isBotRunning){
         const token = (dom.apiToken?.value || "").trim();
         if (!token){
@@ -6059,7 +6525,9 @@ document.addEventListener("DOMContentLoaded", () => {
       logLine("RuShXAi Mode: " + (appState.rushXAiEnabled ? "ON" : "OFF"));
       if (appState.rushXAiEnabled) {
         // Show risk popup
-        UAE_showTimedPopup('🚀 RuShXA ACTIVATED! AI observation mode engaged. News/event pauses AND time restrictions overridden. Two consecutive losses trigger 120-second cooldown. Remember: high reward = high risk!', 15000);
+        if (typeof UAE_showTimedPopup === 'function') {
+          UAE_showTimedPopup('🚀 RuShXA ACTIVATED! AI observation mode engaged. News/event pauses AND time restrictions overridden. Two consecutive losses trigger 120-second cooldown. Remember: high reward = high risk!', 15000);
+        }
       }
       updateUI();
     });
@@ -6711,8 +7179,8 @@ console.log("KUT MILZ AI ENGINE ACTIVE");
 <script>
 document.addEventListener("AI_TRADE", e => {
   const d = e.detail;
-  if(window.AI && d){
-    AI.recordTrade({
+  if(window.AI && typeof window.AI.recordTrade === 'function' && d){
+    window.AI.recordTrade({
       symbol: d.symbol,
       result: d.win ? "win" : "loss",
       stake: d.stake,
@@ -6829,22 +7297,21 @@ document.addEventListener("AI_TRADE", e => {
   try{
     const popup = document.getElementById("kut-welcome-popup");
     if(!popup) return;
-    // Show on DOMContentLoaded
-    function show(){
+
+    // Define showWelcomePopup function for login handler
+    window.showWelcomePopup = function(){
       popup.classList.add("visible");
       // Auto-hide after 10 seconds (10000 ms)
       setTimeout(()=>{
         popup.classList.remove("visible");
       }, 10000);
-    }
+    };
+
     // Attach close button
     const btn = popup.querySelector(".kut-close");
     if(btn) btn.addEventListener("click", ()=> popup.classList.remove("visible"));
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", show);
-    } else {
-      show();
-    }
+
+    // Removed DOMContentLoaded trigger - now only shows after login
   }catch(e){ console.warn("Welcome popup error:", e); }
 })();
 </script>
@@ -7113,6 +7580,144 @@ document.addEventListener("AI_TRADE", e => {
 })();
 </script>
 <!-- END: KUTMILZAI RISK NOTICES -->
-<script src="ai_performance.js"></script>
+
+<!-- Login System -->
+<script>
+(function() {
+  'use strict';
+
+  // Login credentials
+  const VALID_KEY = '876641';
+  const VALID_PASSWORD = 'Q1977';
+
+  // DOM elements
+  const loginOverlay = document.getElementById('login-overlay');
+  const loginForm = document.getElementById('login-form');
+  const kutmilzKeyInput = document.getElementById('kutmilz-key');
+  const passwordInput = document.getElementById('password');
+  const loginError = document.getElementById('login-error');
+  const appRoot = document.getElementById('app-root');
+
+  // Check if already logged in (localStorage) - DISABLED: Always show login
+  function isLoggedIn() {
+    return false; // Always return false to show login on every refresh
+  }
+
+  // Set logged in state - DISABLED: Don't persist login
+  function setLoggedIn() {
+    // Removed localStorage persistence - login required on every refresh
+  }
+
+  // Show login overlay
+  function showLogin() {
+    loginOverlay.classList.remove('hidden');
+    appRoot.classList.add('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  // Hide login overlay
+  function hideLogin() {
+    loginOverlay.classList.add('hidden');
+    appRoot.classList.remove('hidden');
+    document.body.style.overflow = '';
+  }
+
+  // Validate credentials
+  function validateCredentials(key, password) {
+    return key === VALID_KEY && password === VALID_PASSWORD;
+  }
+
+  // Handle login form submission
+  function handleLogin(e) {
+    e.preventDefault();
+    console.log('Login attempt started');
+
+    const key = kutmilzKeyInput.value.trim();
+    const password = passwordInput.value.trim();
+
+    if (validateCredentials(key, password)) {
+      // Show loading state
+      const loginButton = document.getElementById('login-submit-btn');
+      if (loginButton) {
+        loginButton.disabled = true;
+        loginButton.textContent = 'Accessing...';
+      }
+
+      // Hide login immediately for instant response
+      hideLogin();
+
+      // Clear form
+      loginError.classList.add('hidden');
+      kutmilzKeyInput.value = '';
+      passwordInput.value = '';
+
+      // Show welcome message after successful login
+      setTimeout(() => {
+        showWelcomePopup();
+        // Re-enable button
+        if (loginButton) {
+          loginButton.disabled = false;
+          loginButton.textContent = 'Access Bot';
+        }
+      }, 800);
+
+    } else {
+      loginError.classList.remove('hidden');
+      kutmilzKeyInput.value = '';
+      passwordInput.value = '';
+
+      // Shake animation for error
+      loginForm.classList.add('animate-pulse');
+      setTimeout(() => {
+        loginForm.classList.remove('animate-pulse');
+      }, 500);
+    }
+  }
+
+  // Initialize login system
+  function initLogin() {
+    // Check for offline mode
+    if (!navigator.onLine) {
+      const offlineNotice = document.getElementById('offline-notice');
+      if (offlineNotice) offlineNotice.classList.remove('hidden');
+    }
+
+    // Always show login on page load
+    showLogin();
+
+    // Add form submit handler
+    if (loginForm) {
+      loginForm.addEventListener('submit', handleLogin);
+    }
+
+    // Add input focus effects
+    if (kutmilzKeyInput && passwordInput) {
+      [kutmilzKeyInput, passwordInput].forEach(input => {
+        input.addEventListener('focus', () => {
+          if (loginError) loginError.classList.add('hidden');
+        });
+      });
+    }
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && loginOverlay && !loginOverlay.classList.contains('hidden')) {
+        // Don't allow escape to close login for security
+        e.preventDefault();
+      }
+    });
+  }
+
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLogin);
+  } else {
+    initLogin();
+  }
+
+  // Logout function removed - login required on every refresh
+})();
+</script>
+
 </body>
 </html>
