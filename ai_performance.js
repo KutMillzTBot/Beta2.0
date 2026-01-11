@@ -156,11 +156,32 @@ function loadBrain(){
   return deepClone(DEFAULT_BRAIN);
 }
 
+function migrateBrain(brain) {
+  // Ensure all required properties exist with defaults
+  if (!brain.meta) brain.meta = deepClone(DEFAULT_BRAIN.meta);
+  if (!brain.session) brain.session = deepClone(DEFAULT_BRAIN.session);
+  if (!brain.symbols) brain.symbols = {};
+  if (!brain.hourly) brain.hourly = {};
+  if (!brain.daily) brain.daily = {};
+  if (!brain.patterns) brain.patterns = {};
+  if (!brain.strategies) brain.strategies = {};
+  if (!brain.learning) brain.learning = deepClone(DEFAULT_BRAIN.learning);
+  if (!brain.history) brain.history = [];
+
+  // Ensure learning sub-properties exist
+  if (!brain.learning.marketRankings) brain.learning.marketRankings = {};
+  if (!brain.learning.timePreferences) brain.learning.timePreferences = {};
+  if (!brain.learning.adaptiveParams) brain.learning.adaptiveParams = {};
+  if (!brain.learning.mistakes) brain.learning.mistakes = [];
+
+  return brain;
+}
+
 function saveBrain(){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(window.AI_BRAIN));
 }
 
-window.AI_BRAIN = loadBrain();
+window.AI_BRAIN = migrateBrain(loadBrain());
 
 setInterval(saveBrain, window.AI_BRAIN.meta.autosaveMs);
 
@@ -252,7 +273,7 @@ window.AI = {
     }
 
     // Learning from mistakes
-    if(result === "loss") {
+    if(result === "loss" && brain.learning && brain.learning.mistakes) {
       brain.learning.mistakes.push({
         symbol, direction, stake, strategy, confidence,
         time: now, reason: this.analyzeMistake(symbol, direction, confidence)
@@ -320,13 +341,16 @@ window.AI = {
     });
 
     // Sort by score
-    window.AI_BRAIN.learning.marketRankings = Object.fromEntries(
-      Object.entries(rankings).sort(([,a], [,b]) => b.score - a.score)
-    );
+    if (window.AI_BRAIN.learning) {
+      window.AI_BRAIN.learning.marketRankings = Object.fromEntries(
+        Object.entries(rankings).sort(([,a], [,b]) => b.score - a.score)
+      );
+    }
   },
 
   // Get best markets for MILZXAI
   getBestMarkets(limit = 5) {
+    if (!window.AI_BRAIN.learning || !window.AI_BRAIN.learning.marketRankings) return [];
     const rankings = Object.keys(window.AI_BRAIN.learning.marketRankings);
     return rankings.slice(0, limit);
   },
@@ -514,11 +538,11 @@ window.AI = {
         trades: totalTrades,
         winRate: winRate.toFixed(1) + '%',
         bestStreak: brain.meta.bestStreak,
-        totalProfit: Object.values(brain.symbols).reduce((sum, sym) => sum + sym.profit, 0).toFixed(2)
+        totalProfit: Object.values(brain.symbols || {}).reduce((sum, sym) => sum + (sym.profit || 0), 0).toFixed(2)
       },
-      topMarkets: Object.entries(brain.learning.marketRankings).slice(0, 5),
+      topMarkets: Object.entries((brain.learning && brain.learning.marketRankings) || {}).slice(0, 5),
       bestHours: this.getBestHours(),
-      recentMistakes: brain.learning.mistakes.slice(-3)
+      recentMistakes: (brain.learning && brain.learning.mistakes) ? brain.learning.mistakes.slice(-3) : []
     };
   },
 
@@ -548,7 +572,7 @@ window.AI = {
     }
 
     // Learning from mistakes
-    const recentMistakes = window.AI_BRAIN.learning.mistakes.slice(-5);
+    const recentMistakes = (window.AI_BRAIN.learning && window.AI_BRAIN.learning.mistakes) ? window.AI_BRAIN.learning.mistakes.slice(-5) : [];
     if(recentMistakes.length >= 3) {
       const commonReasons = {};
       recentMistakes.forEach(m => {
