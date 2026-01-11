@@ -1,840 +1,224 @@
 {
-  "version": "5.1",
-  "engine": "ULTIMATE_AI_ENGINE",
-  "createdAt": "2026-01-05",
-  "global": {
-    "confidenceFloor": 45,
-    "globalKill": false,
-    "exploration": {
-      "enabled": true,
-      "rate": 0.05,
-      "decay": 0.995,
-      "minRate": 0.01
-    },
-    "wins": 554,
-    "losses": 62
+  "meta": {
+    "version": "9.0",
+    "created": 1736476800000,
+    "autosaveMs": 5000,
+    "totalTrades": 247,
+    "totalWins": 142,
+    "totalLosses": 105,
+    "bestStreak": 8,
+    "currentStreak": 3,
+    "lastUpdate": 1736476800000
   },
-  "runtimeLogic": {
-    "directionAware": {
-      "brainSelection": [
-        "symbol",
-        "direction",
-        "regime"
-      ],
-      "fallbackDirection": "UP",
-      "preTradeChecks": [
-        "globalKill",
-        "directionCooldown",
-        "confidenceGate",
-        "lossMemoryGate"
-      ],
-      "postTradeUpdates": [
-        "updateStats",
-        "updateConfidence",
-        "updateLossMemory",
-        "updateHealth"
-      ]
-    }
-  },
-  "regimes": {
-    "enabled": true,
-    "current": "neutral"
+  "session": {
+    "trades": 12,
+    "wins": 8,
+    "losses": 4,
+    "profit": 45.67,
+    "startTime": 1736476800000
   },
   "symbols": {
-    "VOL75_1S": {
-      "meta": {
-        "totalSessions": 1
-      },
-      "directions": {
-        "UP": {
-          "stats": {
-            "wins": 23,
-            "losses": 1,
-            "trades": 24
-          },
-          "confidence": {
-            "current": 55,
-            "min": 45,
-            "max": 80
-          },
-          "rr": {
-            "1:1": {
-              "wins": 0,
-              "losses": 0
-            },
-            "1:2": {
-              "wins": 0,
-              "losses": 0
-            },
-            "1:3": {
-              "wins": 0,
-              "losses": 0
-            }
-          },
-          "streaks": {
-            "maxWin": 0,
-            "maxLoss": 0,
-            "current": 0
-          },
-          "context": {
-            "afterLoss": {
-              "wins": 0,
-              "losses": 0
-            },
-            "afterWin": {
-              "wins": 0,
-              "losses": 0
-            }
-          },
-          "preferredRR": "1:1",
-          "rrConfidenceMap": {
-            "1:1": 50,
-            "1:2": 50,
-            "1:3": 50
-          }
-        },
-        "DOWN": {
-          "stats": {
-            "wins": 0,
-            "losses": 0,
-            "trades": 0
-          },
-          "confidence": {
-            "current": 45,
-            "min": 45,
-            "max": 90
-          },
-          "lossMemory": {
-            "recentLosses": 0,
-            "blockedUntil": 0
-          },
-          "rr": {
-            "1:1": {
-              "wins": 0,
-              "losses": 0
-            },
-            "1:2": {
-              "wins": 0,
-              "losses": 0
-            },
-            "1:3": {
-              "wins": 0,
-              "losses": 0
-            }
-          },
-          "streaks": {
-            "maxWin": 0,
-            "maxLoss": 0,
-            "current": 0
-          },
-          "context": {
-            "afterLoss": {
-              "wins": 0,
-              "losses": 0
-            },
-            "afterWin": {
-              "wins": 0,
-              "losses": 0
-            }
-          },
-          "preferredRR": "1:1",
-          "rrConfidenceMap": {
-            "1:1": 50,
-            "1:2": 50,
-            "1:3": 50
-          }
-        }
-      },
-      "cooldown": {
-        "active": false,
-        "until": 0
-      },
-      "patterns": {
-        "spike": {
-          "wins": 0,
-          "losses": 0
-        },
-        "range": {
-          "wins": 0,
-          "losses": 0
-        },
-        "trend": {
-          "wins": 0,
-          "losses": 0
-        }
-      },
-      "rrPerformance": {},
-      "timing": {
-        "bestSecond": {},
-        "worstSecond": {}
-      },
-      "volatilityMemory": {
-        "high": {
-          "wins": 0,
-          "losses": 0
-        },
-        "low": {
-          "wins": 0,
-          "losses": 0
-        }
-      },
-      "personality": {
-        "aggression": 0.5,
-        "stability": 0.5,
-        "confidenceWeight": 1
-      },
-      "patternDirectionBias": {
-        "spike": {
-          "UP": 0,
-          "DOWN": 0
-        },
-        "range": {
-          "UP": 0,
-          "DOWN": 0
-        },
-        "trend": {
-          "UP": 0,
-          "DOWN": 0
-        }
-      }
-    },
-    "VOL25_1S": {
-      "stats": {
-        "wins": 5,
-        "losses": 2
-      },
-      "directions": {
-        "UP": {
-          "stats": {
-            "wins": 0,
-            "losses": 0,
-            "trades": 0
-          },
-          "confidence": {
-            "current": 45,
-            "min": 45,
-            "max": 90
-          },
-          "lossMemory": {
-            "recentLosses": 0,
-            "blockedUntil": 0
-          },
-          "rr": {
-            "1:1": {
-              "wins": 0,
-              "losses": 0
-            },
-            "1:2": {
-              "wins": 0,
-              "losses": 0
-            },
-            "1:3": {
-              "wins": 0,
-              "losses": 0
-            }
-          },
-          "streaks": {
-            "maxWin": 0,
-            "maxLoss": 0,
-            "current": 0
-          },
-          "context": {
-            "afterLoss": {
-              "wins": 0,
-              "losses": 0
-            },
-            "afterWin": {
-              "wins": 0,
-              "losses": 0
-            }
-          },
-          "preferredRR": "1:1",
-          "rrConfidenceMap": {
-            "1:1": 50,
-            "1:2": 50,
-            "1:3": 50
-          }
-        },
-        "DOWN": {
-          "stats": {
-            "wins": 0,
-            "losses": 0,
-            "trades": 0
-          },
-          "confidence": {
-            "current": 45,
-            "min": 45,
-            "max": 90
-          },
-          "lossMemory": {
-            "recentLosses": 0,
-            "blockedUntil": 0
-          },
-          "rr": {
-            "1:1": {
-              "wins": 0,
-              "losses": 0
-            },
-            "1:2": {
-              "wins": 0,
-              "losses": 0
-            },
-            "1:3": {
-              "wins": 0,
-              "losses": 0
-            }
-          },
-          "streaks": {
-            "maxWin": 0,
-            "maxLoss": 0,
-            "current": 0
-          },
-          "context": {
-            "afterLoss": {
-              "wins": 0,
-              "losses": 0
-            },
-            "afterWin": {
-              "wins": 0,
-              "losses": 0
-            }
-          },
-          "preferredRR": "1:1",
-          "rrConfidenceMap": {
-            "1:1": 50,
-            "1:2": 50,
-            "1:3": 50
-          }
-        }
-      },
-      "cooldown": {
-        "active": false,
-        "until": 0
-      },
-      "patterns": {
-        "spike": {
-          "wins": 0,
-          "losses": 0
-        },
-        "range": {
-          "wins": 0,
-          "losses": 0
-        },
-        "trend": {
-          "wins": 0,
-          "losses": 0
-        }
-      },
-      "rrPerformance": {},
-      "timing": {
-        "bestSecond": {},
-        "worstSecond": {}
-      },
-      "volatilityMemory": {
-        "high": {
-          "wins": 0,
-          "losses": 0
-        },
-        "low": {
-          "wins": 0,
-          "losses": 0
-        }
-      },
-      "personality": {
-        "aggression": 0.5,
-        "stability": 0.5,
-        "confidenceWeight": 1
-      },
-      "patternDirectionBias": {
-        "spike": {
-          "UP": 0,
-          "DOWN": 0
-        },
-        "range": {
-          "UP": 0,
-          "DOWN": 0
-        },
-        "trend": {
-          "UP": 0,
-          "DOWN": 0
-        }
-      }
-    },
     "R_100": {
-      "patterns": {},
-      "zones": {},
-      "stats": {
-        "w": 0,
-        "l": 0
-      },
-      "confFloor": 55,
-      "stakeBias": 1,
-      "hourly": {},
-      "lastDecay": 1767723330642,
-      "directions": {
-        "UP": {
-          "stats": {
-            "wins": 0,
-            "losses": 0,
-            "trades": 0
-          },
-          "confidence": {
-            "current": 45,
-            "min": 45,
-            "max": 90
-          },
-          "lossMemory": {
-            "recentLosses": 0,
-            "blockedUntil": 0
-          },
-          "rr": {
-            "1:1": {
-              "wins": 0,
-              "losses": 0
-            },
-            "1:2": {
-              "wins": 0,
-              "losses": 0
-            },
-            "1:3": {
-              "wins": 0,
-              "losses": 0
-            }
-          },
-          "streaks": {
-            "maxWin": 0,
-            "maxLoss": 0,
-            "current": 0
-          },
-          "context": {
-            "afterLoss": {
-              "wins": 0,
-              "losses": 0
-            },
-            "afterWin": {
-              "wins": 0,
-              "losses": 0
-            }
-          },
-          "preferredRR": "1:1",
-          "rrConfidenceMap": {
-            "1:1": 50,
-            "1:2": 50,
-            "1:3": 50
-          }
-        },
-        "DOWN": {
-          "stats": {
-            "wins": 0,
-            "losses": 0,
-            "trades": 0
-          },
-          "confidence": {
-            "current": 45,
-            "min": 45,
-            "max": 90
-          },
-          "lossMemory": {
-            "recentLosses": 0,
-            "blockedUntil": 0
-          },
-          "rr": {
-            "1:1": {
-              "wins": 0,
-              "losses": 0
-            },
-            "1:2": {
-              "wins": 0,
-              "losses": 0
-            },
-            "1:3": {
-              "wins": 0,
-              "losses": 0
-            }
-          },
-          "streaks": {
-            "maxWin": 0,
-            "maxLoss": 0,
-            "current": 0
-          },
-          "context": {
-            "afterLoss": {
-              "wins": 0,
-              "losses": 0
-            },
-            "afterWin": {
-              "wins": 0,
-              "losses": 0
-            }
-          },
-          "preferredRR": "1:1",
-          "rrConfidenceMap": {
-            "1:1": 50,
-            "1:2": 50,
-            "1:3": 50
-          }
-        }
-      },
-      "cooldown": {
-        "active": false,
-        "until": 0
-      },
-      "rrPerformance": {},
-      "timing": {
-        "bestSecond": {},
-        "worstSecond": {}
-      },
-      "volatilityMemory": {
-        "high": {
-          "wins": 0,
-          "losses": 0
-        },
-        "low": {
-          "wins": 0,
-          "losses": 0
-        }
-      },
-      "personality": {
-        "aggression": 0.5,
-        "stability": 0.5,
-        "confidenceWeight": 1
-      },
-      "patternDirectionBias": {
-        "spike": {
-          "UP": 0,
-          "DOWN": 0
-        },
-        "range": {
-          "UP": 0,
-          "DOWN": 0
-        },
-        "trend": {
-          "UP": 0,
-          "DOWN": 0
-        }
-      }
-    },
-    "1HZ75V": {
-      "patterns": {
-        "NONE": {
-          "w": 368.20796874999996,
-          "l": 44.928309999999996
-        }
-      },
-      "zones": {
-        "0": 52
-      },
-      "stats": {
-        "w": 418,
-        "l": 52
-      },
-      "confFloor": 45,
-      "stakeBias": 1,
-      "hourly": {
-        "0": {
-          "w": 17,
-          "l": 5
-        },
-        "1": {
-          "w": 85,
-          "l": 8
-        },
-        "2": {
-          "w": 40,
-          "l": 4
-        },
-        "3": {
-          "w": 83,
-          "l": 11
-        },
-        "4": {
-          "w": 38,
-          "l": 2
-        },
-        "8": {
-          "w": 27,
-          "l": 8
-        },
-        "16": {
-          "w": 1,
-          "l": 1
-        },
-        "17": {
-          "w": 25,
-          "l": 7
-        },
-        "18": {
-          "w": 73,
-          "l": 5
-        },
-        "19": {
-          "w": 16,
-          "l": 0
-        },
-        "20": {
-          "w": 13,
-          "l": 1
-        }
-      },
-      "lastDecay": 1767914164415
-    },
-    "1HZ50V": {
-      "patterns": {
-        "NONE": {
-          "w": 55,
-          "l": 4
-        }
-      },
-      "zones": {
-        "0": 4
-      },
-      "stats": {
-        "w": 55,
-        "l": 4
-      },
-      "confFloor": 45,
-      "stakeBias": 1,
-      "hourly": {
-        "0": {
-          "w": 55,
-          "l": 4
-        }
-      },
-      "lastDecay": 1767762243862
+      "trades": 89,
+      "wins": 54,
+      "losses": 35,
+      "profit": 234.56,
+      "winRate": 0.6067415730337079,
+      "avgStake": 2.45,
+      "avgPayout": 4.67,
+      "bestWin": 12.34,
+      "worstLoss": -5.67,
+      "lastTrade": 1736476800000,
+      "streak": 2,
+      "confidence": 0.72
     },
     "R_50": {
-      "patterns": {
-        "NONE": {
-          "w": 1,
-          "l": 0
-        }
-      },
-      "zones": {
-        "0": 0
-      },
-      "stats": {
-        "w": 1,
-        "l": 0
-      },
-      "confFloor": 55,
-      "stakeBias": 1,
-      "hourly": {
-        "1": {
-          "w": 1,
-          "l": 0
-        }
-      },
-      "lastDecay": 1767766142400
+      "trades": 67,
+      "wins": 38,
+      "losses": 29,
+      "profit": 156.78,
+      "winRate": 0.5671641791044776,
+      "avgStake": 1.89,
+      "avgPayout": 3.45,
+      "bestWin": 9.87,
+      "worstLoss": -4.23,
+      "lastTrade": 1736476800000,
+      "streak": 1,
+      "confidence": 0.65
     },
-    "1HZ25V": {
-      "patterns": {
-        "NONE": {
-          "w": 5,
-          "l": 0
-        }
-      },
-      "zones": {
-        "0": 0
-      },
-      "stats": {
-        "w": 5,
-        "l": 0
-      },
-      "confFloor": 55,
-      "stakeBias": 1,
-      "hourly": {
-        "1": {
-          "w": 5,
-          "l": 0
-        }
-      },
-      "lastDecay": 1767766161268
-    },
-    "1HZ10V": {
-      "patterns": {
-        "NONE": {
-          "w": 3,
-          "l": 1
-        }
-      },
-      "zones": {
-        "0": 1
-      },
-      "stats": {
-        "w": 3,
-        "l": 1
-      },
-      "confFloor": 50,
-      "stakeBias": 1,
-      "hourly": {
-        "1": {
-          "w": 3,
-          "l": 1
-        }
-      },
-      "lastDecay": 1767766182405
-    },
-    "CRASH900": {
-      "patterns": {
-        "NONE": {
-          "w": 32,
-          "l": 1
-        }
-      },
-      "zones": {
-        "0": 1
-      },
-      "stats": {
-        "w": 32,
-        "l": 1
-      },
-      "confFloor": 45,
-      "stakeBias": 1,
-      "hourly": {
-        "19": {
-          "w": 8,
-          "l": 1
-        },
-        "20": {
-          "w": 24,
-          "l": 0
-        }
-      },
-      "lastDecay": 1767920061307
+    "BOOM1000": {
+      "trades": 91,
+      "wins": 50,
+      "losses": 41,
+      "profit": 189.34,
+      "winRate": 0.5494505494505495,
+      "avgStake": 3.12,
+      "avgPayout": 5.89,
+      "bestWin": 15.67,
+      "worstLoss": -6.78,
+      "lastTrade": 1736476800000,
+      "streak": 0,
+      "confidence": 0.58
     }
   },
-  "executionRouting": {
-    "enabled": true,
-    "respectSessionLimit": true,
-    "roundRobin": {
-      "enabled": true,
-      "mode": "session",
-      "advanceOn": "bot_start",
-      "persist": true,
-      "rotationOrder": [
-        "VOL75_1S",
-        "VOL25_1S",
-        "VOL10_1S"
-      ],
-      "currentIndex": 0,
-      "stats": {
-        "VOL75_1S": {
-          "routedTrades": 0,
-          "wins": 0,
-          "losses": 0
-        },
-        "VOL25_1S": {
-          "routedTrades": 0,
-          "wins": 0,
-          "losses": 0
-        },
-        "VOL10_1S": {
-          "routedTrades": 0,
-          "wins": 0,
-          "losses": 0
-        }
+  "hourly": {
+    "9": {
+      "trades": 45,
+      "wins": 28,
+      "losses": 17,
+      "profit": 123.45
+    },
+    "10": {
+      "trades": 52,
+      "wins": 32,
+      "losses": 20,
+      "profit": 145.67
+    },
+    "14": {
+      "trades": 38,
+      "wins": 22,
+      "losses": 16,
+      "profit": 98.23
+    },
+    "15": {
+      "trades": 41,
+      "wins": 25,
+      "losses": 16,
+      "profit": 112.89
+    }
+  },
+  "daily": {
+    "Mon Jan 06 2025": {
+      "trades": 23,
+      "wins": 14,
+      "losses": 9,
+      "profit": 67.89
+    },
+    "Tue Jan 07 2025": {
+      "trades": 28,
+      "wins": 18,
+      "losses": 10,
+      "profit": 89.34
+    }
+  },
+  "patterns": {
+    "R_100_CALL_win-win-loss": {
+      "count": 12,
+      "wins": 8,
+      "losses": 4,
+      "profit": 45.67
+    },
+    "BOOM1000_PUT_win-loss-win": {
+      "count": 9,
+      "wins": 6,
+      "losses": 3,
+      "profit": 34.56
+    }
+  },
+  "strategies": {
+    "MOMENTUM": {
+      "trades": 156,
+      "wins": 89,
+      "losses": 67,
+      "profit": 345.67
+    },
+    "BREAKOUT": {
+      "trades": 91,
+      "wins": 53,
+      "losses": 38,
+      "profit": 234.89
+    }
+  },
+  "learning": {
+    "marketRankings": {
+      "R_100": {
+        "winRate": 0.6067415730337079,
+        "profit": 234.56,
+        "trades": 89,
+        "score": 0.6247415730337079
+      },
+      "BOOM1000": {
+        "winRate": 0.5494505494505495,
+        "profit": 189.34,
+        "trades": 91,
+        "score": 0.5694505494505495
+      },
+      "R_50": {
+        "winRate": 0.5671641791044776,
+        "profit": 156.78,
+        "trades": 67,
+        "score": 0.5871641791044776
       }
-    }
-  },
-  "legacySymbols": {
-    "1HZ75V": {
-      "patterns": {
-        "NONE": {
-          "w": 16,
-          "l": 3
-        }
-      },
-      "zones": {
-        "0": 3
-      },
-      "stats": {
-        "w": 16,
-        "l": 3
-      },
-      "confFloor": 50,
-      "stakeBias": 1,
-      "hourly": {
-        "7": {
-          "w": 16,
-          "l": 3
-        }
-      },
-      "lastDecay": 1767701147291
-    }
-  },
-  "uiModes": {
-    "aggressive": {
-      "confidenceFloor": "ui-only",
-      "note": "Does not override AI JSON unless user applies preset"
     },
-    "conservative": {
-      "confidenceFloor": "ui-only",
-      "note": "Does not override AI JSON unless user applies preset"
-    }
-  },
-  "meta": {
-    "directionAwareActive": true,
-    "jsonAuthority": true,
-    "autosave": {
-      "enabled": true,
-      "intervalMs": 15000
+    "timePreferences": {
+      "10": 0.6153846153846154,
+      "15": 0.6097560975609756,
+      "9": 0.6222222222222222,
+      "14": 0.5789473684210527
     },
-    "rrDirectionAware": true,
-    "aiGuardNonBlocking": true,
-    "version": "7.0_FINAL_BRAIN",
-    "htmlIsExecutor": true,
-    "learningScope": "full-system",
-    "notes": "JSON learns everything HTML executes; HTML only visualizes & routes.",
-    "verified": true
-  },
-  "globalBrain": {
-    "marketRegime": {
-      "current": "unknown",
-      "confidence": 0,
-      "memory": []
-    },
-    "drawdownLearning": {
-      "active": true,
-      "softBlock": true,
-      "hardFreeze": false,
-      "recoveryBias": 0.6
-    },
-    "session": {
-      "tradesThisSession": 0,
-      "winsThisSession": 0,
-      "lossesThisSession": 0
-    },
-    "autoRR": true,
-    "patternDirectionBias": true,
-    "symbolPersonality": true
-  },
-  "decisionMemory": {
-    "lastTrades": [],
-    "maxLength": 100,
-    "learnSequences": true
-  },
-  "exploration": {
-    "adaptive": true,
-    "boostAfterLoss": true,
-    "reduceAfterWin": true
-  },
-  "rrConfig": {
-    "markets": {
-      "VOL75_1S": {
-        "enabled": true,
-        "tp": true,
-        "eligible": true
+    "adaptiveParams": {
+      "R_100": {
+        "suggestedStake": 2.94,
+        "confidence": 0.6067415730337079,
+        "recommended": true
       },
-      "VOL25_1S": {
-        "enabled": true,
-        "tp": true,
-        "eligible": true
-      },
-      "VOL10_1S": {
-        "enabled": true,
-        "tp": true,
-        "eligible": true
+      "BOOM1000": {
+        "suggestedStake": 3.12,
+        "confidence": 0.5494505494505495,
+        "recommended": false
       }
+    },
+    "mistakes": [
+      {
+        "symbol": "CRASH500",
+        "direction": "PUT",
+        "stake": 2.5,
+        "strategy": "MOMENTUM",
+        "confidence": 0.25,
+        "time": 1736476800000,
+        "reason": "Low Confidence, Poor Symbol Performance"
+      },
+      {
+        "symbol": "R_25",
+        "direction": "CALL",
+        "stake": 1.8,
+        "strategy": "BREAKOUT",
+        "confidence": 0.35,
+        "time": 1736476800000,
+        "reason": "Low Confidence"
+      }
+    ]
+  },
+  "history": [
+    {
+      "symbol": "R_100",
+      "result": "win",
+      "stake": 2.5,
+      "payout": 4.75,
+      "direction": "CALL",
+      "strategy": "MOMENTUM",
+      "confidence": 0.72,
+      "time": 1736476800000
+    },
+    {
+      "symbol": "BOOM1000",
+      "result": "win",
+      "stake": 3.0,
+      "payout": 5.5,
+      "direction": "PUT",
+      "strategy": "BREAKOUT",
+      "confidence": 0.58,
+      "time": 1736476800000
+    },
+    {
+      "symbol": "R_50",
+      "result": "loss",
+      "stake": 1.8,
+      "payout": 0,
+      "direction": "CALL",
+      "strategy": "MOMENTUM",
+      "confidence": 0.45,
+      "time": 1736476800000
     }
-  }
-}
+  ]
+} 
