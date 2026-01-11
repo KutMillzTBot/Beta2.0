@@ -63,6 +63,20 @@
   transition: opacity 0.4s ease-in, visibility 0.4s ease-in;
 }
 
+function disconnectFromDeriv(userInitiated = true){
+  try{
+    if (appState.ws) appState.ws.close();
+  }catch(_){ }
+  appState.ws = null;
+  appState.isApiConnected = false;
+  appState.isAuthenticated = false;
+  if (userInitiated) appState.userRequestedDisconnect = true;
+  updateConnection("DISCONNECTED", "bg-red-800 text-white");
+  logLine("Disconnected from API (userInitiated=" + !!userInitiated + ")");
+  // Keep bot running state untouched so user can disconnect without stopping the bot
+  updateUI();
+}
+
 .container-wrapper:not(.hidden) {
   opacity: 1;
   visibility: visible;
@@ -1742,6 +1756,11 @@ button {
     <option value="CRASH600">Crash 600 Index</option>
     <option value="CRASH900">Crash 900 Index</option>
     <option value="CRASH1000">Crash 1000 Index</option>
+    <option value="JD10">Jump 10 Index</option>
+    <option value="JD25">Jump 25 Index</option>
+    <option value="JD50">Jump 50 Index</option>
+    <option value="JD75">Jump 75 Index</option>
+    <option value="JD100">Jump 100 Index</option>
 </select>
             <p class="text-xs text-slate-400 mt-2">
               Current symbol: <span id="currentSymbolLabel" class="text-sky-300 font-semibold">R_100</span>
@@ -2619,6 +2638,14 @@ const appState = {
   isAuthenticated:false,
   isApiConnected:false,
   isEntryInProgress:false,
+
+  // When user manually disconnects, we avoid auto-reconnect
+  userRequestedDisconnect:false,
+
+  // After cooldown finishes, require a few fresh ticks before allowing new entries
+  requireMarketWarmup:false,
+  warmupTicksNeeded:3,
+  warmupTicksSeen:0,
 
   symbol: "R_100",
 
@@ -4600,7 +4627,7 @@ function updateUI(){
   
   // Manual Sell button state
   if (dom.manualSellBtn) {
-    dom.manualSellBtn.disabled = !appState.currentContractId || appState.isSelling || appState.is_sellable !== 1;
+    dom.manualSellBtn.disabled = !appState.currentContractId || appState.isSelling;
   }
 
   if (dom.accountTypeStatus){
@@ -4617,6 +4644,11 @@ function updateUI(){
       dom.toggleBotBtn.textContent = "START BOT";
       dom.toggleBotBtn.className = "w-full py-3 rounded-lg font-bold transition duration-200 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg";
     }
+  }
+  // Connect button label
+  if (dom.connectApiBtn){
+    dom.connectApiBtn.textContent = appState.isApiConnected ? 'DISCONNECT' : 'CONNECT API';
+    dom.connectApiBtn.disabled = false;
   }
 
 
@@ -5303,6 +5335,8 @@ function updateConfidenceUI(){
 ========================================================= */
 function connectToDeriv(){
   try{
+    // If user had manually requested disconnect earlier, clear that flag when attempting a fresh connect
+    appState.userRequestedDisconnect = false;
     appState.ws = new WebSocket(API_URL);
   }catch(e){
     logLine("WebSocket create failed: " + e.message);
@@ -5322,7 +5356,8 @@ function connectToDeriv(){
   appState.ws.onclose = () => {
     appState.isAuthenticated = false;
     logLine("WS closed.");
-    if (appState.isBotRunning){
+    // Only auto-reconnect when bot is running AND the user hasn't explicitly disconnected
+    if (appState.isBotRunning && !appState.userRequestedDisconnect){
       updateConnection("RECONNECTING...", "bg-yellow-600 text-white");
       setTimeout(connectToDeriv, 2500);
     } else {
@@ -5436,7 +5471,10 @@ function startBot(){
   appState.isBotRunning = true;
   logLine("Bot started - trading active.");
   updateUI();
-  // Note: API connection is handled separately by Connect button
+  // If API is already connected/authenticated, start subscribing to ticks now
+  if (appState.isApiConnected && appState.isAuthenticated){
+    try{ subscribeTicks(appState.symbol); }catch(_){ }
+  }
 }
 
 function subscribeTicks(symbol){
@@ -5488,7 +5526,7 @@ function handleResponse(res){
 
       logLine("Authorized. Account=" + (appState.isDemo ? "DEMO" : "REAL"));
 
-      subscribeTicks(appState.symbol);
+      // Do NOT auto-subscribe ticks here. Subscriptions start when the user clicks START BOT.
       appState.ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
       appState.ws.send(JSON.stringify({ proposal_open_contract: 1, subscribe: 1 }));
 
@@ -5522,6 +5560,9 @@ function handleResponse(res){
         dom.toggleBotBtn.textContent = 'START BOT';
       }
 
+      // Update Connect button label to allow disconnecting
+      if (dom.connectApiBtn) dom.connectApiBtn.textContent = 'DISCONNECT';
+
       // Show connection status
       if (dom.connectionStatus) {
         dom.connectionStatus.classList.remove('hidden');
@@ -5548,6 +5589,18 @@ function handleResponse(res){
 
     case "tick":{
       if (!appState.isBotRunning) return;
+
+      // If we're in warmup mode after cooldown, count ticks until ready
+      if (appState.requireMarketWarmup){
+        appState.warmupTicksSeen = (appState.warmupTicksSeen || 0) + 1;
+        if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = `Warming up (${appState.warmupTicksSeen}/${appState.warmupTicksNeeded})`;
+        if (appState.warmupTicksSeen >= (appState.warmupTicksNeeded || 1)){
+          appState.requireMarketWarmup = false;
+          appState.warmupTicksSeen = 0;
+          logLine("Market warmup complete - resuming market analysis and trading on " + appState.symbol);
+          if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "None";
+        }
+      }
 
       const price = Number(res.tick.quote);
       if (!Number.isFinite(price)) return;
@@ -5749,6 +5802,9 @@ function handleResponse(res){
           hideCurrentTradeDisplay();
 
           appState.cooldownUntil = Date.now() + (appState.cooldownDuration * 1000);
+          // After cooldown finishes, require a few fresh ticks before entering new trades
+          appState.requireMarketWarmup = true;
+          appState.warmupTicksSeen = 0;
           if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "Cooldown";
           updateTradeStatus("Trade Closed. Cooldown...", "bg-orange-500 text-white");
           logLine("Trade closed. P/L: " + profit.toFixed(2));
@@ -5849,6 +5905,11 @@ function checkAndEnterTrade(){
       }
       return;
     }
+  }
+  // If we recently exited a cooldown, ensure market warmup completed (fresh ticks)
+  if (appState.requireMarketWarmup){
+    if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "Warming up after cooldown";
+    return;
   }
   if (appState.isEntryInProgress){
     if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "Entry In Progress";
@@ -6119,18 +6180,15 @@ function updateCurrentTradeDisplay(tradeInfo) {
   }
   
   if (dom.currentTradeSellBtn) {
-    // Always allow manual sell - even when auto sell is on
-    // Only disable if no contract, already selling, or not sellable
-    const shouldDisable = !appState.currentContractId || appState.isSelling || appState.is_sellable !== 1;
+    // Allow manual sell as soon as a trade exists; only disable if no contract or already selling
+    const shouldDisable = !appState.currentContractId || appState.isSelling;
     dom.currentTradeSellBtn.disabled = shouldDisable;
-    
+
     // Add visual feedback
     if (shouldDisable && !appState.currentContractId) {
       dom.currentTradeSellBtn.title = "No active contract";
     } else if (shouldDisable && appState.isSelling) {
       dom.currentTradeSellBtn.title = "Selling in progress...";
-    } else if (shouldDisable && appState.is_sellable !== 1) {
-      dom.currentTradeSellBtn.title = "Contract not sellable yet";
     } else {
       dom.currentTradeSellBtn.title = "Click to manually sell contract";
     }
@@ -6231,10 +6289,9 @@ function sellContract(){
     return;
   }
 
+  // Allow immediate sell attempt, even if API hasn't marked as sellable yet
   if (appState.is_sellable !== 1){
-    logLine("Sell: Contract not sellable (is_sellable=" + appState.is_sellable + ")");
-    if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "Not Sellable";
-    return;
+    logLine("Sell: Contract not marked sellable (is_sellable=" + appState.is_sellable + ") - attempting immediate sell");
   }
 
   if (!appState.ws || !appState.isAuthenticated) {
@@ -6514,14 +6571,13 @@ function setSymbol(newSymbol){
     }
   }
 
-  if (appState.isAuthenticated){
+  if (appState.isAuthenticated && appState.isBotRunning){
     subscribeTicks(newSymbol);
-
-    // 
-// refresh trend candles for the NEW symbol
+    // refresh trend candles for the NEW symbol
     if (appState.trend.enabled) requestH4Candles();
-
     logLine("Symbol switched to: " + newSymbol);
+  } else if (appState.isAuthenticated && !appState.isBotRunning){
+    logLine("Symbol set (will subscribe after START BOT): " + newSymbol);
   } else {
     logLine("Symbol set (will subscribe after connect): " + newSymbol);
   }
@@ -6722,13 +6778,9 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
         
-        if (appState.is_sellable !== 1) {
-          logLine("Sell button: Contract not sellable yet");
-          if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "Not Sellable";
-          return;
-        }
-        
-        logLine("Sell button clicked - selling contract");
+        // If contract isn't marked sellable yet, still attempt a manual sell
+        // Immediate sell action when button pressed
+        logLine("Sell button clicked - executing immediate sell");
         sellContract();
       });
     }
@@ -6745,9 +6797,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     dom.connectApiBtn?.addEventListener("click", () => {
+      // Toggle connect/disconnect
       if (appState.isApiConnected) {
+        // User requested manual disconnect; do not stop the bot
+        disconnectFromDeriv(true);
+        if (dom.connectApiBtn) dom.connectApiBtn.textContent = 'CONNECT API';
         if (typeof UAE_showTimedPopup === 'function') {
-          UAE_showTimedPopup('✅ Already connected to API!', 3000);
+          UAE_showTimedPopup('🔌 Disconnected from API (manual).', 3000);
         }
         return;
       }
