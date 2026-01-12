@@ -191,6 +191,12 @@ window.AI_BRAIN = migrateBrain(loadBrain());
 setInterval(saveBrain, window.AI_BRAIN.meta.autosaveMs);
 
 window.AI = {
+  // Learning status tracking
+  _learningStatus: 'idle',
+  _currentAnalysisSymbol: null,
+  _lastAnalysisTime: null,
+  _learningInterval: null,
+
   // Enhanced trade recording with detailed analytics
   recordTrade({symbol, result, stake=0, payout=0, direction='', strategy='', confidence=0}){
     if(!symbol) return;
@@ -843,7 +849,243 @@ window.AI = {
     window.AI_BRAIN = deepClone(DEFAULT_BRAIN);
     saveBrain();
     location.reload();
+  },
+
+  // Get current learning status
+  getLearningStatus() {
+    return {
+      status: this._learningStatus || 'idle',
+      currentSymbol: this._currentAnalysisSymbol || null,
+      lastAnalysis: this._lastAnalysisTime || null
+    };
+  },
+
+  // Start continuous learning cycle
+  startContinuousLearning() {
+    if (this._learningInterval) {
+      clearInterval(this._learningInterval);
+    }
+    
+    // Run learning analysis every 10 minutes
+    this._learningInterval = setInterval(() => {
+      this.performContinuousLearning();
+    }, 600000); // 10 minutes
+    
+    console.log('[AI] Continuous learning started - analyzing markets every 10 minutes');
+    
+    // Initial analysis
+    setTimeout(() => {
+      this.performContinuousLearning();
+    }, 30000); // Start after 30 seconds
+  },
+
+  // Stop continuous learning
+  stopContinuousLearning() {
+    if (this._learningInterval) {
+      clearInterval(this._learningInterval);
+      this._learningInterval = null;
+      console.log('[AI] Continuous learning stopped');
+    }
+  },
+
+  // Get market insights for continuous learning
+  getMarketInsights(symbol) {
+    const brain = window.AI_BRAIN;
+    if (!brain.symbols[symbol]) return null;
+
+    const sym = brain.symbols[symbol];
+    const rankings = brain.learning.marketRankings[symbol];
+    
+    return {
+      symbol: symbol,
+      overallWinRate: sym.totalTrades > 0 ? sym.wins / sym.totalTrades : 0,
+      recentPerformance: rankings ? rankings.recentWinRate : 0,
+      totalTrades: sym.totalTrades,
+      bestStrategy: sym.bestStrategy,
+      avgStake: sym.avgStake,
+      marketScore: rankings ? rankings.score : 0,
+      recommended: this.getRecommendedSettings(symbol).recommended,
+      lastAnalyzed: rankings ? rankings.lastAnalyzed : null
+    };
+  },
+
+  // Continuous learning - analyze all markets periodically
+  performContinuousLearning() {
+    const brain = window.AI_BRAIN;
+    const symbols = Object.keys(brain.symbols);
+    
+    symbols.forEach(symbol => {
+      // Analyze markets that haven't been analyzed recently
+      const rankings = brain.learning.marketRankings[symbol];
+      const now = Date.now();
+      
+      if (!rankings || (now - (rankings.lastAnalyzed || 0)) > 300000) { // 5 minutes
+        this.analyzeMarket(symbol);
+      }
+    });
+    
+    console.log('[AI] Continuous learning cycle completed');
+  },
+
+  // Get winning patterns for TAKE indicator
+  getWinningPatterns(symbol, direction) {
+    const brain = window.AI_BRAIN;
+    const patterns = [];
+
+    Object.keys(brain.learning.winningPatterns || {}).forEach(key => {
+      const pattern = brain.learning.winningPatterns[key];
+      if (pattern.symbol === symbol && 
+          (!direction || key.startsWith(direction + '_')) &&
+          pattern.wins / pattern.total >= 0.7 && 
+          pattern.total >= 5) {
+        patterns.push({
+          pattern: key,
+          winRate: pattern.wins / pattern.total,
+          count: pattern.total,
+          avgProfit: pattern.avgProfit
+        });
+      }
+    });
+
+    // Sort by win rate and return top patterns
+    return patterns.sort((a, b) => b.winRate - a.winRate).slice(0, 3);
+  },
+
+  // Analyze market patterns and improve performance after cooldown
+  analyzeMarket(symbol) {
+    if (!symbol || !window.AI_BRAIN.symbols[symbol]) {
+      console.log('[AI] Cannot analyze market: invalid symbol');
+      return;
+    }
+
+    // Set learning status
+    this._learningStatus = 'analyzing';
+    this._currentAnalysisSymbol = symbol;
+
+    const brain = window.AI_BRAIN;
+    const sym = brain.symbols[symbol];
+    const now = Date.now();
+
+    console.log(`[AI] Analyzing market patterns for ${symbol}...`);
+
+    // Analyze recent performance
+    const recentTrades = sym.trades.slice(-10); // Last 10 trades
+    if (recentTrades.length < 3) {
+      console.log('[AI] Not enough recent trades for analysis');
+      this._learningStatus = 'idle';
+      this._currentAnalysisSymbol = null;
+      return;
+    }
+
+    // Calculate win rate for recent trades
+    const recentWins = recentTrades.filter(t => t.result === 'win').length;
+    const recentWinRate = recentWins / recentTrades.length;
+
+    // Analyze time-based performance
+    const currentHour = new Date().getHours();
+    const hourTrades = sym.trades.filter(t => {
+      const tradeHour = new Date(t.timestamp).getHours();
+      return tradeHour === currentHour;
+    });
+
+    if (hourTrades.length >= 3) {
+      const hourWinRate = hourTrades.filter(t => t.result === 'win').length / hourTrades.length;
+      brain.learning.timePreferences[`${symbol}_${currentHour}`] = {
+        winRate: hourWinRate,
+        trades: hourTrades.length,
+        lastUpdated: now
+      };
+    }
+
+    // Update market rankings based on performance
+    const overallWinRate = sym.totalTrades > 0 ? sym.wins / sym.totalTrades : 0;
+    brain.learning.marketRankings[symbol] = {
+      winRate: overallWinRate,
+      totalTrades: sym.totalTrades,
+      recentWinRate: recentWinRate,
+      lastAnalyzed: now,
+      score: (overallWinRate * 0.6) + (recentWinRate * 0.4) // Weighted score
+    };
+
+    // Learn from mistakes - analyze losing patterns
+    const recentLosses = recentTrades.filter(t => t.result === 'loss');
+    if (recentLosses.length > 0) {
+      recentLosses.forEach(loss => {
+        const mistakeKey = `${symbol}_${loss.direction}_${loss.strategy}`;
+        if (!brain.learning.mistakes[mistakeKey]) {
+          brain.learning.mistakes[mistakeKey] = {
+            count: 0,
+            totalLoss: 0,
+            avgStake: 0
+          };
+        }
+        brain.learning.mistakes[mistakeKey].count++;
+        brain.learning.mistakes[mistakeKey].totalLoss += Math.abs(loss.profit);
+        brain.learning.mistakes[mistakeKey].avgStake = 
+          (brain.learning.mistakes[mistakeKey].avgStake + loss.stake) / 2;
+      });
+    }
+
+    // Adaptive parameter learning
+    if (recentWinRate > 0.6) {
+      // High win rate - reinforce current parameters
+      brain.learning.adaptiveParams[symbol] = brain.learning.adaptiveParams[symbol] || {};
+      brain.learning.adaptiveParams[symbol].lastGoodParams = {
+        stake: sym.avgStake,
+        strategy: sym.bestStrategy,
+        timestamp: now
+      };
+    }
+
+    // Update winning patterns for TAKE indicator
+    this.updateWinningPatterns(symbol);
+
+    saveBrain();
+    
+    // Clear learning status
+    this._learningStatus = 'idle';
+    this._currentAnalysisSymbol = null;
+    this._lastAnalysisTime = now;
+    
+    console.log(`[AI] Market analysis complete for ${symbol}. Win rate: ${(recentWinRate * 100).toFixed(1)}%`);
+  },
+
+  // Update winning patterns for auto-take decisions
+  updateWinningPatterns(symbol) {
+    const brain = window.AI_BRAIN;
+    const sym = brain.symbols[symbol];
+    
+    if (!sym || sym.trades.length < 5) return;
+
+    // Analyze patterns that led to wins
+    const winningTrades = sym.trades.filter(t => t.result === 'win');
+    
+    winningTrades.forEach(trade => {
+      const patternKey = `${trade.direction}_${trade.strategy}_${trade.confidence || 50}`;
+      
+      if (!brain.learning.winningPatterns[patternKey]) {
+        brain.learning.winningPatterns[patternKey] = {
+          wins: 0,
+          total: 0,
+          avgProfit: 0,
+          symbol: symbol
+        };
+      }
+      
+      brain.learning.winningPatterns[patternKey].wins++;
+      brain.learning.winningPatterns[patternKey].total++;
+      brain.learning.winningPatterns[patternKey].avgProfit = 
+        (brain.learning.winningPatterns[patternKey].avgProfit + trade.profit) / 2;
+    });
+
+    // Clean up old patterns (keep only recent and successful ones)
+    Object.keys(brain.learning.winningPatterns).forEach(key => {
+      const pattern = brain.learning.winningPatterns[key];
+      if (pattern.wins / pattern.total < 0.5 || pattern.total < 3) {
+        delete brain.learning.winningPatterns[key];
+      }
+    });
   }
 };
 
-console.log("[AI] Session-learning brain loaded");
+console.log("[AI] KUT MILLZ AI Brain loaded with FULL LEARNING CAPABILITIES - Continuous analysis, pattern recognition, and adaptive optimization active!");
