@@ -2,8 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kut Milz TB</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="KUT MILLZ AI" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="msapplication-TileColor" content="#0f172a" />
+  <meta name="msapplication-tap-highlight" content="no" />
+  <title>KUT MILLZ AI Trading Bot</title>
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Fallback styles when Tailwind fails -->
@@ -61,20 +68,6 @@
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.4s ease-in, visibility 0.4s ease-in;
-}
-
-function disconnectFromDeriv(userInitiated = true){
-  try{
-    if (appState.ws) appState.ws.close();
-  }catch(_){ }
-  appState.ws = null;
-  appState.isApiConnected = false;
-  appState.isAuthenticated = false;
-  if (userInitiated) appState.userRequestedDisconnect = true;
-  updateConnection("DISCONNECTED", "bg-red-800 text-white");
-  logLine("Disconnected from API (userInitiated=" + !!userInitiated + ")");
-  // Keep bot running state untouched so user can disconnect without stopping the bot
-  updateUI();
 }
 
 .container-wrapper:not(.hidden) {
@@ -1295,14 +1288,27 @@ button {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  right: 0;
+  bottom: 0;
   z-index: 50;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg,
+    #0f172a 0%,
+    #1e293b 25%,
+    #334155 50%,
+    #1e293b 75%,
+    #0f172a 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 #login-overlay.hidden { display: none; }
@@ -1311,45 +1317,94 @@ button {
   position: relative;
   z-index: 10;
   width: 100%;
-  max-width: 400px;
-  padding: 2rem;
+  max-width: 420px;
+  padding: 1rem;
+  margin: 0 auto;
 }
 
 .login-card {
-  background: rgba(30, 41, 59, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 1rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(51, 65, 85, 0.5);
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 1.5rem;
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.2);
   padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #06b6d4, #7c3aed, #06b6d4);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 .login-header {
   text-align: center;
   margin-bottom: 2rem;
+  position: relative;
 }
 
 .login-icon {
-  width: 4rem;
-  height: 4rem;
-  background: linear-gradient(135deg, #06b6d4 0%, #7c3aed 100%);
+  width: 5rem;
+  height: 5rem;
+  background: linear-gradient(135deg, #06b6d4 0%, #7c3aed 50%, #ec4899 100%);
   border-radius: 50%;
-  margin: 0 auto 1rem;
+  margin: 0 auto 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 10px 30px rgba(6, 182, 212, 0.3);
+  position: relative;
+}
+
+.login-icon::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #06b6d4, #7c3aed, #ec4899);
+  z-index: -1;
+  opacity: 0.3;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.05); opacity: 0.6; }
 }
 
 .login-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: white;
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #f6d365 0%, #fda085 50%, #f6d365 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   margin-bottom: 0.5rem;
+  text-shadow: 0 2px 10px rgba(246, 211, 101, 0.3);
+  letter-spacing: 0.05em;
 }
 
 .login-subtitle {
-  color: #94a3b8;
-  font-size: 0.875rem;
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  font-weight: 400;
 }
 
 .login-form {
@@ -1364,28 +1419,34 @@ button {
 }
 
 .form-label {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #cbd5e1;
+  font-weight: 600;
+  color: #e2e8f0;
   margin-bottom: 0.5rem;
+  font-size: 0.9rem;
 }
 
 .form-input {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
   background: rgba(51, 65, 85, 0.5);
-  border: 1px solid #475569;
-  border-radius: 0.5rem;
+  border: 2px solid rgba(71, 85, 105, 0.5);
+  border-radius: 0.75rem;
   color: white;
   font-size: 1rem;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
 .form-input:focus {
   outline: none;
   border-color: #06b6d4;
-  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
+  background: rgba(51, 65, 85, 0.7);
+}
+
+.form-input::placeholder {
+  color: #94a3b8;
+  opacity: 0.8;
 }
 
 .login-button {
@@ -1393,16 +1454,39 @@ button {
   background: linear-gradient(135deg, #06b6d4 0%, #7c3aed 100%);
   color: white;
   font-weight: 600;
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1.5rem;
+  border-radius: 0.75rem;
   border: none;
-  border-radius: 0.5rem;
-  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  font-size: 1rem;
+  box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+}
+
+.login-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.login-button:hover::before {
+  left: 100%;
 }
 
 .login-button:hover {
-  transform: scale(1.02);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(6, 182, 212, 0.4);
+}
+
+.login-button:active {
+  transform: translateY(0);
 }
 
 .login-button:disabled {
@@ -1419,17 +1503,84 @@ button {
   text-align: center;
 }
 
-/* Mobile responsive */
+/* Enhanced Mobile Responsiveness */
 @media (max-width: 640px) {
   .login-container {
-    margin: 1rem;
-    padding: 1rem;
+    margin: 0.5rem;
+    padding: 0.5rem;
   }
+
   .login-card {
     padding: 1.5rem;
+    border-radius: 1rem;
   }
+
   .login-title {
-    font-size: 1.25rem;
+    font-size: 1.75rem;
+  }
+
+  .login-icon {
+    width: 4rem;
+    height: 4rem;
+  }
+
+  .form-input {
+    padding: 0.75rem 1rem;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .login-button {
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-container {
+    margin: 0.25rem;
+    padding: 0.25rem;
+  }
+
+  .login-card {
+    padding: 1.25rem;
+  }
+
+  .login-title {
+    font-size: 1.5rem;
+  }
+
+  .login-subtitle {
+    font-size: 0.875rem;
+  }
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  .login-card {
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .form-input {
+    -webkit-appearance: none;
+    border-radius: 0.75rem;
+  }
+
+  .login-button {
+    -webkit-appearance: none;
+  }
+}
+
+/* Android specific fixes */
+@supports not (-webkit-touch-callout: none) {
+  .login-card {
+    backdrop-filter: blur(20px);
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .login-card {
+    border: 0.5px solid rgba(148, 163, 184, 0.2);
   }
 }
 </style>
@@ -1443,7 +1594,7 @@ button {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
           </svg>
         </div>
-        <h2 class="text-2xl font-bold text-white mb-2 login-title">Kut Milz Access</h2>
+        <h2 class="text-2xl font-bold text-white mb-2 login-title">KUT MILLZ AI</h2>
         <p class="text-slate-400 login-subtitle">Enter your credentials to access the trading bot</p>
         <div id="offline-notice" class="text-xs text-yellow-400 mt-2 hidden">
           ⚠️ Some features may be limited due to network connectivity
@@ -1461,6 +1612,20 @@ button {
           <input type="password" id="password" name="password" class="w-full px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition duration-200 form-input" placeholder="Enter Password" required>
         </div>
 
+        <div class="form-group">
+          <label class="flex items-center">
+            <input type="checkbox" id="terms-checkbox" class="mr-2 h-4 w-4 text-cyan-600 bg-slate-700 border-slate-600 rounded focus:ring-cyan-500 focus:ring-2">
+            <span class="text-sm text-slate-300">I agree to the <a href="#" class="text-cyan-400 hover:text-cyan-300 underline" onclick="showTermsAndConditions()">Terms and Conditions</a></span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label class="flex items-center">
+            <input type="checkbox" id="remember-checkbox" class="mr-2 h-4 w-4 text-cyan-600 bg-slate-700 border-slate-600 rounded focus:ring-cyan-500 focus:ring-2">
+            <span class="text-sm text-slate-300">Remember my login (stored locally)</span>
+          </label>
+        </div>
+
         <button type="submit" id="login-submit-btn" class="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-600 hover:to-purple-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-slate-800 login-button">
           Access Bot
         </button>
@@ -1474,7 +1639,7 @@ button {
 </div>
 
 <div class="container-wrapper hidden" id="app-root">
-  <h1 class="text-3xl text-center mb-6 brand-title">KUT MILZ TB</h1>
+  <h1 class="text-3xl text-center mb-6 brand-title">KUT MILLZ AI</h1>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
@@ -2552,6 +2717,20 @@ button {
         </div>
       </div>
 
+      <!-- Market Chart -->
+      <div class="card">
+        <h2 class="text-xl font-semibold mb-4 text-emerald-400">Market Chart</h2>
+        <div id="chart-container" style="width: 100%; height: 400px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(124,58,237,0.2);">
+          <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: rgba(255,255,255,0.6);">
+            <div style="text-align: center;">
+              <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
+              <div id="chart-status" class="text-sm">WAITING</div>
+              <div class="text-xs text-slate-400 mt-2">Chart will load when API connects</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Insights -->
       <div class="card">
         <h2 class="text-xl font-semibold mb-4 text-emerald-400">Market Insights ✨</h2>
@@ -2659,6 +2838,8 @@ const appState = {
   sessionTrades: 0,
   sessionWins: 0,
   sessionLosses: 0,
+  consecutiveWins: 0,   // consecutive winning trades
+  consecutiveLosses: 0, // consecutive losing trades
   sessLimitsEnabled: false,
   sessMaxProfit: null,
   sessMaxLoss: null,
@@ -4187,6 +4368,232 @@ function updateConnection(status, cls){
   updateLoginBadge();
 }
 
+function disconnectFromDeriv(userInitiated = true){
+  try{
+    if (appState.ws) appState.ws.close();
+  }catch(_){ }
+  appState.ws = null;
+  appState.isApiConnected = false;
+  appState.isAuthenticated = false;
+  if (userInitiated) appState.userRequestedDisconnect = true;
+  updateConnection("DISCONNECTED", "bg-red-800 text-white");
+  logLine("Disconnected from API (userInitiated=" + !!userInitiated + ")");
+  // Keep bot running state untouched so user can disconnect without stopping the bot
+  updateUI();
+}
+
+function showTermsAndConditions(){
+  // Create modal overlay
+  const modal = document.createElement('div');
+  modal.style.position = 'fixed';
+  modal.style.top = '0';
+  modal.style.left = '0';
+  modal.style.width = '100%';
+  modal.style.height = '100%';
+  modal.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+  modal.style.zIndex = '10000';
+  modal.style.display = 'flex';
+  modal.style.alignItems = 'center';
+  modal.style.justifyContent = 'center';
+  modal.style.padding = '20px';
+  modal.style.boxSizing = 'border-box';
+
+  // Create modal content
+  const content = document.createElement('div');
+  content.style.backgroundColor = '#1e293b';
+  content.style.borderRadius = '12px';
+  content.style.padding = '24px';
+  content.style.maxWidth = '600px';
+  content.style.maxHeight = '80vh';
+  content.style.overflowY = 'auto';
+  content.style.border = '2px solid #06b6d4';
+  content.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+
+  // Modal header
+  const header = document.createElement('div');
+  header.style.marginBottom = '20px';
+  header.style.borderBottom = '1px solid #374151';
+  header.style.paddingBottom = '16px';
+
+  const title = document.createElement('h2');
+  title.textContent = 'Terms and Conditions';
+  title.style.color = '#f1f5f9';
+  title.style.fontSize = '24px';
+  title.style.fontWeight = 'bold';
+  title.style.margin = '0';
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '×';
+  closeBtn.style.float = 'right';
+  closeBtn.style.background = 'none';
+  closeBtn.style.border = 'none';
+  closeBtn.style.color = '#94a3b8';
+  closeBtn.style.fontSize = '28px';
+  closeBtn.style.cursor = 'pointer';
+  closeBtn.style.padding = '0';
+  closeBtn.style.lineHeight = '1';
+  closeBtn.onclick = () => document.body.removeChild(modal);
+
+  header.appendChild(title);
+  header.appendChild(closeBtn);
+
+  // Terms content
+  const termsContent = document.createElement('div');
+  termsContent.style.color = '#cbd5e1';
+  termsContent.style.lineHeight = '1.6';
+  termsContent.innerHTML = `
+    <h3 style="color: #06b6d4; margin-top: 20px; margin-bottom: 10px;">1. Acceptance of Terms</h3>
+    <p>By accessing and using KUT MILLZ AI Trading Bot, you accept and agree to be bound by the terms and provision of this agreement.</p>
+
+    <h3 style="color: #06b6d4; margin-top: 20px; margin-bottom: 10px;">2. Trading Risks</h3>
+    <p><strong>WARNING:</strong> Trading binary options and CFDs involves substantial risk of loss and is not suitable for all investors. You may lose all of your invested capital. Past performance does not guarantee future results.</p>
+
+    <h3 style="color: #06b6d4; margin-top: 20px; margin-bottom: 10px;">3. AI and Automation</h3>
+    <p>The bot uses artificial intelligence algorithms to analyze market data and make trading decisions. While designed to optimize performance, no trading system can guarantee profits. The AI learns from historical data and market patterns.</p>
+
+    <h3 style="color: #06b6d4; margin-top: 20px; margin-bottom: 10px;">4. User Responsibility</h3>
+    <p>You are solely responsible for:</p>
+    <ul style="margin-left: 20px;">
+      <li>Your trading account and credentials</li>
+      <li>Understanding the risks involved</li>
+      <li>Monitoring bot performance</li>
+      <li>Ensuring sufficient account balance</li>
+    </ul>
+
+    <h3 style="color: #06b6d4; margin-top: 20px; margin-bottom: 10px;">5. No Guarantees</h3>
+    <p>The bot and its developers make no guarantees regarding profitability, account growth, or trading success. Results may vary based on market conditions, account settings, and other factors.</p>
+
+    <h3 style="color: #06b6d4; margin-top: 20px; margin-bottom: 10px;">6. Data Privacy</h3>
+    <p>Trading data and performance metrics are stored locally in your browser. Login credentials may be saved locally if you choose "Remember my login" - this data stays on your device and is not transmitted to external servers.</p>
+
+    <h3 style="color: #06b6d4; margin-top: 20px; margin-bottom: 10px;">7. Limitation of Liability</h3>
+    <p>The bot developers shall not be liable for any direct, indirect, incidental, or consequential damages resulting from the use or inability to use the bot.</p>
+
+    <h3 style="color: #06b6d4; margin-top: 20px; margin-bottom: 10px;">8. Modifications</h3>
+    <p>These terms may be updated at any time. Continued use of the bot constitutes acceptance of updated terms.</p>
+  `;
+
+  // Accept button
+  const acceptBtn = document.createElement('button');
+  acceptBtn.textContent = 'I Understand and Accept';
+  acceptBtn.style.backgroundColor = '#06b6d4';
+  acceptBtn.style.color = 'white';
+  acceptBtn.style.border = 'none';
+  acceptBtn.style.padding = '12px 24px';
+  acceptBtn.style.borderRadius = '6px';
+  acceptBtn.style.cursor = 'pointer';
+  acceptBtn.style.fontWeight = 'bold';
+  acceptBtn.style.marginTop = '20px';
+  acceptBtn.style.width = '100%';
+  acceptBtn.style.transition = 'background-color 0.2s';
+  acceptBtn.onmouseover = () => acceptBtn.style.backgroundColor = '#0891b2';
+  acceptBtn.onmouseout = () => acceptBtn.style.backgroundColor = '#06b6d4';
+  acceptBtn.onclick = () => {
+    document.body.removeChild(modal);
+    // Check the terms checkbox
+    const checkbox = document.getElementById('terms-checkbox');
+    if (checkbox) checkbox.checked = true;
+  };
+
+  // Assemble modal
+  content.appendChild(header);
+  content.appendChild(termsContent);
+  content.appendChild(acceptBtn);
+  modal.appendChild(content);
+
+  // Close on background click
+  modal.onclick = (e) => {
+    if (e.target === modal) document.body.removeChild(modal);
+  };
+
+  // Add to page
+  document.body.appendChild(modal);
+
+  // Focus management
+  closeBtn.focus();
+}
+
+function initChart() {
+  if (!window.LightweightChartsLoaded) {
+    console.warn('Lightweight Charts library not loaded yet');
+    return;
+  }
+
+  const chartContainer = document.getElementById('chart-container');
+  if (!chartContainer) {
+    console.warn('Chart container not found');
+    return;
+  }
+
+  try {
+    // Clear any existing chart
+    chartContainer.innerHTML = '';
+
+    // Create the chart
+    const chart = LightweightCharts.createChart(chartContainer, {
+      layout: {
+        background: { color: 'rgba(30, 41, 59, 0.8)' },
+        textColor: '#cbd5e1',
+        fontSize: 12,
+        fontFamily: 'Inter, sans-serif',
+      },
+      grid: {
+        vertLines: { color: 'rgba(124, 58, 237, 0.1)' },
+        horzLines: { color: 'rgba(124, 58, 237, 0.1)' },
+      },
+      crosshair: {
+        mode: LightweightCharts.CrosshairMode.Normal,
+      },
+      rightPriceScale: {
+        borderColor: 'rgba(124, 58, 237, 0.3)',
+      },
+      timeScale: {
+        borderColor: 'rgba(124, 58, 237, 0.3)',
+        timeVisible: true,
+        secondsVisible: false,
+      },
+      width: chartContainer.clientWidth,
+      height: 400,
+    });
+
+    // Create candlestick series
+    const candlestickSeries = chart.addCandlestickSeries({
+      upColor: '#10b981',
+      downColor: '#ef4444',
+      borderVisible: false,
+      wickUpColor: '#10b981',
+      wickDownColor: '#ef4444',
+    });
+
+    // Store chart reference globally
+    window.chartInstance = chart;
+    window.candlestickSeries = candlestickSeries;
+
+    // Update chart status
+    const statusEl = document.getElementById('chart-status');
+    if (statusEl) {
+      statusEl.textContent = 'LIVE';
+      statusEl.style.color = '#10b981';
+    }
+
+    // Handle resize
+    const resizeObserver = new ResizeObserver(() => {
+      chart.applyOptions({ width: chartContainer.clientWidth });
+    });
+    resizeObserver.observe(chartContainer);
+
+    console.log('Chart initialized successfully');
+
+  } catch (error) {
+    console.error('Failed to initialize chart:', error);
+    const statusEl = document.getElementById('chart-status');
+    if (statusEl) {
+      statusEl.textContent = 'ERROR';
+      statusEl.style.color = '#ef4444';
+    }
+  }
+}
+
 function updateLoginBadge(){
   if (!dom.loginBadge || !dom.connectionStatus) return;
   const t = dom.connectionStatus.textContent || "";
@@ -4252,6 +4659,8 @@ function resetSessionLimits(){
   appState.sessionTrades = 0;
   appState.sessionWins = 0;
   appState.sessionLosses = 0;
+  appState.consecutiveWins = 0;
+  appState.consecutiveLosses = 0;
   appState.sessStopReason = null;
 
   // Keep user limits inputs as-is, just reset counters
@@ -4339,6 +4748,49 @@ function getEffectiveStake(){
     stake *= riskMult;
   }
 
+  // Dynamic stake adjustment based on recent performance
+  if (appState.sessionTrades > 0) {
+    const winRate = appState.sessionWins / appState.sessionTrades;
+    const recentTrades = Math.min(appState.sessionTrades, 10); // Look at last 10 trades
+
+    // If winning streak, gradually increase stake
+    if (appState.consecutiveWins >= 3) {
+      const increaseFactor = Math.min(1.5, 1 + (appState.consecutiveWins * 0.1));
+      stake *= increaseFactor;
+      logLine(`Stake increased by ${((increaseFactor - 1) * 100).toFixed(1)}% due to ${appState.consecutiveWins} consecutive wins`);
+      if (typeof UAE_showTimedPopup === 'function') {
+        UAE_showTimedPopup(`📈 Stake Increased: ${((increaseFactor - 1) * 100).toFixed(1)}% boost due to ${appState.consecutiveWins} wins in a row!`, 3000);
+      }
+    }
+    // If losing streak, decrease stake
+    else if (appState.consecutiveLosses >= 2) {
+      const decreaseFactor = Math.max(0.5, 1 - (appState.consecutiveLosses * 0.15));
+      stake *= decreaseFactor;
+      logLine(`Stake decreased by ${((1 - decreaseFactor) * 100).toFixed(1)}% due to ${appState.consecutiveLosses} consecutive losses`);
+      if (typeof UAE_showTimedPopup === 'function') {
+        UAE_showTimedPopup(`📉 Stake Decreased: ${((1 - decreaseFactor) * 100).toFixed(1)}% reduction due to ${appState.consecutiveLosses} losses in a row.`, 3000);
+      }
+    }
+    // General win rate adjustment
+    else if (winRate < 0.4 && appState.sessionTrades >= 5) {
+      stake *= 0.8; // Reduce stake if win rate below 40%
+      logLine(`Stake reduced by 20% due to low win rate (${(winRate * 100).toFixed(1)}%)`);
+      if (typeof UAE_showTimedPopup === 'function') {
+        UAE_showTimedPopup(`⚠️ Stake Reduced: 20% decrease due to low win rate (${(winRate * 100).toFixed(1)}%).`, 3000);
+      }
+    }
+    else if (winRate > 0.7 && appState.sessionTrades >= 5) {
+      stake *= 1.2; // Increase stake if win rate above 70%
+      logLine(`Stake increased by 20% due to high win rate (${(winRate * 100).toFixed(1)}%)`);
+      if (typeof UAE_showTimedPopup === 'function') {
+        UAE_showTimedPopup(`🎯 Stake Increased: 20% boost due to high win rate (${(winRate * 100).toFixed(1)}%)!`, 3000);
+      }
+    }
+  }
+
+  // Ensure stake stays within reasonable bounds
+  stake = Math.max(0.35, Math.min(stake, appState.currentBalance * 0.1)); // Max 10% of balance
+
   if (Number.isFinite(stake) && stake > 0) return stake;
   return manual;
 }
@@ -4355,10 +4807,15 @@ function updateAIInsights(){
 
     const analytics = window.AI.getAnalytics();
     const insights = window.AI.getInsights();
+    const learningStatus = window.AI.getLearningStatus ? window.AI.getLearningStatus() : { status: 'unknown' };
 
     // Update overall stats
+    const learningIndicator = learningStatus.status === 'analyzing' ? 
+      `<span style="color: #06b6d4;">🧠 ANALYZING ${learningStatus.currentSymbol || ''}</span>` : 
+      `<span style="color: #10b981;">🤖 LEARNING ACTIVE</span>`;
+
     dom.aiOverallStats.innerHTML = `
-      <div><strong>Total Trades:</strong> ${analytics.overall.trades} | <strong>Win Rate:</strong> ${analytics.overall.winRate} | <strong>Best Streak:</strong> ${analytics.overall.bestStreak}</div>
+      <div><strong>Total Trades:</strong> ${analytics.overall.trades} | <strong>Win Rate:</strong> ${analytics.overall.winRate} | <strong>Best Streak:</strong> ${analytics.overall.bestStreak} | ${learningIndicator}</div>
       <div><strong>Total P&L:</strong> $${analytics.overall.totalProfit}</div>
     `;
 
@@ -5416,6 +5873,11 @@ function stopBot(){
 
   logLine("Bot stopped.");
   updateUI();
+
+  // Stop continuous AI learning
+  if (window.AI && window.AI.stopContinuousLearning) {
+    window.AI.stopContinuousLearning();
+  }
 }
 
 function startBot(){
@@ -5444,6 +5906,11 @@ function startBot(){
 
   appState.sessionProfit = 0;
   appState.sessionLoss = 0;
+  appState.sessionTrades = 0;
+  appState.sessionWins = 0;
+  appState.sessionLosses = 0;
+  appState.consecutiveWins = 0;
+  appState.consecutiveLosses = 0;
   appState.tradeCounter = 0;
   appState.currentContractId = null;
   appState.isEntryInProgress = false;
@@ -5474,6 +5941,15 @@ function startBot(){
   // If API is already connected/authenticated, start subscribing to ticks now
   if (appState.isApiConnected && appState.isAuthenticated){
     try{ subscribeTicks(appState.symbol); }catch(_){ }
+  }
+
+  // Start continuous AI learning
+  if (window.AI && window.AI.startContinuousLearning) {
+    window.AI.startContinuousLearning();
+    logLine("AI continuous learning activated");
+    if (typeof UAE_showTimedPopup === 'function') {
+      UAE_showTimedPopup('🤖 AI Continuous Learning Activated: Bot will analyze and improve performance automatically.', 5000);
+    }
   }
 }
 
@@ -5551,7 +6027,29 @@ function handleResponse(res){
       // Mark API as connected and show success popup
       appState.isApiConnected = true;
       if (typeof UAE_showTimedPopup === 'function') {
-        UAE_showTimedPopup('✅ Connected as scscsfull! API connected and monitoring market data.', 5000);
+        UAE_showTimedPopup('✅ Connected successfully! API connected and monitoring market data.', 5000);
+      }
+
+      // Initialize chart when API connects
+      if (typeof initChart === 'function') {
+        initChart();
+        logLine("Chart initialized on API connection");
+        if (typeof UAE_showTimedPopup === 'function') {
+          UAE_showTimedPopup('📊 Chart Loading: Market data visualization activated.', 3000);
+        }
+      }
+
+      // Start reading market data immediately when API connects
+      if (window.AI && window.AI.analyzeMarket) {
+        try {
+          window.AI.analyzeMarket(appState.symbol);
+          logLine("Market analysis started on API connection");
+          if (typeof UAE_showTimedPopup === 'function') {
+            UAE_showTimedPopup('🧠 Market Analysis Started: AI is analyzing market patterns and preparing for trading.', 4000);
+          }
+        } catch (e) {
+          logLine("Market analysis error on connection: " + e.message);
+        }
       }
 
       // Enable the START BOT button
@@ -5778,8 +6276,15 @@ function handleResponse(res){
 
           // Session limits counters (extra safety)
           appState.sessionTrades += 1;
-          if (profit > 0) appState.sessionWins += 1;
-          else if (profit < 0) appState.sessionLosses += 1;
+          if (profit > 0) {
+            appState.sessionWins += 1;
+            appState.consecutiveWins += 1;
+            appState.consecutiveLosses = 0; // Reset losses on win
+          } else if (profit < 0) {
+            appState.sessionLosses += 1;
+            appState.consecutiveLosses += 1;
+            appState.consecutiveWins = 0; // Reset wins on loss
+          }
           renderSessionLimitsUI();
           // Stop bot if any session limit is hit
           checkSessionLimitsAndMaybeStop();
@@ -5859,7 +6364,25 @@ function handleResponse(res){
               if (!appState.isBotRunning) return;
               if (Date.now() >= appState.cooldownUntil){
                 if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "None";
-                updateTradeStatus("Monitoring Ticks...", "bg-yellow-600 text-white");
+                updateTradeStatus("Analyzing Market...", "bg-blue-600 text-white");
+
+                // Start market analysis after cooldown
+                if (window.AI && window.AI.analyzeMarket) {
+                  try {
+                    window.AI.analyzeMarket(appState.symbol);
+                    logLine("Market analysis started after cooldown completion");
+                    if (typeof UAE_showTimedPopup === 'function') {
+                      UAE_showTimedPopup('🧠 Market Analysis Started: AI is analyzing market patterns and improving performance.', 4000);
+                    }
+                  } catch (e) {
+                    logLine("Market analysis error: " + e.message);
+                  }
+                }
+
+                setTimeout(() => {
+                  if (!appState.isBotRunning) return;
+                  updateTradeStatus("Monitoring Ticks...", "bg-yellow-600 text-white");
+                }, 2000);
               }
             }, appState.cooldownDuration * 1000);
           }
@@ -8018,6 +8541,7 @@ document.addEventListener("AI_TRADE", e => {
   const loginForm = document.getElementById('login-form');
   const kutmilzKeyInput = document.getElementById('kutmilz-key');
   const passwordInput = document.getElementById('password');
+  const termsCheckbox = document.getElementById('terms-checkbox');
   const loginError = document.getElementById('login-error');
   const appRoot = document.getElementById('app-root');
 
@@ -8050,6 +8574,38 @@ document.addEventListener("AI_TRADE", e => {
     return key === VALID_KEY && password === VALID_PASSWORD;
   }
 
+  // Show terms and conditions popup
+  function showTermsAndConditions() {
+    const termsText = `
+KUT MILLZ AI - Terms and Conditions
+
+1. ACCEPTANCE OF TERMS
+By accessing and using KUT MILLZ AI trading bot, you accept and agree to be bound by the terms and conditions of this agreement.
+
+2. TRADING RISKS
+Trading binary options and CFDs involves substantial risk of loss. Past performance does not guarantee future results. You may lose all or more than your initial investment.
+
+3. NO GUARANTEES
+KUT MILLZ AI does not guarantee profits or protect against losses. All trading involves risk, and you trade at your own risk.
+
+4. RESPONSIBLE TRADING
+You must be 18+ years old and legally permitted to trade in your jurisdiction. Do not trade with money you cannot afford to lose.
+
+5. BOT USAGE
+This bot is for educational and personal use only. Commercial use requires written permission.
+
+6. LIMITATION OF LIABILITY
+KUT MILLZ AI and its creators are not liable for any losses incurred through use of this software.
+
+7. MODIFICATIONS
+These terms may be updated at any time. Continued use constitutes acceptance of new terms.
+
+By checking "I agree", you acknowledge you have read and accept these terms.
+    `;
+
+    alert(termsText);
+  }
+
   // Handle login form submission
   function handleLogin(e) {
     e.preventDefault();
@@ -8057,8 +8613,32 @@ document.addEventListener("AI_TRADE", e => {
 
     const key = kutmilzKeyInput.value.trim();
     const password = passwordInput.value.trim();
+    const termsAccepted = termsCheckbox.checked;
+    const rememberMe = document.getElementById('remember-checkbox').checked;
+
+    if (!termsAccepted) {
+      loginError.textContent = 'Please accept the Terms and Conditions';
+      loginError.classList.remove('hidden');
+      return;
+    }
 
     if (validateCredentials(key, password)) {
+      // Save credentials if remember me is checked
+      if (rememberMe) {
+        try {
+          localStorage.setItem('kutmilz_key', key);
+          localStorage.setItem('kutmilz_password', password);
+          console.log('Credentials saved to localStorage');
+        } catch (error) {
+          console.warn('Failed to save credentials:', error);
+        }
+      } else {
+        // Clear saved credentials if remember me is unchecked
+        localStorage.removeItem('kutmilz_key');
+        localStorage.removeItem('kutmilz_password');
+        console.log('Credentials cleared from localStorage');
+      }
+
       // Show loading state
       const loginButton = document.getElementById('login-submit-btn');
       if (loginButton) {
@@ -8077,7 +8657,7 @@ document.addEventListener("AI_TRADE", e => {
       // Show welcome message after successful login
       setTimeout(() => {
         showWelcomePopup();
-        // Re-enable button
+        // Re-enable button (though login is hidden, for consistency)
         if (loginButton) {
           loginButton.disabled = false;
           loginButton.textContent = 'Access Bot';
@@ -8085,6 +8665,7 @@ document.addEventListener("AI_TRADE", e => {
       }, 800);
 
     } else {
+      loginError.textContent = 'Access Denied - Invalid credentials';
       loginError.classList.remove('hidden');
       kutmilzKeyInput.value = '';
       passwordInput.value = '';
@@ -8105,12 +8686,39 @@ document.addEventListener("AI_TRADE", e => {
       if (offlineNotice) offlineNotice.classList.remove('hidden');
     }
 
+    // Load saved credentials if available
+    const savedKey = localStorage.getItem('kutmilz_key');
+    const savedPassword = localStorage.getItem('kutmilz_password');
+    if (savedKey && savedPassword && kutmilzKeyInput && passwordInput) {
+      kutmilzKeyInput.value = savedKey;
+      passwordInput.value = savedPassword;
+      document.getElementById('remember-checkbox').checked = true;
+      console.log('Saved credentials loaded');
+    }
+
     // Always show login on page load
     showLogin();
 
     // Add form submit handler
     if (loginForm) {
       loginForm.addEventListener('submit', handleLogin);
+    }
+
+    // Add terms checkbox handler
+    if (termsCheckbox) {
+      termsCheckbox.addEventListener('change', () => {
+        const loginButton = document.getElementById('login-submit-btn');
+        if (loginButton) {
+          loginButton.disabled = !termsCheckbox.checked;
+        }
+        if (loginError) loginError.classList.add('hidden');
+      });
+    }
+
+    // Initially disable login button
+    const loginButton = document.getElementById('login-submit-btn');
+    if (loginButton) {
+      loginButton.disabled = true;
     }
 
     // Add input focus effects
