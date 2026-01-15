@@ -1871,6 +1871,19 @@ button {
         </div>
       </div>
 
+      <!-- KutMilzAi Pro Engine Alert -->
+      <div id="kutMilzAi-alert" class="card hidden border-blue-500/40">
+        <div class="flex items-start gap-3">
+          <div class="text-blue-400 text-xl">🤖</div>
+          <div>
+            <div class="text-lg font-semibold text-blue-300">KutMilzAi Pro Engine</div>
+            <div id="kutMilzAi-content" class="text-sm text-slate-200 mt-1">
+              Analyzing digit patterns...
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Confidence Meter -->
       <div class="card">
         <div class="flex items-center justify-between mb-3">
@@ -2417,6 +2430,41 @@ button {
             Chart Assist is currently OFF.
           </div>
 
+          <!-- Multi-Timeframe Analysis -->
+          <div class="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
+            <div class="flex flex-col sm:flex-row sm:items-center">
+              <span class="text-sm font-medium text-slate-300 mr-4">Multi-Timeframe Analysis:</span>
+              <span id="mtf-indicator" class="pill bg-green-600 text-white">ON</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="mtf-toggle" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-slate-500 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-cyan-300 rounded-full peer
+                peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-600"></div>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-xs text-slate-400">Primary Timeframe</label>
+              <select id="primary-timeframe" class="w-full mt-1 p-2 bg-slate-800 border border-slate-600 rounded text-slate-100">
+                <option value="1min">1 Minute</option>
+                <option value="5min" selected>5 Minute</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Confirmation Timeframe</label>
+              <select id="confirmation-timeframe" class="w-full mt-1 p-2 bg-slate-800 border border-slate-600 rounded text-slate-100">
+                <option value="5min">5 Minute</option>
+                <option value="15min">15 Minute</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="text-center text-xs text-slate-500" id="mtf-status">
+            Multi-Timeframe Analysis is ON. Using 5-min confirmation.
+          </div>
+
 
           <div class="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
             <div class="flex flex-col sm:flex-row sm:items-center">
@@ -2621,6 +2669,37 @@ button {
             Tick Ladder is OFF.
           </div>
 
+          <!-- KutMilzAi Pro Engine -->
+          <div class="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg mt-3">
+            <div class="flex flex-col sm:flex-row sm:items-center">
+              <span class="text-sm font-medium text-slate-300 mr-4">KutMilzAi Pro Engine (Volatility Indices):</span>
+              <span id="kutMilzAi-indicator" class="pill bg-green-600 text-white">ON</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="kutMilzAi-toggle" class="sr-only peer" checked disabled>
+              <div class="w-11 h-6 bg-slate-500 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer
+                peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+            <div>
+              <label class="text-xs text-slate-400">Barrier (1-9)</label>
+              <input id="kutMilzAi-barrier" type="number" min="1" max="9" step="1" value="5"
+                class="w-full mt-1 p-2 bg-slate-800 border border-slate-600 rounded text-slate-100" disabled />
+            </div>
+            <div>
+              <label class="text-xs text-slate-400">Confidence Boost %</label>
+              <input id="kutMilzAi-boost" type="number" min="0" max="100" step="5" value="30"
+                class="w-full mt-1 p-2 bg-slate-800 border border-slate-600 rounded text-slate-100" disabled />
+            </div>
+          </div>
+
+          <div class="text-center text-xs text-slate-500 mt-2" id="kutMilzAi-status">
+            KutMilzAi Pro Engine is ON (Barrier: 4, Boost: 30%).
+          </div>
+
 <div class="mt-4 pt-3 border-t border-slate-700">
           <p class="text-xs text-center text-slate-500">Made by Kut.Milz</p>
         </div>
@@ -2717,17 +2796,80 @@ button {
         </div>
       </div>
 
-      <!-- Market Chart -->
-      <div class="card">
-        <h2 class="text-xl font-semibold mb-4 text-emerald-400">Market Chart</h2>
-        <div id="chart-container" style="width: 100%; height: 400px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(124,58,237,0.2);">
-          <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: rgba(255,255,255,0.6);">
+      <!-- Xdigits Trading Panel (Accumulator OFF only) -->
+      <div class="card" id="xdigits-panel" style="display:none;">
+        <h2 class="text-xl font-semibold mb-4 text-blue-400">Xdigits - KutMilzAi Predictions</h2>
+        <div style="width: 100%; height: 400px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid rgba(100,200,255,0.3); padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto;">
+          <!-- KutMilzAi Analysis Result -->
+          <div id="xdigits-result" style="background: rgba(59,130,246,0.2); border: 1px solid #3b82f6; border-radius: 6px; padding: 10px; margin-bottom: 15px; text-align: center; width: 100%; font-size: 13px; color: #93c5fd;">
+            Analyzing...
+          </div>
+          
+          <p class="text-xs text-slate-400 mb-2">Barrier: <span id="xdigits-barrier-value" style="color: #fbbf24; font-weight: bold;">4</span></p>
+          <p class="text-xs text-slate-400 mb-3">Click digit to trade (🟢=CALL/UP | 🔴=PUT/DOWN)</p>
+          
+          <!-- Digit Grid with Predictions -->
+          <div style="width: 100%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px;">
             <div style="text-align: center;">
-              <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
-              <div id="chart-status" class="text-sm">WAITING</div>
-              <div class="text-xs text-slate-400 mt-2">Chart will load when API connects</div>
+              <button class="px-3 py-4 text-2xl font-bold rounded w-full" id="xdigit-1" onclick="window.kutMilzAiManualTrade && window.kutMilzAiManualTrade(1)" style="background-color: #2563eb; color: white;">1</button>
+              <p class="text-xs mt-1" id="xdigit-1-pred">--</p>
+            </div>
+            <div style="text-align: center;">
+              <button class="px-3 py-4 text-2xl font-bold rounded w-full" id="xdigit-2" onclick="window.kutMilzAiManualTrade && window.kutMilzAiManualTrade(2)" style="background-color: #2563eb; color: white;">2</button>
+              <p class="text-xs mt-1" id="xdigit-2-pred">--</p>
+            </div>
+            <div style="text-align: center;">
+              <button class="px-3 py-4 text-2xl font-bold rounded w-full" id="xdigit-3" onclick="window.kutMilzAiManualTrade && window.kutMilzAiManualTrade(3)" style="background-color: #2563eb; color: white;">3</button>
+              <p class="text-xs mt-1" id="xdigit-3-pred">--</p>
+            </div>
+            <div style="text-align: center;">
+              <button class="px-3 py-4 text-2xl font-bold rounded w-full" id="xdigit-4" onclick="window.kutMilzAiManualTrade && window.kutMilzAiManualTrade(4)" style="background-color: #2563eb; color: white;">4</button>
+              <p class="text-xs mt-1" id="xdigit-4-pred">--</p>
+            </div>
+            <div style="text-align: center;">
+              <button class="px-3 py-4 text-2xl font-bold rounded w-full" id="xdigit-5" onclick="window.kutMilzAiManualTrade && window.kutMilzAiManualTrade(5)" style="background-color: #2563eb; color: white;">5</button>
+              <p class="text-xs mt-1" id="xdigit-5-pred">--</p>
+            </div>
+            <div style="text-align: center;">
+              <button class="px-3 py-4 text-2xl font-bold rounded w-full" id="xdigit-6" onclick="window.kutMilzAiManualTrade && window.kutMilzAiManualTrade(6)" style="background-color: #2563eb; color: white;">6</button>
+              <p class="text-xs mt-1" id="xdigit-6-pred">--</p>
+            </div>
+            <div style="text-align: center;">
+              <button class="px-3 py-4 text-2xl font-bold rounded w-full" id="xdigit-7" onclick="window.kutMilzAiManualTrade && window.kutMilzAiManualTrade(7)" style="background-color: #2563eb; color: white;">7</button>
+              <p class="text-xs mt-1" id="xdigit-7-pred">--</p>
+            </div>
+            <div style="text-align: center;">
+              <button class="px-3 py-4 text-2xl font-bold rounded w-full" id="xdigit-8" onclick="window.kutMilzAiManualTrade && window.kutMilzAiManualTrade(8)" style="background-color: #2563eb; color: white;">8</button>
+              <p class="text-xs mt-1" id="xdigit-8-pred">--</p>
+            </div>
+            <div style="text-align: center;">
+              <button class="px-3 py-4 text-2xl font-bold rounded w-full" id="xdigit-9" onclick="window.kutMilzAiManualTrade && window.kutMilzAiManualTrade(9)" style="background-color: #2563eb; color: white;">9</button>
+              <p class="text-xs mt-1" id="xdigit-9-pred">--</p>
             </div>
           </div>
+        </div>
+        <div class="flex justify-center gap-3 mt-4">
+          <button class="px-6 py-2 rounded bg-green-600 text-white hover:bg-green-500 font-semibold text-lg" onclick="window.kutMilzAiManualTrade && window.kutMilzAiManualTrade('CALL')" id="xdigits-call-btn">📈 CALL (Higher)</button>
+          <button class="px-6 py-2 rounded bg-red-600 text-white hover:bg-red-500 font-semibold text-lg" onclick="window.kutMilzAiManualTrade && window.kutMilzAiManualTrade('PUT')" id="xdigits-put-btn">📉 PUT (Lower)</button>
+        </div>
+      </div>
+
+      <!-- Digit Trade Confirmation Modal (Only when trading Digits) -->
+      <div id="xdigits-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center; display: none;">
+        <div style="background: #0f172a; border: 2px solid #3b82f6; border-radius: 12px; padding: 30px; max-width: 400px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.9);">
+          <h3 id="xdigits-modal-title" style="font-size: 24px; font-weight: bold; color: #93c5fd; margin-bottom: 15px;">Digit Trade</h3>
+          <p id="xdigits-modal-message" style="font-size: 16px; color: #cbd5e1; margin-bottom: 25px;">Select trade type:</p>
+          <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <button id="xdigits-modal-call-btn" class="flex-1 px-4 py-3 rounded font-bold text-lg transition" style="background: #16a34a; color: white; border: 2px solid #16a34a; cursor: pointer;">
+              📈 CALL
+            </button>
+            <button id="xdigits-modal-put-btn" class="flex-1 px-4 py-3 rounded font-bold text-lg transition" style="background: #dc2626; color: white; border: 2px solid #dc2626; cursor: pointer;">
+              📉 PUT
+            </button>
+          </div>
+          <button id="xdigits-modal-cancel-btn" class="w-full px-4 py-2 rounded font-semibold bg-slate-700 text-slate-200 hover:bg-slate-600 transition">
+            Cancel
+          </button>
         </div>
       </div>
 
@@ -2880,6 +3022,11 @@ autoTradingEnabled:true,
     threshold:70            // 0..100
   },
 
+  // Multi-Timeframe Analysis
+  mtfEnabled: true,
+  primaryTimeframe: '5min',
+  confirmationTimeframe: '15min',
+
   // Scalp Indicator Assist: optional indicator confirmation (SCALP only). Does NOT change direction.
   scalpInd:{
     enabled:false,
@@ -2913,6 +3060,13 @@ autoTradingEnabled:true,
     maxTicks:3,
     quickWindowTicks:3,
     doubleTouchCount:2
+  },
+
+  // KutMilzAi Pro Engine - High-Frequency Digit Analyst
+  kutMilzAi:{
+    enabled:true,
+    barrier:5,              // Digit threshold for ICF X strategy (1-9)
+    confidenceBoost:30      // Percentage boost to add to confidence score (0-100)
   },
 
   // Burst Protection (optional): stand down briefly during tick-volatility bursts (best for Vol 1s)
@@ -4197,6 +4351,13 @@ const dom = {
   chartAssistMode: $("chart-assist-mode"),
   chartAssistMinCd: $("chart-assist-mincd"),
   chartAssistStatus: $("chart-assist-status"),
+
+  // Multi-Timeframe Analysis
+  mtfToggle: $("mtf-toggle"),
+  mtfIndicator: $("mtf-indicator"),
+  primaryTimeframe: $("primary-timeframe"),
+  confirmationTimeframe: $("confirmation-timeframe"),
+  mtfStatus: $("mtf-status"),
   autoResumeToggle: $("autoresume-toggle"),
   autoResumeIndicator: $("autoresume-indicator"),
   autoSellToggle: $("autosell-toggle"),
@@ -4218,6 +4379,13 @@ const dom = {
   tickLadderWindow: $("tick-ladder-window"),
   tickLadderDTouch: $("tick-ladder-dtouch"),
   tickLadderStatus: $("tick-ladder-status"),
+
+  // KutMilzAi Pro Engine
+  kutMilzAiToggle: $("kutMilzAi-toggle"),
+  kutMilzAiIndicator: $("kutMilzAi-indicator"),
+  kutMilzAiBarrier: $("kutMilzAi-barrier"),
+  kutMilzAiBoost: $("kutMilzAi-boost"),
+  kutMilzAiStatus: $("kutMilzAi-status"),
 
   // Burst Protection + Soft Score
   burstProtectToggle: $("burst-protect-toggle"),
@@ -4304,6 +4472,10 @@ const dom = {
   // clustering
   clusterAlert: $("cluster-alert"),
   clusterText: $("cluster-text"),
+
+  // KutMilzAi Pro Engine
+  kutMilzAiAlert: $("kutMilzAi-alert"),
+  kutMilzAiContent: $("kutMilzAi-content"),
 
   // log controls
   clearLogBtn: $("clear-log-btn"),
@@ -4737,56 +4909,9 @@ function getEffectiveStake(){
     stake = Math.round(stake * 100) / 100;
   }
 
-  // Apply AI dynamic stake scaling
-  if(window.AI && window.AI.getDynamicStake) {
-    stake = window.AI.getDynamicStake(stake, appState.symbol);
-  }
-
-  // Apply risk multiplier
-  if(window.AI && window.AI.getRiskMultiplier) {
-    const riskMult = window.AI.getRiskMultiplier(appState.symbol);
-    stake *= riskMult;
-  }
-
-  // Dynamic stake adjustment based on recent performance
-  if (appState.sessionTrades > 0) {
-    const winRate = appState.sessionWins / appState.sessionTrades;
-    const recentTrades = Math.min(appState.sessionTrades, 10); // Look at last 10 trades
-
-    // If winning streak, gradually increase stake
-    if (appState.consecutiveWins >= 3) {
-      const increaseFactor = Math.min(1.5, 1 + (appState.consecutiveWins * 0.1));
-      stake *= increaseFactor;
-      logLine(`Stake increased by ${((increaseFactor - 1) * 100).toFixed(1)}% due to ${appState.consecutiveWins} consecutive wins`);
-      if (typeof UAE_showTimedPopup === 'function') {
-        UAE_showTimedPopup(`📈 Stake Increased: ${((increaseFactor - 1) * 100).toFixed(1)}% boost due to ${appState.consecutiveWins} wins in a row!`, 3000);
-      }
-    }
-    // If losing streak, decrease stake
-    else if (appState.consecutiveLosses >= 2) {
-      const decreaseFactor = Math.max(0.5, 1 - (appState.consecutiveLosses * 0.15));
-      stake *= decreaseFactor;
-      logLine(`Stake decreased by ${((1 - decreaseFactor) * 100).toFixed(1)}% due to ${appState.consecutiveLosses} consecutive losses`);
-      if (typeof UAE_showTimedPopup === 'function') {
-        UAE_showTimedPopup(`📉 Stake Decreased: ${((1 - decreaseFactor) * 100).toFixed(1)}% reduction due to ${appState.consecutiveLosses} losses in a row.`, 3000);
-      }
-    }
-    // General win rate adjustment
-    else if (winRate < 0.4 && appState.sessionTrades >= 5) {
-      stake *= 0.8; // Reduce stake if win rate below 40%
-      logLine(`Stake reduced by 20% due to low win rate (${(winRate * 100).toFixed(1)}%)`);
-      if (typeof UAE_showTimedPopup === 'function') {
-        UAE_showTimedPopup(`⚠️ Stake Reduced: 20% decrease due to low win rate (${(winRate * 100).toFixed(1)}%).`, 3000);
-      }
-    }
-    else if (winRate > 0.7 && appState.sessionTrades >= 5) {
-      stake *= 1.2; // Increase stake if win rate above 70%
-      logLine(`Stake increased by 20% due to high win rate (${(winRate * 100).toFixed(1)}%)`);
-      if (typeof UAE_showTimedPopup === 'function') {
-        UAE_showTimedPopup(`🎯 Stake Increased: 20% boost due to high win rate (${(winRate * 100).toFixed(1)}%)!`, 3000);
-      }
-    }
-  }
+  // Stake scaling disabled: AI dynamic scaling, risk multiplier,
+  // and performance-based adjustments have been turned off.
+  // Stake remains as computed from manual/risk sizing values above.
 
   // Ensure stake stays within reasonable bounds
   stake = Math.max(0.35, Math.min(stake, appState.currentBalance * 0.1)); // Max 10% of balance
@@ -4838,6 +4963,12 @@ function updateAIInsights(){
     if(window.AI.getMarketSentiment) {
       const sentiment = window.AI.getMarketSentiment(appState.symbol);
       dom.aiInsightsList.innerHTML += `<div class="mt-1 text-green-300"><strong>Market Sentiment:</strong> ${sentiment.trend} (${(sentiment.strength * 100).toFixed(0)}% strength)</div>`;
+    }
+
+    // Add multi-timeframe sentiment if enabled
+    if(window.AI.getMultiTimeframeSentiment && appState.mtfEnabled) {
+      const mtfSentiment = window.AI.getMultiTimeframeSentiment(appState.symbol);
+      dom.aiInsightsList.innerHTML += `<div class="mt-1 text-blue-300"><strong>MTF Confirmation:</strong> ${mtfSentiment.confirmedTrend} (${(mtfSentiment.confidence * 100).toFixed(0)}% confidence)</div>`;
     }
 
     if(window.AI.shouldPauseForNews && window.AI.shouldPauseForNews()) {
@@ -4917,6 +5048,22 @@ function updateUI(){
     } else {
       dom.chartAssistStatus.textContent = "Chart Assist is ON. Scanning...";
     }
+  }
+
+  // Multi-Timeframe Analysis UI
+  if (dom.mtfToggle) dom.mtfToggle.checked = !!appState.mtfEnabled;
+  if (dom.mtfIndicator){
+    const on = !!appState.mtfEnabled;
+    dom.mtfIndicator.textContent = on ? "ON" : "OFF";
+    dom.mtfIndicator.className = `pill ${on ? "bg-emerald-600" : "bg-red-600"} text-white`;
+  }
+  if (dom.primaryTimeframe) dom.primaryTimeframe.value = appState.primaryTimeframe || '5min';
+  if (dom.confirmationTimeframe) dom.confirmationTimeframe.value = appState.confirmationTimeframe || '15min';
+  if (dom.mtfStatus){
+    const on = !!appState.mtfEnabled;
+    const primary = appState.primaryTimeframe || '5min';
+    const confirm = appState.confirmationTimeframe || '15min';
+    dom.mtfStatus.textContent = on ? `Multi-Timeframe Analysis is ON. Using ${confirm} confirmation.` : "Multi-Timeframe Analysis is OFF.";
   }
   if (dom.chartAssistMode && appState.chartAssist && document.activeElement !== dom.chartAssistMode){
     dom.chartAssistMode.value = appState.chartAssist.mode || "BOOST";
@@ -5031,6 +5178,23 @@ function updateUI(){
     dom.softScoreStatus.textContent = appState.softScore.enabled ? "Soft Score is ON." : "Soft Score is OFF.";
   }
 
+  // KutMilzAi Pro Engine UI
+  if (dom.kutMilzAiIndicator && appState.kutMilzAi){
+    const on = !!appState.kutMilzAi.enabled;
+    dom.kutMilzAiIndicator.textContent = on ? "ON" : "OFF";
+    dom.kutMilzAiIndicator.className = `pill ${on ? "bg-emerald-600" : "bg-red-600"} text-white`;
+  }
+  if (dom.kutMilzAiToggle && appState.kutMilzAi){
+    dom.kutMilzAiToggle.checked = !!appState.kutMilzAi.enabled;
+  }
+  setIfNotEditing(dom.kutMilzAiBarrier, String(appState.kutMilzAi?.barrier ?? 4));
+  setIfNotEditing(dom.kutMilzAiBoost, String(appState.kutMilzAi?.confidenceBoost ?? 30));
+  if (dom.kutMilzAiStatus && appState.kutMilzAi){
+    const on = !!appState.kutMilzAi.enabled;
+    const barrier = appState.kutMilzAi.barrier ?? 4;
+    const boost = appState.kutMilzAi.confidenceBoost ?? 30;
+    dom.kutMilzAiStatus.textContent = on ? `KutMilzAi Pro Engine is ON (Barrier: ${barrier}, Boost: ${boost}%).` : "KutMilzAi Pro Engine is OFF.";
+  }
 
   // Scalp Indicator Assist UI
   if (dom.scalpIndToggle && appState.scalpInd){
@@ -5112,6 +5276,13 @@ function updateUI(){
   // Accumulator UI sync (True ACCU)
   if (dom.accuToggle && document.activeElement !== dom.accuToggle) dom.accuToggle.checked = !!appState.accu.enabled;
   if (dom.accuSettings) dom.accuSettings.style.display = appState.accu.enabled ? "grid" : "none";
+  
+  // Xdigits Panel visibility (show ONLY when Accumulator is OFF)
+  const xdigitsPanel = document.getElementById("xdigits-panel");
+  if (xdigitsPanel) {
+    xdigitsPanel.style.display = !appState.accu.enabled ? "block" : "none";
+  }
+  
   if (dom.accuSafe && document.activeElement !== dom.accuSafe) dom.accuSafe.checked = !!appState.accu.safe;
   if (dom.accuGrowth && document.activeElement !== dom.accuGrowth) dom.accuGrowth.value = String(appState.accu.growthRate || 0.01);
   if (dom.accuTP && document.activeElement !== dom.accuTP) dom.accuTP.value = appState.accu.takeProfit ? String(appState.accu.takeProfit) : "";
@@ -5155,6 +5326,7 @@ function setSettingsLock(isLocked){
     dom.chartAssistToggle, dom.chartAssistMode, dom.chartAssistMinCd,
     dom.accuToggle, dom.accuSafe, dom.accuTP, dom.accuGrowth,
     dom.milzxaiToggle, dom.milzxaiMarkets,
+    dom.kutMilzAiToggle, dom.kutMilzAiBarrier, dom.kutMilzAiBoost,
     dom.sessLimitEnabled, dom.sessMaxProfit, dom.sessMaxLoss, dom.sessMaxTrades, dom.sessMaxWins, dom.sessMaxLosses, dom.sessLimitReset
   ].filter(Boolean);
 
@@ -5239,6 +5411,11 @@ function updateStateFromUI(){
     if (dom.softScoreBoost) appState.softScore.boostBelow = Math.max(0, Math.min(100, parseInt(dom.softScoreBoost.value) || 60));
     if (dom.softScoreBoostCd) appState.softScore.boostCooldownS = Math.max(0, parseInt(dom.softScoreBoostCd.value) || 20);
 
+    // KutMilzAi Pro Engine
+    if (!appState.kutMilzAi) appState.kutMilzAi = { enabled:true, barrier:5, confidenceBoost:30 };
+    if (dom.kutMilzAiToggle) appState.kutMilzAi.enabled = !!dom.kutMilzAiToggle.checked;
+    if (dom.kutMilzAiBarrier) appState.kutMilzAi.barrier = Math.max(1, Math.min(9, parseInt(dom.kutMilzAiBarrier.value) || 5));
+    if (dom.kutMilzAiBoost) appState.kutMilzAi.confidenceBoost = Math.max(0, Math.min(100, parseInt(dom.kutMilzAiBoost.value) || 30));
 
     // Scalp Indicator Assist (SCALP only)
     if (!appState.scalpInd) appState.scalpInd = { enabled:false };
@@ -5265,6 +5442,11 @@ function updateStateFromUI(){
       if (dom.chartAssistMode) appState.chartAssist.mode = dom.chartAssistMode.value || "BOOST";
       if (dom.chartAssistMinCd) appState.chartAssist.minCooldownSec = Math.max(0, parseFloat(dom.chartAssistMinCd.value) || 0);
     }
+
+    // Multi-Timeframe Analysis
+    if (dom.mtfToggle) appState.mtfEnabled = !!dom.mtfToggle.checked;
+    if (dom.primaryTimeframe) appState.primaryTimeframe = dom.primaryTimeframe.value || '5min';
+    if (dom.confirmationTimeframe) appState.confirmationTimeframe = dom.confirmationTimeframe.value || '15min';
 
     if (dom.safeToggle) appState.isSafeMode = !!dom.safeToggle.checked;
 
@@ -5703,11 +5885,13 @@ function passesPriceActionFilter(direction){
 ========================================================= */
 function updateClustering(price){
   const s = String(price);
-  const lastChar = s.replace(/\D/g,'').slice(-1) || "0";
-  const d = parseInt(lastChar,10);
+  const lastChar = s.replace(/\D/g,'').slice(-1) || "1";
+  let d = parseInt(lastChar,10);
+  // Convert 0 to 1 for 1-9 range
+  if (d === 0) d = 1;
 
   appState.lastDigits.push(d);
-  while(appState.lastDigits.length > 5) appState.lastDigits.shift();
+  while(appState.lastDigits.length > 50) appState.lastDigits.shift(); // Keep 50 digits for KutMilzAi analysis
 
   if (appState.lastDigits.length < 5) return;
 
@@ -5722,6 +5906,309 @@ function updateClustering(price){
   } else {
     dom.clusterAlert?.classList.add("hidden");
   }
+  
+  // Update Xdigits digit stream display
+  updateXdigitsDisplay();
+}
+
+/**
+ * Update the Xdigits digit stream display with predictions for each digit 1-9
+ */
+function updateXdigitsDisplay() {
+  const barrier = appState.kutMilzAi?.barrier ?? 4;
+  const digits = appState.lastDigits || [];
+  
+  // Update barrier display
+  const barrierEl = document.getElementById("xdigits-barrier-value");
+  if (barrierEl) barrierEl.textContent = barrier;
+  
+  // Check if bot is running - if not, show message
+  if (!appState.isBotRunning) {
+    const resultEl = document.getElementById("xdigits-result");
+    if (resultEl) {
+      resultEl.innerHTML = "⚠️ Bot is not running. Start the bot to begin analysis.";
+      resultEl.style.backgroundColor = "rgba(239,68,68,0.2)";
+      resultEl.style.borderColor = "#ef4444";
+      resultEl.style.color = "#fca5a5";
+    }
+    return;
+  }
+  
+  // Get KutMilzAi analysis result
+  const kutMilzAiResult = analyzeKutMilzAi();
+  const resultEl = document.getElementById("xdigits-result");
+  if (resultEl && kutMilzAiResult) {
+    const signal = kutMilzAiResult.signal || "WAITING";
+    const strategy = kutMilzAiResult.strategy || "KutMilzAi";
+    const confidence = kutMilzAiResult.confidence ? kutMilzAiResult.confidence.toFixed(1) : "0";
+    resultEl.innerHTML = `<strong>${strategy}</strong><br/>${signal} | ${confidence}% confidence`;
+    resultEl.style.backgroundColor = "rgba(59,130,246,0.2)";
+    resultEl.style.borderColor = "#3b82f6";
+    resultEl.style.color = "#93c5fd";
+  } else if (resultEl) {
+    resultEl.innerHTML = `📊 Analyzing... (${digits.length}/20 digits)`;
+    resultEl.style.backgroundColor = "rgba(59,130,246,0.2)";
+    resultEl.style.borderColor = "#3b82f6";
+    resultEl.style.color = "#93c5fd";
+  }
+  
+  // Update CALL/PUT button labels to show current barrier
+  const callBtn = document.getElementById("xdigits-call-btn");
+  const putBtn = document.getElementById("xdigits-put-btn");
+  if (callBtn) callBtn.textContent = `📈 CALL (Higher than ${barrier})`;
+  if (putBtn) putBtn.textContent = `📉 PUT (Lower than ${barrier})`;
+  
+  // Calculate overall statistics for predictions
+  let aboveBarrier = 0;
+  let belowBarrier = 0;
+  if (digits.length >= 20) {
+    aboveBarrier = digits.filter(d => d > barrier).length;
+    belowBarrier = digits.filter(d => d <= barrier).length;
+  }
+  
+  // For each digit 1-9, show KutMilzAi prediction (ABOVE or UNDER barrier)
+  for (let digit = 1; digit <= 9; digit++) {
+    const predEl = document.getElementById(`xdigit-${digit}-pred`);
+    const btnEl = document.getElementById(`xdigit-${digit}`);
+    
+    if (predEl && btnEl) {
+      let predictionText = "--";
+      let percentageText = "";
+      let buttonColor = "#2563eb"; // default blue
+      let tradeType = "NEUTRAL"; // CALL, PUT, or NEUTRAL
+      
+      if (digits.length >= 20) {
+        const callPercentage = (aboveBarrier / digits.length) * 100;
+        const putPercentage = (belowBarrier / digits.length) * 100;
+        
+        if (digit > barrier) {
+          // Digit is above barrier - should go UP (CALL)
+          if (callPercentage > 60) {
+            predictionText = "🟢 CALL";
+            buttonColor = "#16a34a"; // green
+            tradeType = "CALL";
+          } else if (callPercentage > 40) {
+            predictionText = "⚪ NEUTRAL";
+            buttonColor = "#4b5563"; // gray
+            tradeType = "NEUTRAL";
+          } else {
+            predictionText = "🔴 WEAK";
+            buttonColor = "#7c3aed"; // purple
+            tradeType = "WEAK_CALL";
+          }
+          percentageText = `${callPercentage.toFixed(1)}%`;
+        } else {
+          // Digit is below or equal to barrier - should go DOWN (PUT)
+          if (putPercentage > 60) {
+            predictionText = "🔴 PUT";
+            buttonColor = "#dc2626"; // red
+            tradeType = "PUT";
+          } else if (putPercentage > 40) {
+            predictionText = "⚪ NEUTRAL";
+            buttonColor = "#4b5563"; // gray
+            tradeType = "NEUTRAL";
+          } else {
+            predictionText = "🟢 WEAK";
+            buttonColor = "#7c3aed"; // purple
+            tradeType = "WEAK_PUT";
+          }
+          percentageText = `${putPercentage.toFixed(1)}%`;
+        }
+      }
+      
+      // Make prediction clickable - show modal with trade options
+      predEl.innerHTML = `<span style="cursor: pointer; padding: 5px; display: inline-block; border-radius: 4px; transition: background 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.3)'" onmouseout="this.style.background='transparent'">${predictionText}<br/><span style="font-size: 11px; color: #cbd5e1;">${percentageText}</span></span>`;
+      predEl.style.cursor = "pointer";
+      predEl.onclick = () => showXdigitsTradeModal(digit, barrier, tradeType);
+      
+      btnEl.style.backgroundColor = buttonColor;
+    }
+  }
+}
+
+/**
+ * Show Digit Trade Confirmation Modal
+ */
+function showXdigitsTradeModal(digit, barrier, predictedType) {
+  const modal = document.getElementById("xdigits-modal");
+  const title = document.getElementById("xdigits-modal-title");
+  const message = document.getElementById("xdigits-modal-message");
+  const callBtn = document.getElementById("xdigits-modal-call-btn");
+  const putBtn = document.getElementById("xdigits-modal-put-btn");
+  const cancelBtn = document.getElementById("xdigits-modal-cancel-btn");
+  
+  if (!modal) return;
+  
+  // Update modal title with digit info
+  title.textContent = `Digit ${digit}${digit > barrier ? ' > ' : ' ≤ '}${barrier}`;
+  message.textContent = `Predicted: ${predictedType}. Select trade type:`;
+  
+  // Configure CALL button
+  callBtn.textContent = `📈 CALL (Higher than ${barrier})`;
+  callBtn.onclick = () => {
+    closeXdigitsTradeModal();
+    window.kutMilzAiManualTrade && window.kutMilzAiManualTrade('CALL');
+  };
+  
+  // Configure PUT button
+  putBtn.textContent = `📉 PUT (Lower than ${barrier})`;
+  putBtn.onclick = () => {
+    closeXdigitsTradeModal();
+    window.kutMilzAiManualTrade && window.kutMilzAiManualTrade('PUT');
+  };
+  
+  // Configure Cancel button
+  cancelBtn.onclick = closeXdigitsTradeModal;
+  
+  // Show modal
+  modal.style.display = "flex";
+  
+  // Close modal when clicking outside
+  modal.onclick = (e) => {
+    if (e.target === modal) closeXdigitsTradeModal();
+  };
+}
+
+/**
+ * Close Digit Trade Modal
+ */
+function closeXdigitsTradeModal() {
+  const modal = document.getElementById("xdigits-modal");
+  if (modal) modal.style.display = "none";
+}
+
+/* =========================================================
+   KutMilzAi Pro Engine - High-Frequency Digit Analyst
+========================================================= */
+function analyzeKutMilzAi(){
+  const digits = appState.lastDigits;
+  if (digits.length < 20) return null; // Need at least 20 digits for analysis
+
+  const asset = appState.symbol;
+  const isVolatilityIndex = asset.startsWith('R_') && ['10', '25', '50', '75', '100'].includes(asset.split('_')[1]);
+
+  if (!isVolatilityIndex) return null; // Only works for Volatility Indices
+
+  // Strategy 1: ICF X (Digit Threshold)
+  function analyzeMilliX() {
+    const barrier = appState.kutMilzAi?.barrier ?? 4;
+    const aboveCount = digits.filter(d => d > barrier).length;
+    const percentage = (aboveCount / digits.length) * 100;
+
+    if (percentage > 85) {
+      return {
+        strategy: 'ICF X',
+        signal: `OVER ${barrier}`,
+        confidence: Math.min(95, percentage),
+        logic: `${percentage.toFixed(1)}% of digits above ${barrier} in last ${digits.length} ticks.`
+      };
+    } else if (percentage < 15) {
+      return {
+        strategy: 'ICF X',
+        signal: `UNDER ${barrier}`,
+        confidence: Math.min(95, 100 - percentage),
+        logic: `${(100 - percentage).toFixed(1)}% of digits below ${barrier} in last ${digits.length} ticks.`
+      };
+    }
+    return null;
+  }
+
+  // Strategy 2: AI LX (Accumulator/Trend)
+  function analyzeMPro() {
+    // Look for repeating patterns or runs
+    let maxRun = 0;
+    let currentRun = 1;
+    let runType = null; // 'even', 'odd', 'climbing', 'descending'
+
+    for (let i = 1; i < digits.length; i++) {
+      const prev = digits[i-1];
+      const curr = digits[i];
+
+      if (curr === prev) {
+        currentRun++;
+      } else if (curr === prev + 1) {
+        if (runType === 'climbing' || runType === null) {
+          runType = 'climbing';
+          currentRun++;
+        } else {
+          maxRun = Math.max(maxRun, currentRun);
+          currentRun = 1;
+          runType = null;
+        }
+      } else if (curr === prev - 1) {
+        if (runType === 'descending' || runType === null) {
+          runType = 'descending';
+          currentRun++;
+        } else {
+          maxRun = Math.max(maxRun, currentRun);
+          currentRun = 1;
+          runType = null;
+        }
+      } else {
+        maxRun = Math.max(maxRun, currentRun);
+        currentRun = 1;
+        runType = null;
+      }
+    }
+    maxRun = Math.max(maxRun, currentRun);
+
+    if (maxRun >= 4) {
+      const lastDigit = digits[digits.length - 1];
+      const trend = runType === 'climbing' ? 'UP' : runType === 'descending' ? 'DOWN' :
+                   lastDigit % 2 === 0 ? 'EVEN' : 'ODD';
+
+      return {
+        strategy: 'AI LX',
+        signal: `CONTINUE ${trend}`,
+        confidence: Math.min(90, maxRun * 15),
+        logic: `${maxRun} consecutive ${runType || 'same'} digits detected. Trend continuation likely.`
+      };
+    }
+    return null;
+  }
+
+  // Strategy 3: TradePlus X (Matches/Differs)
+  function analyzeTradePlusX() {
+    const frequency = {};
+    for (let d = 1; d <= 9; d++) {
+      frequency[d] = digits.filter(digit => digit === d).length;
+    }
+
+    const totalDigits = digits.length;
+    let minFreq = Infinity;
+    let coldDigit = null;
+
+    for (let d = 1; d <= 9; d++) {
+      if (frequency[d] < minFreq) {
+        minFreq = frequency[d];
+        coldDigit = d;
+      }
+    }
+
+    const coldPercentage = (minFreq / totalDigits) * 100;
+
+    if (coldPercentage <= 5) { // Cold digit appears 5% or less
+      return {
+        strategy: 'TradePlus X',
+        signal: `DIFFERS ${coldDigit}`,
+        confidence: Math.min(85, 100 - coldPercentage * 2),
+        logic: `Digit ${coldDigit} is cold with ${(coldPercentage).toFixed(1)}% frequency over ${totalDigits} ticks.`
+      };
+    }
+    return null;
+  }
+
+  // Try strategies in order of preference
+  const milliX = analyzeMilliX();
+  if (milliX) return milliX;
+
+  const mPro = analyzeMPro();
+  if (mPro) return mPro;
+
+  const tradePlusX = analyzeTradePlusX();
+  if (tradePlusX) return tradePlusX;
+
+  return null; // No clear signal
 }
 
 /* =========================================================
@@ -5750,6 +6237,14 @@ function computeConfidence(){
 
   if (dom.clusterAlert && !dom.clusterAlert.classList.contains("hidden")) score -= 15;
 
+  // KutMilzAi Pro Engine Analysis
+  const kutMilzAi = analyzeKutMilzAi();
+  if (kutMilzAi && appState.kutMilzAi?.enabled) {
+    // Boost confidence based on KutMilzAi signal strength
+    const boostPct = appState.kutMilzAi.confidenceBoost || 30;
+    score += Math.round(kutMilzAi.confidence * (boostPct / 100));
+  }
+
   score = Math.max(0, Math.min(100, score));
 
   let signal = "WAIT";
@@ -5764,13 +6259,13 @@ function computeConfidence(){
                             durationUnit === 'h' ? 'Hours' : durationUnit.toUpperCase();
   
   const notes = `Δ=${delta.toFixed(4)} | Mode=${appState.mode} | Duration=${appState.duration || 0} ${durationUnitLabel} | Trend=${appState.trend.enabled ? appState.trend.status : "OFF"} | Breakout=${breakoutOk ? "OK" : "WAIT"}`;
-  return { score, signal, notes };
+  return { score, signal, notes, kutMilzAi };
 }
 
 function updateConfidenceUI(){
   if (!dom.confidenceBar || !dom.confidenceText || !dom.signalPill || !dom.confidenceNotes) return;
 
-  const { score, signal, notes } = computeConfidence();
+  const { score, signal, notes, kutMilzAi } = computeConfidence();
   dom.confidenceBar.style.width = score + "%";
   dom.confidenceText.textContent = score + "%";
   dom.confidenceNotes.textContent = notes;
@@ -5785,6 +6280,21 @@ function updateConfidenceUI(){
   if (signal === "SELL") pillCls = "bg-red-700 text-white";
   if (signal === "WATCH") pillCls = "bg-yellow-600 text-white";
   setPill(dom.signalPill, signal, pillCls);
+
+  // Update KutMilzAi display
+  if (dom.kutMilzAiAlert && dom.kutMilzAiContent) {
+    if (kutMilzAi) {
+      dom.kutMilzAiAlert.classList.remove("hidden");
+      const riskLevel = kutMilzAi.confidence >= 80 ? "Low" : kutMilzAi.confidence >= 60 ? "Medium" : "High";
+      dom.kutMilzAiContent.innerHTML = `
+        <div class="font-semibold">${kutMilzAi.strategy}: ${kutMilzAi.signal}</div>
+        <div class="text-xs mt-1 opacity-90">Confidence: ${kutMilzAi.confidence.toFixed(1)}% | Risk: ${riskLevel}</div>
+        <div class="text-xs mt-1 opacity-75">${kutMilzAi.logic}</div>
+      `;
+    } else {
+      dom.kutMilzAiAlert.classList.add("hidden");
+    }
+  }
 }
 
 /* =========================================================
@@ -6021,6 +6531,31 @@ function handleResponse(res){
       updateTradeStatus("Monitoring Ticks...", "bg-yellow-600 text-white");
       if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "None";
       if (dom.chartStatus) setPill(dom.chartStatus, "LIVE", "bg-sky-700 text-white");
+
+      // Add timeframe indicator once chart is live
+      setTimeout(() => {
+        const chartContainer = document.getElementById('chart-container');
+        if (chartContainer && !document.getElementById('timeframe-indicator')) {
+          const timeframeIndicator = document.createElement('div');
+          timeframeIndicator.id = 'timeframe-indicator';
+          timeframeIndicator.style.position = 'absolute';
+          timeframeIndicator.style.top = '10px';
+          timeframeIndicator.style.right = '10px';
+          timeframeIndicator.style.background = 'rgba(30, 41, 59, 0.9)';
+          timeframeIndicator.style.color = '#cbd5e1';
+          timeframeIndicator.style.padding = '4px 8px';
+          timeframeIndicator.style.borderRadius = '4px';
+          timeframeIndicator.style.fontSize = '12px';
+          timeframeIndicator.style.fontWeight = 'bold';
+          timeframeIndicator.style.border = '1px solid rgba(124, 58, 237, 0.3)';
+          timeframeIndicator.style.zIndex = '1000';
+          timeframeIndicator.style.pointerEvents = 'none';
+          timeframeIndicator.textContent = '1M';
+
+          chartContainer.style.position = 'relative';
+          chartContainer.appendChild(timeframeIndicator);
+        }
+      }, 2000); // Wait 2 seconds for chart to be fully loaded
 
       updateUI();
 
@@ -6297,6 +6832,10 @@ function handleResponse(res){
 
           appState.currentContractId = null;
           appState.isSelling = false;
+          if (appState.sellTimeout) {
+            clearTimeout(appState.sellTimeout);
+            appState.sellTimeout = null;
+          }
           appState.tickBuffer = [];
           appState.tradeCounter = 0;
 
@@ -6512,10 +7051,21 @@ function checkAndEnterTrade(){
     }
   }
 
-  /* NEWS/EVENT FILTER */
-  if (window.AI && window.AI.shouldPauseForNews && window.AI.shouldPauseForNews() && !appState.rushXAiEnabled) {
-    if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "News/Event Pause";
-    return;
+  /* MULTI-TIMEFRAME CONFIRMATION */
+  if (window.AI && window.AI.getMultiTimeframeSentiment && appState.mtfEnabled) {
+    const mtfSentiment = window.AI.getMultiTimeframeSentiment(appState.symbol);
+    if (mtfSentiment.confirmedTrend === 'neutral' || mtfSentiment.confidence < 0.6) {
+      if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "MTF: No trend confirmation";
+      return;
+    }
+    if (mtfSentiment.confirmedTrend === 'bearish' && direction === 'CALL') {
+      if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "MTF: Bearish vs CALL";
+      return;
+    }
+    if (mtfSentiment.confirmedTrend === 'bullish' && direction === 'PUT') {
+      if (dom.blockReasonDisplay) dom.blockReasonDisplay.textContent = "MTF: Bullish vs PUT";
+      return;
+    }
   }
 
   /* TIME-BASED TRADING WINDOWS */
@@ -6803,7 +7353,7 @@ function checkProfitAndLoss(contract){
 
 function sellContract(){
   if (appState.isSelling) {
-    logLine("Sell: Already selling, ignoring duplicate request");
+    logLine("Sell: Already attempting to sell, ignoring duplicate request");
     return;
   }
   
@@ -6828,10 +7378,25 @@ function sellContract(){
   try {
     appState.ws.send(JSON.stringify({ sell: appState.currentContractId, price: 0 }));
     logLine("Sell requested for contract: " + appState.currentContractId);
+    
+    // Set timeout for sell operation (10 seconds)
+    appState.sellTimeout = setTimeout(() => {
+      if (appState.isSelling) {
+        logLine("Sell timeout: Contract may not be sellable or sell failed - resetting sell state");
+        appState.isSelling = false;
+        updateTradeStatus("Sell Failed - Contract Active", "bg-yellow-600 text-white");
+        // Contract remains active, can try selling again later
+      }
+    }, 10000);
+    
   } catch(e) {
     logLine("Sell error: " + e.message);
     appState.isSelling = false;
     updateTradeStatus("Sell Error", "bg-red-600 text-white");
+    if (appState.sellTimeout) {
+      clearTimeout(appState.sellTimeout);
+      appState.sellTimeout = null;
+    }
   }
 }
 
@@ -6947,6 +7512,56 @@ function manualPlaceTrade(mult=1){
 
   enterTrade(dir, appState.stakeAmount * mult, appState.symbol);
 }
+
+/**
+ * KutMilzAi Manual Trade Handler
+ * Handles digit trading and CALL/PUT trades with barrier awareness
+ */
+window.kutMilzAiManualTrade = function(typeOrDigit){
+  if (!appState.isAuthenticated){
+    logLine("[KutMilzAi] Manual trade blocked: not connected.");
+    updateTradeStatus("Connect first.", "bg-red-600 text-white");
+    return;
+  }
+  if (appState.currentContractId || appState.isEntryInProgress){
+    logLine("[KutMilzAi] Manual trade blocked: trade already active.");
+    return;
+  }
+  
+  // Get current barrier
+  const barrier = appState.kutMilzAi?.barrier ?? 4;
+  let direction = null;
+  let tradeType = "DIGIT";
+  
+  if (typeOrDigit === "CALL"){
+    direction = "CALL";
+    tradeType = `CALL (Digit > ${barrier})`;
+  } else if (typeOrDigit === "PUT"){
+    direction = "PUT";
+    tradeType = `PUT (Digit < ${barrier})`;
+  } else if (typeof typeOrDigit === 'number' || (typeof typeOrDigit === 'string' && !isNaN(typeOrDigit))){
+    const digit = parseInt(typeOrDigit, 10);
+    if (digit > barrier){
+      direction = "CALL";
+      tradeType = `CALL: Digit ${digit} > ${barrier}`;
+    } else {
+      direction = "PUT";
+      tradeType = `PUT: Digit ${digit} ≤ ${barrier}`;
+    }
+    logLine(`[KutMilzAi] Digit ${digit} selected | Barrier: ${barrier} | Prediction: ${direction}`);
+  } else {
+    logLine("[KutMilzAi] Invalid trade type.");
+    return;
+  }
+  
+  // Show confirmation
+  const confirmMsg = `🎯 KutMilzAi: ${tradeType} | Stake: $${appState.stakeAmount.toFixed(2)}`;
+  updateTradeStatus(confirmMsg, "bg-blue-600 text-white");
+  logLine(confirmMsg);
+  
+  // Place the trade
+  enterTrade(direction, appState.stakeAmount, appState.symbol);
+};
 
 function clearHistory(){
   appState.sessionProfit = 0;
@@ -7419,6 +8034,10 @@ document.addEventListener("DOMContentLoaded", () => {
     dom.chartAssistMode?.addEventListener("change", () => updateStateFromUI());
     dom.chartAssistMinCd?.addEventListener("input", () => updateStateFromUI());
 
+    dom.mtfToggle?.addEventListener("change", () => updateStateFromUI());
+    dom.primaryTimeframe?.addEventListener("change", () => updateStateFromUI());
+    dom.confirmationTimeframe?.addEventListener("change", () => updateStateFromUI());
+
     dom.toggleVisibilityBtn?.addEventListener("click", toggleTokenVisibility);
     dom.copyApiUrlBtn?.addEventListener("click", copyApiUrl);
 
@@ -7576,6 +8195,11 @@ dom.clearLogBtn?.addEventListener("click", () => { if (LOG) LOG.textContent = ""
     updateConnection("DISCONNECTED", "bg-red-800 text-white");
     updateTradeStatus("Idle", "bg-slate-600 text-slate-300");
     setSellable(0);
+    appState.isSelling = false;
+    if (appState.sellTimeout) {
+      clearTimeout(appState.sellTimeout);
+      appState.sellTimeout = null;
+    }
     updateProfit(appState.sessionProfit);
     updateLoss(appState.sessionLoss);
     updateUI();
@@ -7585,6 +8209,11 @@ dom.clearLogBtn?.addEventListener("click", () => { if (LOG) LOG.textContent = ""
       updateAIInsights();
       // Update insights every 30 seconds
       setInterval(updateAIInsights, 30000);
+    }, 2000);
+    
+    // Initialize Xdigits predictions update every 2 seconds
+    setInterval(() => {
+      updateXdigitsDisplay();
     }, 2000);
 
     logLine("Kut Milz TB loaded. Ready.");
