@@ -467,28 +467,8 @@ window.AI = {
 
   // Dynamic stake scaling based on performance
   getDynamicStake(baseStake, symbol) {
-    const brain = window.AI_BRAIN;
-    const recent = brain.history.slice(-10);
-    const recentWinRate = recent.filter(t => t.result === 'win').length / recent.length;
-
-    let multiplier = 1.0;
-
-    // Scale down after losses
-    if(recentWinRate < 0.4) multiplier *= 0.7;
-    else if(recentWinRate > 0.7) multiplier *= 1.3;
-
-    // Symbol-specific adjustment
-    const sym = brain.symbols[symbol];
-    if(sym && sym.trades > 5) {
-      if(sym.winRate < 0.45) multiplier *= 0.8;
-      else if(sym.winRate > 0.65) multiplier *= 1.2;
-    }
-
-    // Volatility adjustment (simplified)
-    const volatility = this.getMarketVolatility(symbol);
-    if(volatility > 0.02) multiplier *= 0.9; // Reduce in volatile markets
-
-    return Math.max(0.35, Math.min(baseStake * multiplier, baseStake * 2));
+    // Dynamic stake scaling disabled - return base stake unchanged.
+    return baseStake;
   },
 
   // Market sentiment analysis
@@ -510,6 +490,51 @@ window.AI = {
     const strength = Math.min(1, Math.abs(current - sma20) / sma20);
 
     return { trend, strength, sma20 };
+  },
+
+  // Multi-timeframe analysis for trend confirmation
+  getMultiTimeframeSentiment(symbol) {
+    const candles = window.appState?.chart?.closedCandles || [];
+    if(candles.length < 50) return { confirmedTrend: 'neutral', confidence: 0.5 };
+
+    // Assume current data is 1-min candles
+    const min1Sentiment = this.getMarketSentiment(symbol); // 1-min analysis
+
+    // Aggregate to 5-min candles (group every 5 candles)
+    const min5Candles = [];
+    for (let i = 0; i < candles.length; i += 5) {
+      const group = candles.slice(i, i + 5);
+      if (group.length >= 5) {
+        const open = group[0].open;
+        const close = group[group.length - 1].close;
+        const high = Math.max(...group.map(c => c.high));
+        const low = Math.min(...group.map(c => c.low));
+        min5Candles.push({ open, high, low, close });
+      }
+    }
+
+    // Calculate 5-min sentiment
+    if (min5Candles.length < 4) return { confirmedTrend: min1Sentiment.trend, confidence: min1Sentiment.strength };
+
+    const recent5min = min5Candles.slice(-4);
+    const prices5min = recent5min.map(c => c.close);
+    const sma5min = prices5min.reduce((a,b) => a+b, 0) / prices5min.length;
+    const current5min = prices5min[prices5min.length - 1];
+
+    let trend5min = 'neutral';
+    if (current5min > sma5min * 1.005) trend5min = 'bullish';
+    else if (current5min < sma5min * 0.995) trend5min = 'bearish';
+
+    // Confirm if trends match
+    const confirmed = min1Sentiment.trend === trend5min && min1Sentiment.trend !== 'neutral';
+    const confidence = confirmed ? Math.min(1, (min1Sentiment.strength + 0.5) / 1.5) : min1Sentiment.strength * 0.7;
+
+    return {
+      confirmedTrend: confirmed ? min1Sentiment.trend : 'neutral',
+      confidence,
+      min1Trend: min1Sentiment.trend,
+      min5Trend: trend5min
+    };
   },
 
   // RSI calculation
@@ -600,20 +625,8 @@ window.AI = {
 
   // Risk multiplier system
   getRiskMultiplier(symbol) {
-    const brain = window.AI_BRAIN;
-    const recent = brain.history.slice(-5);
-    const recentLosses = recent.filter(t => t.result === 'loss').length;
-
-    let multiplier = 1.0;
-
-    if(recentLosses >= 3) multiplier *= 0.5; // Reduce risk after 3 losses
-    else if(recentLosses === 0 && recent.length >= 3) multiplier *= 1.5; // Increase after wins
-
-    // Symbol risk
-    const sym = brain.symbols[symbol];
-    if(sym && sym.winRate < 0.4) multiplier *= 0.7;
-
-    return Math.max(0.3, Math.min(multiplier, 2.0));
+    // Risk multiplier disabled - use neutral multiplier of 1.0
+    return 1.0;
   },
 
   // Performance analytics
@@ -714,7 +727,7 @@ window.AI = {
     const recent = brain.history.slice(-5);
     const recentWinRate = recent.filter(t => t.result === 'win').length / recent.length;
     if(recentWinRate > 0.6) {
-      insights.push('🔥 RuShXAi: Hot streak detected - increase stake size!');
+      insights.push('🔥 RuShXAi: Hot streak detected');
     }
 
     // Time-sensitive opportunities
